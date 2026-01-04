@@ -29,6 +29,28 @@ jobs:
       run:
         working-directory: ./granyt-app
 
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: granyt
+          POSTGRES_PASSWORD: granyt-password
+          POSTGRES_DB: granyt_test
+        ports:
+          - 5432:5432
+        # Wait for postgres to be ready
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://granyt:granyt-password@localhost:5432/granyt_test?schema=public
+      BETTER_AUTH_SECRET: ci-test-secret-not-real-32chars
+      BETTER_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,6 +68,9 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Push Database Schema
+        run: npx prisma db push --skip-generate
+
       - name: Run linter
         run: npm run lint
 
@@ -54,10 +79,6 @@ jobs:
 
       - name: Build
         run: npm run build
-        env:
-          # Dummy env vars for build (not used in actual build)
-          BETTER_AUTH_SECRET: ci-build-secret-not-real-32chars
-          BETTER_AUTH_URL: http://localhost:3000
 
   docker-build-test:
     runs-on: ubuntu-latest
