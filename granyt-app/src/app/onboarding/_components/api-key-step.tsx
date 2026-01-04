@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Key, ArrowRight, Check, Copy, Loader2 } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 interface ApiKeyStepProps {
   apiKey: string | null

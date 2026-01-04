@@ -8,6 +8,7 @@ export function useApiKeysPage() {
   // API key form state
   const [showNewKeyForm, setShowNewKeyForm] = useState(false)
   const [newKeyName, setNewKeyName] = useState("")
+  const [newKeyType, setNewKeyType] = useState("sdk")
   const [newKeyEnvironmentId, setNewKeyEnvironmentId] = useState<string | undefined>(undefined)
   const [generatedKey, setGeneratedKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -31,6 +32,7 @@ export function useApiKeysPage() {
     onSuccess: (data: { key: string }) => {
       setGeneratedKey(data.key)
       setNewKeyName("")
+      setNewKeyType("sdk")
       setNewKeyEnvironmentId(undefined)
       refetchKeys()
       toast.success("API key generated!")
@@ -58,7 +60,7 @@ export function useApiKeysPage() {
     generateKey.mutate({
       organizationId,
       name: newKeyName.trim(),
-      type: "sdk",
+      type: newKeyType,
       environmentId: newKeyEnvironmentId,
     })
   }
@@ -79,6 +81,9 @@ export function useApiKeysPage() {
   const handleDismissGeneratedKey = () => {
     setGeneratedKey(null)
     setShowNewKeyForm(false)
+    setNewKeyName("")
+    setNewKeyType("sdk")
+    setNewKeyEnvironmentId(undefined)
   }
 
   const isLoading = orgsLoading || keysLoading || envsLoading

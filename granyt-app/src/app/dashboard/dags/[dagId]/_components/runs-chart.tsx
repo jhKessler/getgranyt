@@ -426,7 +426,8 @@ export function RunsChart({
                   <LabelList 
                     dataKey="value" 
                     position="top" 
-                    content={(props: { x: number; y: number; width: number; value: number; index: number }) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    content={(props: any) => {
                       const { x, y, width, value, index } = props;
                       const data = chartData[index];
                       if (!data || value === 0) return null;

@@ -9,13 +9,11 @@ export function useOnboarding() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [organizationName, setOrganizationName] = useState("")
-  const [organizationId, setOrganizationId] = useState<string | null>(null)
   const [apiKey, setApiKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
   const createOrg = trpc.organization.create.useMutation({
     onSuccess: (data: { id: string }) => {
-      setOrganizationId(data.id)
       setStep(2)
       toast.success("Organization created!")
       generateKey.mutate({

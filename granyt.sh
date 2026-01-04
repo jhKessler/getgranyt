@@ -57,7 +57,8 @@ fi
 echo ""
 echo "Please enter the URL the dashboard should be running on (e.g., https://granyt.yourdomain.com)."
 echo "You can leave it empty for now and change the BETTER_AUTH_URL in the .env file later."
-read -p "Dashboard URL [leave empty for auto-detect]: " DASHBOARD_URL
+# Use /dev/tty to allow reading input when the script is piped (e.g. curl | bash)
+read -p "Dashboard URL [leave empty for auto-detect]: " DASHBOARD_URL < /dev/tty
 
 # 4. Generate Secrets
 echo "Generating secure secrets..."
@@ -66,8 +67,15 @@ BETTER_AUTH_SECRET=$(generate_secret 32)
 
 # 5. Handle Empty Domain
 if [ -z "$DASHBOARD_URL" ]; then
-    echo "No URL provided. Detecting public IP..."
-    PUBLIC_IP=$(curl -s https://ifconfig.me || curl -s https://api.ipify.org || echo "localhost")
+    echo "No URL provided. Detecting network IP..."
+    # Get the IP address of the default interface (no external request)
+    # This works by checking the routing table for the default gateway
+    PUBLIC_IP=$(ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || hostname -I | awk '{print $1}')
+    
+    if [ -z "$PUBLIC_IP" ]; then
+        PUBLIC_IP="localhost"
+    fi
+    
     DASHBOARD_URL="http://$PUBLIC_IP:3000"
     echo "Using $DASHBOARD_URL as the default URL."
 fi
@@ -93,7 +101,7 @@ else
 fi
 
 # 8. Health check
-echo "Waiting for Granyt to be online (this may take up to 5 minutes)..."
+echo "Waiting for Granyt to be online (this may take a while)..."
 HEALTH_URL="http://localhost:3000/api/health"
 MAX_RETRIES=60 # 60 * 5 seconds = 300 seconds (5 minutes)
 RETRY_COUNT=0

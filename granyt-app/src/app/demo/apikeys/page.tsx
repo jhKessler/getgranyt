@@ -7,7 +7,7 @@ import { mockApiKeys, mockEnvironments } from "../_data/mock-data"
 export default function DemoApiKeysPage() {
   const [showNewKeyForm, setShowNewKeyForm] = useState(false)
   const [newKeyName, setNewKeyName] = useState("")
-  const [newKeyType, setNewKeyType] = useState<"airflow" | "dagster">("airflow")
+  const [newKeyType, setNewKeyType] = useState<string>("airflow")
   const [newKeyEnvironmentId, setNewKeyEnvironmentId] = useState<string | undefined>("")
   const [generatedKey, setGeneratedKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
