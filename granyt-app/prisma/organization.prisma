@@ -1,0 +1,74 @@
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+
+  creator       User                 @relation("CreatedOrganizations", fields: [createdBy], references: [id])
+  members       OrganizationMember[]
+  environments  Environment[]
+  apiKeys       ApiKey[]
+  dags          Dag[]
+  generalErrors GeneralError[]
+  metrics       Metric[]
+  dagMetricsSettings  DagMetricsSettings[]
+  dagComputedMetrics  DagComputedMetrics[]
+  dagRunMetricSnapshots    DagRunMetricSnapshot[]
+  alertSettings OrganizationAlertSettings[]
+  channelConfigs OrganizationChannelConfig[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  role           String   @default("member") // owner, admin, member
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+model Environment {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String   // production, development, staging, etc.
+  isDefault      Boolean  @default(false) // First environment becomes default for dashboard
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  apiKeys      ApiKey[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("environments")
+}
+
+model ApiKey {
+  id             String    @id @default(cuid())
+  organizationId String
+  environmentId  String?   // Link to an environment
+  type           String    // airflow, dagster, etc.
+  name           String
+  keyHash        String    @unique
+  keyPrefix      String    // First 8 chars for identification
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  environment  Environment? @relation(fields: [environmentId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@map("api_keys")
+}

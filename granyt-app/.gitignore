@@ -1,0 +1,38 @@
+.next/
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Debug files
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files (contain secrets)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+!.env.example
+!.env.prod.example
+!.env.standalone.example
+
+# Testing
+coverage/
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal

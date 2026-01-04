@@ -1,0 +1,46 @@
+model GeneralError {
+  id             String    @id @default(cuid())
+  organizationId String
+  fingerprint    String    // Hash of exception type + normalized message
+  exceptionType  String
+  message        String
+  firstSeenAt    DateTime  @default(now())
+  lastSeenAt     DateTime  @default(now())
+  occurrenceCount Int      @default(1)
+  status         String    @default("open") // open, resolved, ignored
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  occurrences  ErrorOccurrence[]
+
+  @@unique([organizationId, fingerprint])
+  @@index([organizationId, status])
+  @@index([organizationId, lastSeenAt])
+  @@map("general_errors")
+}
+
+// Individual error occurrence
+model ErrorOccurrence {
+  id             String   @id @default(cuid())
+  organizationId String
+  generalErrorId String
+  taskRunId      String  // Link to specific task run (internal ID)
+  errorId        String   @unique // Original error_id from SDK
+  operator       String?
+  tryNumber      Int?
+  stacktrace     Json?
+  systemInfo     Json?
+  sdkVersion     String?
+  timestamp      DateTime
+  createdAt      DateTime @default(now())
+
+  generalError GeneralError @relation(fields: [generalErrorId], references: [id], onDelete: Cascade)
+  taskRun      TaskRun     @relation(fields: [taskRunId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, timestamp])
+  @@index([generalErrorId])
+  @@index([taskRunId])
+  @@map("error_occurrences")
+}

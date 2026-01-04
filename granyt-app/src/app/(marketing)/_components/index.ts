@@ -1,0 +1,7 @@
+export { HeroSection } from "./hero-section"
+export { InstallSection } from "./install-section"
+export { ComparisonSection } from "./comparison-section"
+export { CTASection } from "./cta-section"
+export { ValueSection } from "./value-section"
+export { ToolConsolidationSection } from "./tool-consolidation-section"
+export { DemoPreviewSection } from "./demo-preview-section"

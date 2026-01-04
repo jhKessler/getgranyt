@@ -1,0 +1,126 @@
+# =====================================================
+# Granyt App - Standalone Docker Compose
+# =====================================================
+#
+# This file allows you to run Granyt without building from source.
+# Just download this file, create a .env file, and run!
+#
+# Quick Start:
+# 1. Download this file: docker-compose.standalone.yml
+# 2. Create a .env file with the required variables (see below)
+# 3. Run: docker compose -f docker-compose.standalone.yml up -d
+#
+# Required .env file contents:
+# ----------------------------
+# POSTGRES_PASSWORD=your-secure-database-password
+# BETTER_AUTH_SECRET=your-32-char-secret-key-here
+# BETTER_AUTH_URL=https://your-domain.com
+#
+# Optional:
+# POSTGRES_USER=granyt
+# POSTGRES_DB=granyt
+# GRANYT_VERSION=latest           # Pin to specific version: 1.0.0, 1.1.0, etc.
+# SMTP_HOST=smtp.example.com
+# SMTP_PORT=587
+# SMTP_USER=your-email@example.com
+# SMTP_PASSWORD=your-smtp-password
+# SMTP_FROM_EMAIL=alerts@your-domain.com
+# SMTP_FROM_NAME=Granyt Alerts
+#
+# =====================================================
+
+services:
+  # =========================
+  # PostgreSQL Database
+  # =========================
+  postgres:
+    image: postgres:17-alpine
+    container_name: granyt-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-granyt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-granyt}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    shm_size: 128mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-granyt} -d ${POSTGRES_DB:-granyt}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - granyt-network
+
+  # =========================
+  # Database Migrations
+  # =========================
+  migrations:
+    image: ghcr.io/jhkessler/granyt-app:${GRANYT_VERSION:-latest}-migrations
+    container_name: granyt-migrations
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-granyt}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-granyt}?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - granyt-network
+    restart: "no"
+
+  # =========================
+  # Next.js Application
+  # =========================
+  app:
+    image: ghcr.io/jhkessler/granyt-app:${GRANYT_VERSION:-latest}
+    container_name: granyt-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-granyt}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-granyt}?schema=public
+      
+      # Authentication (Better Auth) - REQUIRED
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL is required}
+      
+      # Application
+      NODE_ENV: production
+      
+      # Email Notifications (Optional - for alerts)
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Granyt Alerts}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - granyt-network
+
+# =========================
+# Volumes
+# =========================
+volumes:
+  postgres-data:
+    name: granyt-postgres-data
+
+# =========================
+# Networks
+# =========================
+networks:
+  granyt-network:
+    name: granyt-network
+    driver: bridge

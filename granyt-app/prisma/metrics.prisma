@@ -1,0 +1,20 @@
+// Unified metrics table - stores any metrics captured by the SDK
+// All metric values are stored as JSON with flexible 1D key-value pairs
+model Metric {
+  id             String   @id @default(cuid())
+  organizationId String
+  captureId      String   // Unique identifier for this capture point
+  taskRunId      String   // Link to specific task run
+  metrics        Json     // All metrics as flexible key-value pairs (e.g., row_count, query_duration_ms, etc.)
+  schema         Json?    // DataFrame schema info: column_dtypes, null_counts, empty_string_counts
+  capturedAt     DateTime
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  taskRun      TaskRun      @relation(fields: [taskRunId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, captureId, taskRunId])
+  @@index([organizationId, taskRunId])
+  @@index([captureId])
+  @@map("metrics")
+}

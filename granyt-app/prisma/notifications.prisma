@@ -1,0 +1,59 @@
+// Notification settings and channel configuration
+
+enum NotificationType {
+  ALL_ALERTS
+  NULL_OCCURRENCE_ALERT
+  SCHEMA_CHANGE_ALERT
+  ROW_COUNT_DROP_ALERT
+  ALL_ERRORS
+  NEW_ERRORS_ONLY
+}
+
+enum ChannelType {
+  SMTP
+  RESEND
+  WEBHOOK
+}
+
+// Per-organization channel configuration
+model OrganizationChannelConfig {
+  id              String      @id @default(cuid())
+  organizationId  String
+  channelType     ChannelType
+  enabled         Boolean     @default(true)
+  
+  // JSON config specific to each channel type
+  // SMTP: { host, port, user, password, fromEmail, fromName, secure }
+  // Resend: { apiKey, fromEmail, fromName }
+  // Webhook: { url, headers, secret }
+  config          Json?
+  
+  // Last test result
+  lastTestAt      DateTime?
+  lastTestSuccess Boolean?
+  lastTestError   String?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, channelType])
+  @@map("organization_channel_config")
+}
+
+// Notification preferences per user
+model UserNotificationSettings {
+  id                String           @id @default(cuid())
+  userId            String
+  notificationType  NotificationType
+  enabled           Boolean          @default(true)
+  
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationType])
+  @@map("user_notification_settings")
+}

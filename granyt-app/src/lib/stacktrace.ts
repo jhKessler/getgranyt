@@ -1,0 +1,39 @@
+export interface StackFrame {
+  filename: string
+  function: string
+  lineno: number
+  module?: string
+  source_context?: { lineno: number; code: string; current: boolean }[]
+  locals?: Record<string, string>
+}
+
+const EXCLUDED_PATTERNS = [
+  "site-packages",
+  "dist-packages",
+  "lib/python",
+  "python3.",
+  "<frozen",
+  "anaconda",
+  "venv/",
+  ".venv/",
+  "granyt_sdk",
+  "node_modules", // Just in case
+];
+
+export function isUserCode(filename: string): boolean {
+  if (!filename) return false;
+  return !EXCLUDED_PATTERNS.some((pattern) => filename.includes(pattern));
+}
+
+export function filterUserStacktrace(stacktrace: StackFrame[] | null): StackFrame[] {
+  if (!stacktrace) return [];
+  return stacktrace.filter((frame) => isUserCode(frame.filename));
+}
+
+export function getMostRelevantFrame(stacktrace: StackFrame[] | null): StackFrame | null {
+  if (!stacktrace) return null;
+  // Stacktraces are usually ordered from oldest to newest (bottom to top)
+  // We want the newest frame that is user code.
+  const userFrames = filterUserStacktrace(stacktrace);
+  return userFrames.length > 0 ? userFrames[userFrames.length - 1] : null;
+}

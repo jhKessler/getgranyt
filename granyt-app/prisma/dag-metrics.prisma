@@ -1,0 +1,91 @@
+// DAG Metrics Settings - User preferences for metrics display
+// Each user can have a default setting (dagId = null) that applies globally,
+// and override settings for specific DAGs (dagId = specific_dag_id)
+
+model DagMetricsSettings {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  dagId          String?  // null = default settings, set = override for specific DAG
+
+  // Ordered array of metric configurations (max 8)
+  // Structure: { id: string, type: "builtin" | "custom_dag" | "custom", aggregation?: "avg" | "total", enabled: boolean, order: number }
+  selectedMetrics Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Each user can have one default and one override per DAG
+  @@unique([userId, organizationId, dagId])
+  @@index([userId, organizationId])
+  @@index([dagId])
+  @@map("dag_metrics_settings")
+}
+
+// Pre-computed metrics per DAG, environment, and timeframe
+// Updated incrementally when new runs are ingested
+model DagComputedMetrics {
+  id             String  @id @default(cuid())
+  organizationId String
+  dagId          String  // srcDagId from Dag model
+  environment    String? // null = combined across all environments
+  timeframe      String  // "24h", "7d", "30d"
+
+  // Built-in metrics
+  totalRuns      Int     @default(0)
+  successfulRuns Int     @default(0)
+  failedRuns     Int     @default(0)
+  totalRows      BigInt  @default(0)
+  totalDuration  BigInt  @default(0) // Sum of all durations in seconds, for avg calculation
+
+  // Dynamic custom metrics as JSON
+  // Structure: { [metricName]: { sum: number, count: number } }
+  customMetrics    Json? // Aggregated from Metric.metrics JSON
+
+  lastComputedAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, dagId, environment, timeframe])
+  @@index([organizationId, dagId])
+  @@index([environment])
+  @@index([timeframe])
+  @@map("dag_computed_metrics")
+}
+
+// Per-run metric snapshot - stores computed metrics for each DAG run
+// This allows displaying any metric in run history charts
+model DagRunMetricSnapshot {
+  id             String   @id @default(cuid())
+  organizationId String
+  dagRunId       String   @unique // One snapshot per DAG run
+  srcDagId       String   // For faster querying without joins
+  environment    String?
+
+  // Built-in metrics computed for this run
+  duration       Int?     // Duration in seconds
+  rowsProcessed  BigInt   @default(0) // Total rows across all tasks
+  taskCount      Int      @default(0)
+  errorCount     Int      @default(0)
+  successRate    Float?   // Percentage of successful tasks (0-100)
+
+  // Custom metrics stored as JSON for flexibility
+  // Structure: { [metricName]: number }
+  customMetrics    Json?  // Aggregated from Metric.metrics JSON
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dagRun       DagRun       @relation(fields: [dagRunId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, srcDagId])
+  @@index([organizationId, srcDagId, environment])
+  @@index([dagRunId])
+  @@map("dag_run_metric_snapshots")
+}

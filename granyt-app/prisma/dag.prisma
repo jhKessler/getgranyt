@@ -1,0 +1,85 @@
+model Dag {
+  id             String   @id @default(cuid())
+  organizationId String
+  srcDagId       String   // Airflow dag_id (source system ID)
+  namespace      String   @default("airflow")
+  description    String?
+  schedule       String?
+  isPaused       Boolean  @default(false)
+  disabled       Boolean  @default(false) // Soft-delete: hide from dashboard
+  firstSeenAt    DateTime @default(now())
+  lastSeenAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  runs         DagRun[]
+
+  @@unique([organizationId, srcDagId, namespace])
+  @@index([organizationId])
+  @@map("dags")
+}
+
+model DagRun {
+  id               String    @id @default(cuid())
+  organizationId   String
+  srcDagId         String    // Airflow dag_id (source system ID)
+  srcRunId         String    // Airflow run_id (e.g., "manual__2025-12-21T13:55:42.409928+00:00")
+  namespace        String    @default("airflow")
+  environment      String?   // Environment at ingest time (e.g., "production", "development")
+  startTime        DateTime
+  endTime          DateTime?
+  duration         Int?      // Duration in seconds
+  runType          String?   // manual, scheduled, backfill
+  status           DagRunStatus @default(RUNNING) // Raw status: running, success, failed
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  dag            Dag?                  @relation(fields: [organizationId, srcDagId, namespace], references: [organizationId, srcDagId, namespace])
+  taskRuns       TaskRun[]
+  metricSnapshot DagRunMetricSnapshot?
+  alerts         Alert[]               // Alerts linked to this run
+
+  @@unique([organizationId, srcDagId, srcRunId])
+  @@index([organizationId, srcDagId])
+  @@index([organizationId, startTime])
+  @@index([environment])
+  @@index([status])
+  @@map("dag_runs")
+}
+
+// Raw run status (stored on DagRun)
+enum DagRunStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+// Individual task run within a DAG run
+model TaskRun {
+  id             String    @id @default(cuid())
+  organizationId String
+  dagRunId       String
+  srcTaskId      String    // Airflow task_id (source system ID)
+  srcRunId       String?   // Task-level run ID (UUID from OpenLineage) - optional, filled in by lineage endpoint
+  environment    String?   // Environment at ingest time (e.g., "production", "development")
+  status         String    @default("running") // running, success, failed
+  startTime      DateTime?
+  endTime        DateTime?
+  duration       Int?      // Duration in seconds
+  operator       String?   // Airflow operator type
+  errorMessage   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  dagRun      DagRun            @relation(fields: [dagRunId], references: [id], onDelete: Cascade)
+  metrics     Metric[]
+  errors      ErrorOccurrence[]
+
+  @@unique([dagRunId, srcTaskId])
+  @@index([dagRunId])
+  @@index([organizationId, srcTaskId])
+  @@index([environment])
+  @@index([status])
+  @@map("task_runs")
+}

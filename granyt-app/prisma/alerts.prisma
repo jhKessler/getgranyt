@@ -1,0 +1,113 @@
+// Alert types for anomaly detection
+enum AlertType {
+  ROW_COUNT_DROP
+  NULL_OCCURRENCE // Alerts when a column that never had nulls suddenly has them
+  SCHEMA_CHANGE   // Alerts when columns are added, removed, or have their type changed
+  INTEGRATION_ERROR // Alerts when a notification channel (SMTP, Resend, etc.) fails
+  // Future alert types:
+  // SLOW_DEGRADATION
+  // ERROR_SPIKE
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  DISMISSED
+  AUTO_RESOLVED
+}
+
+enum AlertSensitivity {
+  LOW       // 99% drop triggers
+  MEDIUM    // 95% drop triggers (default)
+  HIGH      // 90% drop triggers
+  CUSTOM    // Uses customThreshold field
+  DISABLED
+}
+
+// Global alert settings per organization
+model OrganizationAlertSettings {
+  id              String           @id @default(cuid())
+  organizationId  String
+  alertType       AlertType
+  enabled         Boolean          @default(true)
+  sensitivity     AlertSensitivity @default(MEDIUM)
+  customThreshold Int?             // Custom percentage threshold (1-100), only used when sensitivity=CUSTOM
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, alertType])
+  @@map("organization_alert_settings")
+}
+
+// Per-DAG alert settings (overrides organization defaults)
+model DagAlertSettings {
+  id              String            @id @default(cuid())
+  organizationId  String
+  srcDagId        String
+  captureId       String?           // null = applies to whole DAG, otherwise specific capture point
+  alertType       AlertType
+  enabled         Boolean?          // null = inherit from org
+  sensitivity     AlertSensitivity? // null = inherit from org
+  customThreshold Int?              // Custom percentage threshold (1-100), only used when sensitivity=CUSTOM
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([organizationId, srcDagId, captureId, alertType])
+  @@index([organizationId, srcDagId])
+  @@map("dag_alert_settings")
+}
+
+// Individual alert instances
+model Alert {
+  id             String      @id @default(cuid())
+  organizationId String
+  alertType      AlertType
+  status         AlertStatus @default(OPEN)
+  severity       String      // "warning" | "critical"
+
+  // Context links
+  srcDagId       String?
+  captureId      String?     // Which capture point triggered this
+  dagRunId       String?     // The run that triggered this
+  taskRunId      String?
+
+  // Detection metadata (JSON)
+  // For ROW_COUNT_DROP: { baseline, current, dropPercentage, historicalZeroRate, runsAnalyzed }
+  metadata       Json
+
+  // Lifecycle
+  createdAt      DateTime    @default(now())
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+  dismissedAt    DateTime?
+  dismissedBy    String?
+  dismissReason  String?     // "expected_behavior" | "one_time" | "other"
+
+  // Relations
+  dagRun         DagRun?     @relation(fields: [dagRunId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@index([organizationId, srcDagId])
+  @@index([organizationId, alertType, status])
+  @@index([dagRunId])
+  @@map("alerts")
+}
+
+// Job queue for delayed alert evaluation
+model AlertEvaluationJob {
+  id             String   @id @default(cuid())
+  organizationId String
+  dagRunId       String   @unique  // Prevent duplicate jobs for same run
+  scheduledFor   DateTime           // When to process (now() + delay)
+  status         String   @default("pending") // pending, processing, completed, failed
+  attempts       Int      @default(0)
+  lastError      String?
+  createdAt      DateTime @default(now())
+  processedAt    DateTime?
+
+  @@index([status, scheduledFor])
+  @@index([organizationId])
+  @@map("alert_evaluation_jobs")
+}

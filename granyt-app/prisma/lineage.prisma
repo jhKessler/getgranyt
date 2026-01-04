@@ -1,0 +1,19 @@
+model LineageEvent {
+  id             String   @id @default(cuid())
+  organizationId String
+  eventType      String   // START, COMPLETE, FAIL, ABORT
+  jobName        String
+  jobNamespace   String
+  srcRunId       String   // OpenLineage run ID (source system ID)
+  eventTime      DateTime
+  producer       String?
+  inputs         Json?
+  outputs        Json?
+  facets         Json?
+  rawEvent       Json
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId, eventTime])
+  @@index([jobName, jobNamespace])
+  @@map("lineage_events")
+}

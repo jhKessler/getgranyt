@@ -1,0 +1,21 @@
+// This is your Prisma schema file,
+// organized into multiple files for better maintainability.
+// See: https://www.prisma.io/docs/orm/prisma-schema/overview/location#multi-file-prisma-schema
+//
+// Schema files (all in prisma/ folder):
+// - auth.prisma         - Better Auth required tables (User, Session, Account, Verification)
+// - organization.prisma - Organization, Members, Connectors, API Keys
+// - dag.prisma          - DAG and Task run tracking
+// - metrics.prisma      - Data metrics captured during DAG runs
+// - errors.prisma       - Error tracking (GeneralError, ErrorOccurrence)
+// - lineage.prisma      - OpenLineage events
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
