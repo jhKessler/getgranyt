@@ -32,8 +32,6 @@ export function CTASection() {
                 <Button asChild size="lg" className="gap-2 text-base">
                   <Link 
                     href={getDocsLink("", "cta-primary")}
-                    target="_blank"
-                    rel="noopener noreferrer"
                   >
                     <BookOpen className="h-4 w-4" />
                     Docs
@@ -47,7 +45,7 @@ export function CTASection() {
         {/* Additional links */}
         <div className="grid gap-6 md:grid-cols-3 mt-12">
           <Link 
-            href="https://github.com/granyt/granyt" 
+            href="https://github.com/jhKessler/getgranyt" 
             target="_blank"
             className="group"
           >
@@ -70,8 +68,6 @@ export function CTASection() {
 
           <Link 
             href={getDocsLink("", "cta-card")} 
-            target="_blank"
-            rel="noopener noreferrer"
             className="group"
           >
             <Card className="h-full border-border/50 hover:border-primary/30 transition-colors">
@@ -92,7 +88,7 @@ export function CTASection() {
           </Link>
 
           <Link 
-            href="https://github.com/granyt/granyt/discussions" 
+            href="https://github.com/jhKessler/getgranyt/discussions" 
             target="_blank"
             className="group"
           >

@@ -163,21 +163,18 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <motion.div 
-        className="flex h-16 items-center gap-2 px-6 border-b"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <motion.div
-          whileHover={{ rotate: 360 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
+      <Link href="/">
+        <motion.div 
+          className="flex h-16 items-center gap-2 px-6 border-b hover:bg-accent/50 transition-colors"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
         >
           <Shield className="h-6 w-6 text-primary" />
+          <span className="text-xl font-bold">Granyt</span>
+          <span className="text-xs text-muted-foreground ml-1">Docs</span>
         </motion.div>
-        <span className="text-xl font-bold">Granyt</span>
-        <span className="text-xs text-muted-foreground ml-1">Docs</span>
-      </motion.div>
+      </Link>
 
       {/* Navigation */}
       <ScrollArea className="flex-1 py-4">
@@ -206,7 +203,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
           <Link
-            href="https://github.com/granyt/granyt"
+            href="https://github.com/jhKessler/getgranyt"
             target="_blank"
             rel="noopener noreferrer"
             onClick={onLinkClick}
@@ -262,10 +259,10 @@ export default function DocsLayout({
             <Book className="h-5 w-5 text-muted-foreground hidden sm:block" />
             <span className="text-sm text-muted-foreground hidden sm:block">Documentation</span>
             {/* Mobile logo */}
-            <div className="flex items-center gap-2 lg:hidden">
+            <Link href="/" className="flex items-center gap-2 lg:hidden">
               <Shield className="h-5 w-5 text-primary" />
               <span className="font-semibold">Docs</span>
-            </div>
+            </Link>
           </div>
           <ModeToggle />
         </header>

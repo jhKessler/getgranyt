@@ -54,8 +54,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/granyt.git
-cd granyt/granyt-app
+git clone https://github.com/jhKessler/getgranyt.git
+cd getgranyt/granyt-app
 
 # Copy environment file and configure
 cp .env.standalone.example .env

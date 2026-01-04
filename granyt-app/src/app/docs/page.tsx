@@ -32,7 +32,7 @@ const DOCKER_COMPOSE_YAML = `services:
       retries: 5
 
   app:
-    image: ghcr.io/granyt/granyt:latest
+    image: ghcr.io/jhkessler/granyt-app:latest
     ports:
       - "3000:3000"
     environment:
@@ -51,6 +51,10 @@ const DOCKER_COMPOSE_YAML = `services:
 
 volumes:
   postgres-data:`
+
+const DOT_ENV_EXAMPLE = `POSTGRES_PASSWORD=your-secure-password
+BETTER_AUTH_SECRET=your-32-char-secret-key
+BETTER_AUTH_URL=http://localhost:3000`
 
 export default function QuickstartPage() {
   return (
@@ -88,13 +92,20 @@ export default function QuickstartPage() {
             <TabsContent value="docker" className="mt-4 space-y-4">
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Create a <InlineCode>docker-compose.yml</InlineCode> file and run <InlineCode>docker compose up -d</InlineCode>.
+                  Create a <InlineCode>docker-compose.yml</InlineCode> file and a <InlineCode>.env</InlineCode> file, then run <InlineCode>docker compose up -d</InlineCode>.
                 </p>
-                <CodeBlock 
-                  code={DOCKER_COMPOSE_YAML}
-                  language="yaml"
-                  title="docker-compose.yml"
-                />
+                <div className="space-y-4">
+                  <CodeBlock 
+                    code={DOCKER_COMPOSE_YAML}
+                    language="yaml"
+                    title="docker-compose.yml"
+                  />
+                  <CodeBlock 
+                    code={DOT_ENV_EXAMPLE}
+                    language="bash"
+                    title=".env"
+                  />
+                </div>
               </div>
             </TabsContent>
           </Tabs>

@@ -30,7 +30,7 @@ function MarketingHeader() {
             Docs
           </Link>
           <Link 
-            href="https://github.com/granyt/granyt" 
+            href="https://github.com/jhKessler/getgranyt" 
             target="_blank"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
@@ -41,7 +41,7 @@ function MarketingHeader() {
         <div className="flex items-center gap-2 sm:gap-3">
           <ModeToggle />
           <Button asChild variant="ghost" size="icon" className="hidden sm:flex">
-            <Link href="https://github.com/granyt/granyt" target="_blank">
+            <Link href="https://github.com/jhKessler/getgranyt" target="_blank">
               <Github className="h-5 w-5" />
               <span className="sr-only">GitHub</span>
             </Link>
@@ -74,7 +74,7 @@ function MarketingHeader() {
                 </SheetClose>
                 <SheetClose asChild>
                   <Link 
-                    href="https://github.com/granyt/granyt" 
+                    href="https://github.com/jhKessler/getgranyt" 
                     target="_blank"
                     className="flex items-center gap-3 text-lg font-medium hover:text-primary transition-colors py-2"
                   >
@@ -120,9 +120,9 @@ function MarketingFooter() {
           <div>
             <h4 className="font-semibold mb-4">Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="https://github.com/granyt/granyt" target="_blank" className="hover:text-foreground transition-colors">GitHub</Link></li>
-              <li><Link href="https://github.com/granyt/granyt/issues" target="_blank" className="hover:text-foreground transition-colors">Report Issues</Link></li>
-              <li><Link href="https://github.com/granyt/granyt/discussions" target="_blank" className="hover:text-foreground transition-colors">Discussions</Link></li>
+              <li><Link href="https://github.com/jhKessler/getgranyt" target="_blank" className="hover:text-foreground transition-colors">GitHub</Link></li>
+              <li><Link href="https://github.com/jhKessler/getgranyt/issues" target="_blank" className="hover:text-foreground transition-colors">Report Issues</Link></li>
+              <li><Link href="https://github.com/jhKessler/getgranyt/discussions" target="_blank" className="hover:text-foreground transition-colors">Discussions</Link></li>
             </ul>
           </div>
           
@@ -141,7 +141,7 @@ function MarketingFooter() {
           </p>
           <div className="flex items-center gap-4">
             <Link 
-              href="https://github.com/granyt/granyt" 
+              href="https://github.com/jhKessler/getgranyt" 
               target="_blank"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >

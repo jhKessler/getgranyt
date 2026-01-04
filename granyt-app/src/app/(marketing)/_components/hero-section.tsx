@@ -69,7 +69,7 @@ function HeadlineTest() {
         for Airflow Observability
       </h1>
       <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-        Stop patching together legacy tools. <br className="hidden sm:block" /> 
+        All-in-one monitoring for Apache Airflow. <br className="hidden sm:block" />
         Open source, lightweight, and built for engineers who ship.
       </p>
     </>
@@ -125,8 +125,8 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
       <div className="container mx-auto max-w-6xl px-4 py-24 md:py-32">
         <div className="flex flex-col items-center text-center space-y-8">
           {/* Badge */}
-          <Link 
-            href="https://github.com/granyt/granyt" 
+          <Link
+            href="https://github.com/jhKessler/getgranyt"
             target="_blank"
             className="group"
             onClick={trackGithubClick}
@@ -149,10 +149,8 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
           {/* Secondary CTAs */}
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild size="lg" className="gap-2 text-base">
-              <Link 
+              <Link
                 href={getDocsLink("", "hero")}
-                target="_blank"
-                rel="noopener noreferrer"
                 onClick={trackDocsClick}
               >
                 <BookOpen className="h-4 w-4" />
@@ -160,8 +158,8 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="gap-2 text-base">
-              <Link 
-                href="https://github.com/granyt/granyt" 
+              <Link
+                href="https://github.com/jhKessler/getgranyt"
                 target="_blank"
                 onClick={trackGithubClick}
               >
