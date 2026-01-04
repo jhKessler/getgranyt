@@ -4,9 +4,9 @@
 # This script installs Docker, downloads the Granyt standalone docker-compose file,
 # configures environment variables, and starts the deployment.
 #
-# Full source code: https://github.com/jhKessler/getgranyt
-# Report issues:    https://github.com/jhKessler/getgranyt/issues
-# Security policy:  https://github.com/jhKessler/getgranyt/blob/main/granyt-app/SECURITY.md
+# Full source code: ${GITHUB_URL}
+# Report issues:    ${GITHUB_URL}/issues
+# Security policy:  ${GITHUB_URL}/blob/main/granyt-app/SECURITY.md
 #
 # Usage: curl -fsSL https://granyt.sh | sh
 #    or: ./granyt.sh [--help] [--dry-run]
@@ -20,6 +20,13 @@ umask 077
 # Command Line Arguments
 # =========================
 DRY_RUN=false
+
+# =========================
+# Configuration
+# =========================
+GITHUB_REPO="${GITHUB_REPO:-jhKessler/getgranyt}"
+GITHUB_URL="https://github.com/${GITHUB_REPO}"
+GITHUB_RAW_URL="https://raw.githubusercontent.com/${GITHUB_REPO}"
 
 show_help() {
     printf "Granyt Deployment Script\n\n"
@@ -36,7 +43,7 @@ show_help() {
     printf "  4. Generates secure secrets for Postgres and auth\n"
     printf "  5. Creates a .env configuration file\n"
     printf "  6. Starts Granyt containers with Docker Compose\n\n"
-    printf "More info: https://github.com/jhKessler/getgranyt\n"
+    printf "More info: %s\n" "${GITHUB_URL}"
 }
 
 for arg in "$@"; do
@@ -212,7 +219,7 @@ printf "    ${DIM}•${NC} Generate secure secrets for your installation\n"
 printf "    ${DIM}•${NC} Create a .env file with your configuration\n"
 printf "    ${DIM}•${NC} Start Granyt containers\n"
 printf "\n"
-printf "${DIM}  Source: https://github.com/jhKessler/getgranyt${NC}\n"
+printf "${DIM}  Source: %s${NC}\n" "${GITHUB_URL}"
 printf "\n"
 printf "  Press ${BOLD}Enter${NC} to continue or ${BOLD}Ctrl+C${NC} to cancel... "
 read _ < /dev/tty || true
@@ -303,7 +310,7 @@ fi
 print_step 2 "Grabbing the docker-compose file..."
 
 COMPOSE_FILE="docker-compose.standalone.yml"
-URL="https://raw.githubusercontent.com/jhKessler/getgranyt/main/granyt-app/docker-compose.standalone.yml"
+URL="${GITHUB_RAW_URL}/main/granyt-app/docker-compose.standalone.yml"
 
 # Create a temporary file securely
 TEMP_COMPOSE=$(mktemp) || { print_error "Failed to create temp file"; exit 1; }
@@ -420,6 +427,7 @@ POSTGRES_PASSWORD=$POSTGRES_PASSWORD
 POSTGRES_DB=granyt
 BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
 BETTER_AUTH_URL=$SANITIZED_URL
+NEXT_PUBLIC_GITHUB_URL=$GITHUB_URL
 APP_PORT=3000
 EOF
 
@@ -431,6 +439,7 @@ if [ "$DRY_RUN" = true ]; then
     print_info "  POSTGRES_DB=granyt"
     print_info "  BETTER_AUTH_SECRET=<generated>"
     print_info "  BETTER_AUTH_URL=$SANITIZED_URL"
+    print_info "  NEXT_PUBLIC_GITHUB_URL=$GITHUB_URL"
     print_info "  APP_PORT=3000"
     rm -f "$ENV_TEMP"
     print_success ".env file would be created (permissions: 600)"

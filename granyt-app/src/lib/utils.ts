@@ -61,6 +61,5 @@ export function getDocsLink(path: string = "", source: string = "app"): string {
 
   // In APP mode, return external URL with tracking
   const url = new URL(normalizedPath, EXTERNAL_DOCS_BASE_URL);
-  url.searchParams.set("utm_source", source);
   return url.toString();
 }

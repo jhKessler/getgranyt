@@ -5,8 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Github, Sparkles, BookOpen, Copy, Check } from "lucide-react"
-import { INSTALL_COMMAND } from "@/lib/constants"
-import { getDocsLink } from "@/lib/utils"
+import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
 import { useFeatureFlagVariantKey, usePostHog } from "posthog-js/react"
 
 // Feature flag key for the headline A/B test
@@ -125,7 +124,7 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
         <div className="flex flex-col items-center text-center space-y-8">
           {/* Badge */}
           <Link
-            href="https://github.com/jhKessler/getgranyt"
+            href={GITHUB_URL}
             target="_blank"
             className="group"
             onClick={trackGithubClick}
@@ -149,7 +148,7 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild size="lg" className="gap-2 text-base">
               <Link
-                href={getDocsLink("", "hero")}
+                href="/docs"
                 onClick={trackDocsClick}
               >
                 <BookOpen className="h-4 w-4" />
@@ -158,7 +157,7 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
             </Button>
             <Button asChild variant="outline" size="lg" className="gap-2 text-base">
               <Link
-                href="https://github.com/jhKessler/getgranyt"
+                href={GITHUB_URL}
                 target="_blank"
                 onClick={trackGithubClick}
               >

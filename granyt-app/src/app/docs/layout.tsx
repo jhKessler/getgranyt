@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { GITHUB_URL } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -203,7 +204,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
           <Link
-            href="https://github.com/jhKessler/getgranyt"
+            href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
             onClick={onLinkClick}

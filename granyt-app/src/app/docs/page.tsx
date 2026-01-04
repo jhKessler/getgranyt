@@ -1,5 +1,6 @@
 import { Shield, Zap, BarChart3, Mail, Settings } from "lucide-react"
-import { INSTALL_COMMAND } from "@/lib/constants"
+import Link from "next/link"
+import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   PageHeader,
@@ -52,8 +53,8 @@ const DOCKER_COMPOSE_YAML = `services:
 volumes:
   postgres-data:`
 
-const DOT_ENV_EXAMPLE = `POSTGRES_PASSWORD=your-secure-password
-BETTER_AUTH_SECRET=your-32-char-secret-key
+const DOT_ENV_EXAMPLE = `POSTGRES_PASSWORD=your-secure-password # Generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET=your-32-char-secret-key # Generate with: openssl rand -base64 32
 BETTER_AUTH_URL=http://localhost:3000`
 
 export default function QuickstartPage() {
@@ -79,15 +80,40 @@ export default function QuickstartPage() {
 
           <Tabs defaultValue="shell" className="w-full">
             <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-              <TabsTrigger value="shell">Shell Command</TabsTrigger>
+              <TabsTrigger value="shell">CLI</TabsTrigger>
               <TabsTrigger value="docker">Docker Deployment</TabsTrigger>
             </TabsList>
             <TabsContent value="shell" className="mt-4 space-y-4">
-              <CodeBlock 
-                code={INSTALL_COMMAND}
-                language="bash"
-                title="Terminal"
-              />
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  The Granyt installer will walk you through the entire setup process.
+                </p>
+                <CodeBlock 
+                  code={INSTALL_COMMAND}
+                  language="bash"
+                  title="Terminal"
+                />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">This script will:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Check for Docker (optionally install it)</li>
+                    <li>
+                      Download{" "}
+                      <Link 
+                        href={`${GITHUB_URL}/blob/main/granyt-app/docker-compose.standalone.yml`}
+                        target="_blank"
+                        className="text-primary hover:underline"
+                      >
+                        <InlineCode>docker-compose.standalone.yml</InlineCode>
+                      </Link>{" "}
+                      from GitHub
+                    </li>
+                    <li>Generate secure secrets for your installation</li>
+                    <li>Create a <InlineCode>.env</InlineCode> file with your configuration</li>
+                    <li>Start Granyt containers</li>
+                  </ul>
+                </div>
+              </div>
             </TabsContent>
             <TabsContent value="docker" className="mt-4 space-y-4">
               <div className="space-y-3">
@@ -100,18 +126,32 @@ export default function QuickstartPage() {
                     language="yaml"
                     title="docker-compose.yml"
                   />
+                  <p className="text-sm text-muted-foreground">
+                    Next, create a <InlineCode>.env</InlineCode> file in the same directory to store your secrets:
+                  </p>
                   <CodeBlock 
                     code={DOT_ENV_EXAMPLE}
                     language="bash"
                     title=".env"
                   />
+                  <p className="text-sm text-muted-foreground">
+                    Finally, start the Granyt server:
+                  </p>
+                  <CodeBlock 
+                    code="docker compose up -d"
+                    language="bash"
+                    title="Terminal"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    The Granyt server will now be available on your system at port <InlineCode>3000</InlineCode>.
+                  </p>
                 </div>
               </div>
             </TabsContent>
           </Tabs>
 
           <Callout variant="info">
-            Once the server is running, open your dashboard under <strong>/register</strong> and follow the instructions to generate an <strong>API Key</strong>.
+            Once the server is running, it will be available at <strong>http://localhost:3000</strong>. Open your dashboard under <strong>/register</strong> and follow the instructions to generate an <strong>API Key</strong>.
           </Callout>
         </div>
       </section>

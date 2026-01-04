@@ -41,14 +41,14 @@ export default function DemoLayout({
   return (
     <div className="min-h-screen bg-background">
       {/* Demo Banner */}
-      <div className="bg-primary text-primary-foreground px-3 py-2 text-center text-sm">
+      <div className="fixed top-0 left-0 right-0 z-50 h-10 bg-primary text-primary-foreground px-3 text-center text-sm flex items-center justify-center">
         <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
           <Sparkles className="h-4 w-4 shrink-0" />
           <span className="hidden sm:inline">You&apos;re viewing a demo with sample data.</span>
           <span className="sm:hidden">Demo mode</span>
-          <Link href="/register" className="underline underline-offset-2 font-medium hover:opacity-80">
-            <span className="hidden sm:inline">Spin up your own instance</span>
-            <span className="sm:hidden">Sign up</span>
+          <Link href={getDocsLink("", "demo-banner")} className="underline underline-offset-2 font-medium hover:opacity-80">
+            <span className="hidden sm:inline">Read the Docs</span>
+            <span className="sm:hidden">Docs</span>
           </Link>
           <ArrowRight className="h-3 w-3 shrink-0" />
         </div>
@@ -128,15 +128,15 @@ export default function DemoLayout({
                     Like what you see?
                   </p>
                   <Button asChild className="w-full" size="sm">
-                    <Link href="/register">
-                      Sign up
+                    <Link href={getDocsLink("", "demo-sidebar")}>
+                      Docs
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Link>
                   </Button>
                 </div>
               }
             />
-            <Link href="/demo" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
               <span className="font-bold">Granyt</span>
               <Badge variant="secondary" className="text-xs">Demo</Badge>
