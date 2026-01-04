@@ -8,7 +8,6 @@ import {
   Database,
   HardDrive,
   Zap,
-  Globe,
   PlusCircle,
   FileCode,
   Github,

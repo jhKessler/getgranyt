@@ -37,7 +37,7 @@ function isWithinTimeframe(date: Date, timeframe: Timeframe): boolean {
 // Merge custom metrics aggregations
 function mergeCustomMetrics(
   existing: Record<string, CustomMetricAggregation> | null,
-  newMetrics: Record<string, any> | null
+  newMetrics: Record<string, unknown> | null
 ): Record<string, CustomMetricAggregation> | null {
   if (!newMetrics) return existing;
 
@@ -67,7 +67,7 @@ interface UpdateOnRunCompleteParams {
   environment: string | null;
   runStatus: "success" | "failed" | "running";
   runDuration: number | null;
-  customMetrics?: Record<string, any> | null;
+  customMetrics?: Record<string, unknown> | null;
   startTime: Date;
 }
 

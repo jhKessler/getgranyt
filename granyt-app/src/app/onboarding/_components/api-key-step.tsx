@@ -1,9 +1,7 @@
 ﻿"use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import {
   Card,
   CardContent,
@@ -12,19 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Key, ArrowRight, Check, Copy } from "lucide-react"
-import { AirflowIcon, DagsterIcon } from "@/components/icons"
+import { Key, ArrowRight, Check, Copy, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-export type OrchestratorType = "airflow" | "dagster"
 
 interface ApiKeyStepProps {
   apiKey: string | null
-  selectedType: OrchestratorType
-  keyName: string
-  onTypeChange: (type: OrchestratorType) => void
-  onKeyNameChange: (name: string) => void
-  onGenerateKey: () => void
   onCopyApiKey: () => void
   onFinish: () => void
   copied: boolean
@@ -33,39 +23,18 @@ interface ApiKeyStepProps {
 
 export function ApiKeyStep({
   apiKey,
-  selectedType,
-  keyName,
-  onTypeChange,
-  onKeyNameChange,
-  onGenerateKey,
   onCopyApiKey,
   onFinish,
   copied,
   isGenerating,
 }: ApiKeyStepProps) {
-  if (apiKey) {
+  if (isGenerating || !apiKey) {
     return (
       <Card>
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center">
-              <Key className="h-8 w-8 text-green-500" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl">Your API Key</CardTitle>
-          <CardDescription>
-            Save this key securely. It won&apos;t be shown again.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <ApiKeyDisplay apiKey={apiKey} onCopy={onCopyApiKey} copied={copied} />
-          <InstallationInstructions apiKey={apiKey} selectedType={selectedType} />
+        <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Generating your API key...</p>
         </CardContent>
-        <CardFooter>
-          <Button className="w-full" onClick={onFinish}>
-            Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </CardFooter>
       </Card>
     )
   }
@@ -74,80 +43,25 @@ export function ApiKeyStep({
     <Card>
       <CardHeader className="text-center">
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Key className="h-8 w-8 text-primary" />
+          <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center">
+            <Key className="h-8 w-8 text-green-500" />
           </div>
         </div>
-        <CardTitle className="text-2xl">Create API Key</CardTitle>
+        <CardTitle className="text-2xl">Your API Key</CardTitle>
         <CardDescription>
-          Generate an API key to connect your orchestrator
+          Save this key securely. It won&apos;t be shown again.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label>Orchestrator Type</Label>
-          <div className="grid grid-cols-2 gap-4">
-            <OrchestratorOption
-              type="airflow"
-              selected={selectedType === "airflow"}
-              onClick={() => onTypeChange("airflow")}
-            />
-            <OrchestratorOption
-              type="dagster"
-              selected={selectedType === "dagster"}
-              onClick={() => onTypeChange("dagster")}
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="keyName">Key Name</Label>
-          <Input
-            id="keyName"
-            placeholder={`e.g., Production ${selectedType === "airflow" ? "Airflow" : "Dagster"}`}
-            value={keyName}
-            onChange={(e) => onKeyNameChange(e.target.value)}
-          />
-        </div>
+        <ApiKeyDisplay apiKey={apiKey} onCopy={onCopyApiKey} copied={copied} />
+        <InstallationInstructions apiKey={apiKey} />
       </CardContent>
       <CardFooter>
-        <Button 
-          className="w-full" 
-          onClick={onGenerateKey}
-          disabled={!keyName.trim() || isGenerating}
-        >
-          {isGenerating ? "Generating..." : "Generate API Key"}
+        <Button className="w-full" onClick={onFinish}>
+          Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
-  )
-}
-
-function OrchestratorOption({
-  type,
-  selected,
-  onClick,
-}: {
-  type: OrchestratorType
-  selected: boolean
-  onClick: () => void
-}) {
-  const Icon = type === "airflow" ? AirflowIcon : DagsterIcon
-  const name = type === "airflow" ? "Airflow" : "Dagster"
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex flex-col items-center gap-3 p-6 rounded-lg border-2 transition-all",
-        selected
-          ? "border-primary bg-primary/5"
-          : "border-muted hover:border-primary/50"
-      )}
-    >
-      <Icon className="h-10 w-10" />
-      <span className="font-medium">{name}</span>
-    </button>
   )
 }
 
@@ -183,14 +97,10 @@ function ApiKeyDisplay({
 }
 
 function InstallationInstructions({ 
-  apiKey, 
-  selectedType 
+  apiKey
 }: { 
   apiKey: string | null
-  selectedType: OrchestratorType 
 }) {
-  const connectorName = selectedType === "airflow" ? "Airflow" : "Dagster"
-  
   return (
     <div className="space-y-4">
       <Label>Installation Instructions</Label>
@@ -210,7 +120,7 @@ export GRANYT_API_KEY="${apiKey}"`}
         <div className="p-4 bg-muted rounded-lg">
           <p className="font-medium">3. That&apos;s it!</p>
           <p className="text-muted-foreground mt-1">
-            The SDK automatically captures lineage and errors from your {connectorName} DAGs.
+            The SDK automatically captures lineage and errors from your DAGs.
           </p>
         </div>
       </div>

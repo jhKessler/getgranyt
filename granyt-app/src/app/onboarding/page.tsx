@@ -12,18 +12,12 @@ export default function OnboardingPage() {
   useDocumentTitle("Onboarding")
   const {
     step,
-    goToStep,
     organizationName,
     setOrganizationName,
-    selectedType,
-    setSelectedType,
-    keyName,
-    setKeyName,
     apiKey,
     copied,
     isLoading,
     handleCreateOrg,
-    handleGenerateKey,
     handleCopyApiKey,
     handleFinish,
   } = useOnboarding()
@@ -45,11 +39,6 @@ export default function OnboardingPage() {
         {step === 2 && (
           <ApiKeyStep
             apiKey={apiKey}
-            selectedType={selectedType}
-            keyName={keyName}
-            onTypeChange={setSelectedType}
-            onKeyNameChange={setKeyName}
-            onGenerateKey={handleGenerateKey}
             onCopyApiKey={handleCopyApiKey}
             onFinish={handleFinish}
             copied={copied}

@@ -12,8 +12,6 @@ export function ApiKeysContent({
   setShowNewKeyForm,
   newKeyName,
   setNewKeyName,
-  newKeyType,
-  setNewKeyType,
   newKeyEnvironmentId,
   setNewKeyEnvironmentId,
   generatedKey,
@@ -42,11 +40,9 @@ export function ApiKeysContent({
         generatedKey={generatedKey}
         copied={copied}
         newKeyName={newKeyName}
-        newKeyType={newKeyType}
         newKeyEnvironmentId={newKeyEnvironmentId}
         onShowFormChange={setShowNewKeyForm}
         onNameChange={setNewKeyName}
-        onTypeChange={setNewKeyType}
         onEnvironmentIdChange={setNewKeyEnvironmentId}
         onSubmit={handleGenerateKey}
         onCopy={() => generatedKey && handleCopyKey(generatedKey)}

@@ -38,11 +38,11 @@ describe("E2E: Organization Flow", () => {
     const envs = await caller.listEnvironments({ organizationId: newOrg.id });
     expect(envs.some(e => e.id === env.id)).toBe(true);
 
-    // 5. Generate an API key for the environment with type
+    // 5. Generate an API key for the environment
     const apiKey = await caller.generateApiKey({
       organizationId: newOrg.id,
       name: "Staging Key",
-      type: "airflow",
+      type: "sdk",
       environmentId: env.id,
     });
     expect(apiKey.key).toBeDefined();
@@ -52,7 +52,7 @@ describe("E2E: Organization Flow", () => {
     const foundKey = keys.find(k => k.id === apiKey.id);
     expect(foundKey).toBeDefined();
     expect(foundKey?.name).toBe("Staging Key");
-    expect(foundKey?.type).toBe("airflow");
+    expect(foundKey?.type).toBe("sdk");
 
     // 7. Delete API key
     await caller.deleteApiKey({ id: apiKey.id });

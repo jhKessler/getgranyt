@@ -26,8 +26,6 @@ import {
   AlertTriangle,
   Webhook,
   Mail,
-  Zap,
-  Layers,
   ExternalLink,
   Github,
   Menu,

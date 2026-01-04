@@ -10,8 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { AirflowIcon, DagsterIcon } from "@/components/icons"
-import type { ApiKeyType } from "../_hooks"
 
 interface EnvironmentInfo {
   id: string
@@ -22,8 +20,6 @@ interface EnvironmentInfo {
 interface ApiKeyFormProps {
   name: string
   onNameChange: (name: string) => void
-  type: ApiKeyType
-  onTypeChange: (type: ApiKeyType) => void
   environmentId: string | undefined
   onEnvironmentIdChange: (id: string | undefined) => void
   environments: EnvironmentInfo[] | undefined
@@ -35,8 +31,6 @@ interface ApiKeyFormProps {
 export function ApiKeyForm({
   name,
   onNameChange,
-  type,
-  onTypeChange,
   environmentId,
   onEnvironmentIdChange,
   environments,
@@ -50,39 +44,11 @@ export function ApiKeyForm({
         <Label htmlFor="keyName">Key Name</Label>
         <Input
           id="keyName"
-          placeholder="e.g., Production Airflow"
+          placeholder="e.g., Production SDK"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           required
         />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="keyType">Orchestrator Type</Label>
-        <Select
-          value={type}
-          onValueChange={(value) => onTypeChange(value as ApiKeyType)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select type..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="airflow">
-              <div className="flex items-center gap-2">
-                <AirflowIcon className="h-4 w-4" />
-                Airflow
-              </div>
-            </SelectItem>
-            <SelectItem value="dagster">
-              <div className="flex items-center gap-2">
-                <DagsterIcon className="h-4 w-4" />
-                Dagster
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-muted-foreground">
-          Select the type of orchestrator this API key will be used with.
-        </p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="keyEnvironment">Environment (Optional)</Label>

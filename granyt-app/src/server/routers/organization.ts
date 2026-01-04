@@ -28,7 +28,7 @@ export const organizationRouter = router({
     .input(z.object({
       organizationId: z.string(),
       name: z.string().min(1).max(100),
-      type: z.enum(["airflow", "dagster"]),
+      type: z.string().default("sdk"),
       environmentId: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {

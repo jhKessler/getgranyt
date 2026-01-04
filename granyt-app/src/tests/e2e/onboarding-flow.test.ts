@@ -24,11 +24,11 @@ describe("E2E: Onboarding Flow", () => {
     expect(org.name).toBe(orgName);
     expect(org.id).toBeDefined();
 
-    // Step 2: Generate API Key with type
+    // Step 2: Generate API Key
     const apiKey = await orgCaller.generateApiKey({
       organizationId: org.id,
-      name: "airflow-api-key",
-      type: "airflow",
+      name: "Default Key",
+      type: "sdk",
     });
     expect(apiKey.key).toBeDefined();
     expect(apiKey.id).toBeDefined();
@@ -39,8 +39,8 @@ describe("E2E: Onboarding Flow", () => {
 
     const dbApiKey = await prisma.apiKey.findUnique({ where: { id: apiKey.id } });
     expect(dbApiKey).toBeDefined();
-    expect(dbApiKey?.name).toBe("airflow-api-key");
-    expect(dbApiKey?.type).toBe("airflow");
+    expect(dbApiKey?.name).toBe("Default Key");
+    expect(dbApiKey?.type).toBe("sdk");
 
     // Cleanup
     await prisma.apiKey.deleteMany({ where: { organizationId: org.id } });

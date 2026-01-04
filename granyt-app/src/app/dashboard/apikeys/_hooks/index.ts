@@ -1,1 +1,1 @@
-export { useApiKeysPage, type ApiKeyType } from "./use-api-keys-page"
+export { useApiKeysPage } from "./use-api-keys-page"

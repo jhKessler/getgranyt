@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { generateApiKey } from "./helpers";
 import type { ApiKeyGenerated, ApiKeyInfo } from "./types";
 import { createLogger } from "@/lib/logger";
-import { validateEnvironmentOwnership, shouldEnvironmentBeDefault } from "./environments";
+import { validateEnvironmentOwnership } from "./environments";
 
 const logger = createLogger("ApiKeyService");
 

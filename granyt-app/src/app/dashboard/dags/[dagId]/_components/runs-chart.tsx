@@ -224,7 +224,7 @@ export function RunsChart({
     }
     
     return "Duration"
-  }, [selectedRunHistoryMetric])
+  }, [selectedRunHistoryMetric, metricOptions])
 
   // Get the description based on metric type
   const getDescription = () => {
@@ -426,7 +426,7 @@ export function RunsChart({
                   <LabelList 
                     dataKey="value" 
                     position="top" 
-                    content={(props: any) => {
+                    content={(props: { x: number; y: number; width: number; value: number; index: number }) => {
                       const { x, y, width, value, index } = props;
                       const data = chartData[index];
                       if (!data || value === 0) return null;

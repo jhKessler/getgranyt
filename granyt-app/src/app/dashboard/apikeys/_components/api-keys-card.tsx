@@ -19,7 +19,6 @@ import { AirflowIcon, DagsterIcon } from "@/components/icons"
 import { cn } from "@/lib/utils"
 import { ApiKeyForm } from "./api-key-form"
 import { GeneratedKeyDisplay } from "./generated-key-display"
-import type { ApiKeyType } from "../_hooks"
 
 interface ApiKey {
   id: string
@@ -49,11 +48,9 @@ interface ApiKeysCardProps {
   generatedKey: string | null
   copied: boolean
   newKeyName: string
-  newKeyType: ApiKeyType
   newKeyEnvironmentId: string | undefined
   onShowFormChange: (show: boolean) => void
   onNameChange: (name: string) => void
-  onTypeChange: (type: ApiKeyType) => void
   onEnvironmentIdChange: (id: string | undefined) => void
   onSubmit: (e: React.FormEvent) => void
   onCopy: () => void
@@ -98,11 +95,8 @@ function ApiKeyItem({
             <span className="font-mono">{apiKey.keyPrefix}...</span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              {apiKey.type === "airflow" ? (
-                <AirflowIcon className="h-3 w-3" />
-              ) : (
-                <DagsterIcon className="h-3 w-3" />
-              )}
+              {apiKey.type === "airflow" && <AirflowIcon className="h-3 w-3" />}
+              {apiKey.type === "dagster" && <DagsterIcon className="h-3 w-3" />}
               <span className="capitalize">{apiKey.type}</span>
             </span>
           </div>
@@ -155,11 +149,9 @@ export function ApiKeysCard({
   generatedKey,
   copied,
   newKeyName,
-  newKeyType,
   newKeyEnvironmentId,
   onShowFormChange,
   onNameChange,
-  onTypeChange,
   onEnvironmentIdChange,
   onSubmit,
   onCopy,
@@ -180,7 +172,7 @@ export function ApiKeysCard({
               <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-[300px]">
-              <p>API keys authenticate your Granyt SDK with the dashboard. Each key is tied to a specific orchestrator type and environment to organize your DAG data.</p>
+              <p>API keys authenticate your Granyt SDK with the dashboard. Each key is tied to an environment to organize your DAG data.</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -204,8 +196,6 @@ export function ApiKeysCard({
           <ApiKeyForm
             name={newKeyName}
             onNameChange={onNameChange}
-            type={newKeyType}
-            onTypeChange={onTypeChange}
             environmentId={newKeyEnvironmentId}
             onEnvironmentIdChange={onEnvironmentIdChange}
             environments={environments}

@@ -4,13 +4,10 @@ import { useState } from "react"
 import { trpc } from "@/lib/trpc"
 import { toast } from "sonner"
 
-export type ApiKeyType = "airflow" | "dagster"
-
 export function useApiKeysPage() {
   // API key form state
   const [showNewKeyForm, setShowNewKeyForm] = useState(false)
   const [newKeyName, setNewKeyName] = useState("")
-  const [newKeyType, setNewKeyType] = useState<ApiKeyType>("airflow")
   const [newKeyEnvironmentId, setNewKeyEnvironmentId] = useState<string | undefined>(undefined)
   const [generatedKey, setGeneratedKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -24,7 +21,7 @@ export function useApiKeysPage() {
     { enabled: !!organizationId }
   )
 
-  const { data: environments, isLoading: envsLoading, refetch: refetchEnvironments } = trpc.organization.listEnvironments.useQuery(
+  const { data: environments, isLoading: envsLoading } = trpc.organization.listEnvironments.useQuery(
     { organizationId: organizationId! },
     { enabled: !!organizationId }
   )
@@ -34,7 +31,6 @@ export function useApiKeysPage() {
     onSuccess: (data: { key: string }) => {
       setGeneratedKey(data.key)
       setNewKeyName("")
-      setNewKeyType("airflow")
       setNewKeyEnvironmentId(undefined)
       refetchKeys()
       toast.success("API key generated!")
@@ -62,7 +58,7 @@ export function useApiKeysPage() {
     generateKey.mutate({
       organizationId,
       name: newKeyName.trim(),
-      type: newKeyType,
+      type: "sdk",
       environmentId: newKeyEnvironmentId,
     })
   }
