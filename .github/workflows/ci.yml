@@ -11,14 +11,14 @@ on:
   pull_request:
     branches:
       - main
-      - dev
+      - staging
     paths:
       - 'granyt-app/**'
       - '.github/workflows/**'
   push:
     branches:
       - main
-      - dev
+      - staging
     tags:
       - 'v*.*.*'
     paths:
@@ -155,15 +155,15 @@ jobs:
           tags: |
             # Set latest tag for version tags and main branch
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' }}
-            # Set dev tag for dev branch
-            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
+            # Set staging tag for staging branch
+            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/staging' }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
             # Tag with short SHA (always)
             type=sha,prefix=sha-
-            # Tag dev builds with dev-sha for traceability
-            type=sha,prefix=dev-,enable=${{ github.ref == 'refs/heads/dev' }}
+            # Tag staging builds with staging-sha for traceability
+            type=sha,prefix=staging-,enable=${{ github.ref == 'refs/heads/staging' }}
             # Custom tag from workflow dispatch
             type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
 
@@ -177,14 +177,14 @@ jobs:
           tags: |
             # latest-migrations tag for version tags and main branch
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' }}
-            # dev-migrations tag for dev branch
-            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
+            # staging-migrations tag for staging branch
+            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/staging' }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             # Tag with short SHA
             type=sha,prefix=sha-
-            # Tag dev builds with dev-sha for traceability
-            type=sha,prefix=dev-,enable=${{ github.ref == 'refs/heads/dev' }}
+            # Tag staging builds with staging-sha for traceability
+            type=sha,prefix=staging-,enable=${{ github.ref == 'refs/heads/staging' }}
 
       - name: Build and push App image
         uses: docker/build-push-action@v6
