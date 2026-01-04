@@ -16,12 +16,16 @@ echo "--- Granyt Installation ---"
 
 # Function to generate secure secrets
 generate_secret() {
+    local secret=""
     if command -v openssl &> /dev/null; then
-        openssl rand -hex "$1"
-    else
-        # Fallback if openssl is not available
-        cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w "$(( $1 * 2 ))" | head -n 1
+        secret=$(openssl rand -hex "$1" 2>/dev/null | tr -dc 'a-f0-9')
     fi
+
+    if [ -z "$secret" ]; then
+        # Fallback if openssl is not available or failed
+        secret=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w "$(( $1 * 2 ))" | head -n 1)
+    fi
+    echo "$secret"
 }
 
 # 1. Install Docker
@@ -93,11 +97,29 @@ EOF
 
 # 7. Build and start docker compose
 echo "Starting Granyt deployment in detached mode..."
-# We use sudo here to ensure it works even if the user hasn't logged out/in after group change
+
+# Determine the compose command and whether sudo is needed
 if command -v docker-compose &> /dev/null; then
-    sudo docker-compose -f "$COMPOSE_FILE" up -d
+    COMPOSE_CMD="docker-compose"
+elif docker compose version &> /dev/null; then
+    COMPOSE_CMD="docker compose"
 else
-    sudo docker compose -f "$COMPOSE_FILE" up -d
+    echo "Error: Neither 'docker-compose' nor 'docker compose' was found."
+    exit 1
+fi
+
+# Try running without sudo first (in case user is already in docker group or is root)
+if $COMPOSE_CMD version &> /dev/null; then
+    $COMPOSE_CMD -f "$COMPOSE_FILE" up -d
+else
+    # If permission denied, try with sudo. 
+    # We use the full path to the binary to avoid "command not found" issues with sudo's PATH.
+    BASE_BIN=${COMPOSE_CMD%% *}
+    BIN_PATH=$(command -v "$BASE_BIN")
+    FULL_CMD="${COMPOSE_CMD/$BASE_BIN/$BIN_PATH}"
+    
+    echo "Permission denied. Trying with sudo ($FULL_CMD)..."
+    sudo $FULL_CMD -f "$COMPOSE_FILE" up -d
 fi
 
 # 8. Health check
