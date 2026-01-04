@@ -1,0 +1,34 @@
+# =====================================================
+# Granyt App - Local Development Docker Compose
+# =====================================================
+#
+# This file is for local development only. It starts the 
+# infrastructure (database) needed to run the app locally.
+#
+# Usage:
+# 1. Start database: docker compose up -d
+# 2. Run app: npm run dev
+# =====================================================
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: granyt-postgres-dev
+    restart: always
+    environment:
+      POSTGRES_USER: granyt
+      POSTGRES_PASSWORD: granyt
+      POSTGRES_DB: granyt
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U granyt -d granyt"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data-dev:
+    name: granyt-postgres-data-dev
