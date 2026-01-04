@@ -18,19 +18,22 @@ interface TimeframeSwitcherProps {
 }
 
 const TIMEFRAME_OPTIONS = [
-  { value: Timeframe.Day, label: "Last 24 hours" },
-  { value: Timeframe.Week, label: "Last 7 days" },
-  { value: Timeframe.Month, label: "Last 28 days" },
-  { value: Timeframe.AllTime, label: "All time" },
+  { value: Timeframe.Day, label: "Last 24 hours", shortLabel: "24h" },
+  { value: Timeframe.Week, label: "Last 7 days", shortLabel: "7d" },
+  { value: Timeframe.Month, label: "Last 28 days", shortLabel: "28d" },
+  { value: Timeframe.AllTime, label: "All time", shortLabel: "All" },
 ] as const
 
 export function TimeframeSwitcher({ value, onChange, className }: TimeframeSwitcherProps) {
+  const selectedOption = TIMEFRAME_OPTIONS.find((o) => o.value === value)
+  
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className={cn("w-[180px]", className)}>
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <SelectValue />
+          <Clock className="h-4 w-4 shrink-0 text-muted-foreground hidden sm:block" />
+          <span className="sm:hidden">{selectedOption?.shortLabel}</span>
+          <span className="hidden sm:inline"><SelectValue /></span>
         </div>
       </SelectTrigger>
       <SelectContent>

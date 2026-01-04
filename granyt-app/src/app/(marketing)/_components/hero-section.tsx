@@ -62,15 +62,14 @@ function HeadlineTest() {
   return (
     <>
       <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-        The{" "}
+        Observability for{" "}
         <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          Modern Stack
-        </span>{" "}
-        for Airflow Observability
+          Apache Airflow
+        </span>
       </h1>
       <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-        All-in-one monitoring for Apache Airflow. <br className="hidden sm:block" />
-        Open source, lightweight, and built for engineers who ship.
+        Open source, self-hosted monitoring for your DAGs. <br className="hidden sm:block" /> 
+        Capture errors, metrics, and data flow with zero-code instrumentation.
       </p>
     </>
   )

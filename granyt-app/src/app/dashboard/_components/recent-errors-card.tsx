@@ -37,13 +37,13 @@ function ErrorListItem({ error, basePath = "/dashboard" }: { error: RecentError;
       href={`${basePath}/errors/${error.id}`}
       className="block"
     >
-      <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent transition-colors">
-        <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border hover:bg-accent transition-colors">
+        <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <p className="font-medium text-sm truncate">{error.exceptionType}</p>
+          <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+            <p className="font-medium text-xs sm:text-sm truncate">{error.exceptionType}</p>
             {error.environments && error.environments.length > 0 && (
-              <div className="flex gap-1">
+              <div className="hidden sm:flex gap-1">
                 {error.environments.slice(0, 2).map((env) => (
                   <EnvironmentBadge 
                     key={env} 
@@ -60,17 +60,17 @@ function ErrorListItem({ error, basePath = "/dashboard" }: { error: RecentError;
               </div>
             )}
           </div>
-          <p className="text-xs text-muted-foreground truncate">{error.message}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-muted-foreground">
-              {error.occurrenceCount} occurrence{error.occurrenceCount !== 1 ? "s" : ""}
+          <p className="text-xs text-muted-foreground line-clamp-1 sm:truncate">{error.message}</p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-[11px] sm:text-xs text-muted-foreground">
+            <span>
+              {error.occurrenceCount} occ.
             </span>
-            <span className="text-xs text-muted-foreground">•</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="hidden sm:inline">•</span>
+            <span>
               {error.dagCount} DAG{error.dagCount !== 1 ? "s" : ""}
             </span>
-            <span className="text-xs text-muted-foreground">•</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="hidden sm:inline">•</span>
+            <span>
               {formatDistanceToNow(new Date(error.lastSeenAt), { addSuffix: true })}
             </span>
           </div>

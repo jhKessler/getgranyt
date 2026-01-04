@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Shield,
+  Layers,
   type LucideIcon
 } from "lucide-react"
 
@@ -57,40 +58,28 @@ interface GranytCapability {
 
 const granytCapabilities: GranytCapability[] = [
   {
-    icon: Zap,
-    name: "Automatic DAG Monitoring",
-    description: "Zero-code instrumentation that captures every DAG and task run automatically.",
-    highlights: ["DAG run events", "Task-level timing", "Run type detection"],
-  },
-  {
     icon: AlertTriangle,
-    name: "Rich Error Capture",
-    description: "Sentry-like error tracking designed specifically for Airflow DAGs.",
-    highlights: ["Full stack traces", "Auto error grouping", "Task metadata context"],
-  },
-  {
-    icon: BarChart3,
-    name: "Data Metrics Capture",
-    description: "Track DataFrame statistics and custom metrics at any point in your DAG.",
-    highlights: ["Row counts & schema", "Null detection", "Custom KPIs"],
-  },
-  {
-    icon: GitBranch,
-    name: "Data Lineage",
-    description: "Understand how data flows through your DAGs with OpenLineage support.",
-    highlights: ["OpenLineage events", "Upstream tracking", "Dataset visualization"],
-  },
-  {
-    icon: Shield,
-    name: "Privacy-First Design",
-    description: "Your data stays on your infrastructure. No external dependencies required.",
-    highlights: ["Self-hosted", "Auto data redaction", "No data leaves"],
+    name: "Rich Observability",
+    description: "Sentry-style error tracking and metrics built for Airflow DAGs.",
+    highlights: ["Full stack traces", "Automatic operator metrics", "Task metadata context"],
   },
   {
     icon: Bell,
-    name: "Uncover Silent Issues",
-    description: "Get notified when your data changes unexpectedly - before it breaks downstream.",
-    highlights: ["Schema change alerts", "Anomaly detection", "Slack & email notifications"],
+    name: "Proactive Alerting",
+    description: "Get notified before unexpected changes break downstream pipelines.",
+    highlights: ["Schema change alerts", "Anomaly detection", "Email notifications"],
+  },
+  {
+    icon: Layers,
+    name: "Multi-Environment Support",
+    description: "Track and compare errors across dev, staging, and production in one place.",
+    highlights: ["Environment filtering", "Cross-env comparison", "Unified error view"],
+  },
+  {
+    icon: Shield,
+    name: "100% Open Source",
+    description: "Deploy on your infrastructure with complete data ownership.",
+    highlights: ["Open source", "Self-hosted", "No vendor lock-in"],
   },
 ]
 
@@ -112,18 +101,18 @@ function ToolCard({ tool, isAnimating }: { tool: Tool; isAnimating: boolean }) {
       
       <div className="space-y-2">
         <div className="space-y-1">
-          {tool.capabilities.map((cap) => (
-            <div key={cap} className="flex items-center gap-2 text-xs">
+          {tool.capabilities.map((capability) => (
+            <div key={capability} className="flex items-center gap-2 text-xs">
               <CheckCircle2 className="h-3 w-3 text-green-500" />
-              <span className="text-muted-foreground">{cap}</span>
+              <span className="text-muted-foreground">{capability}</span>
             </div>
           ))}
         </div>
         <div className="space-y-1">
-          {tool.limitations.map((lim) => (
-            <div key={lim} className="flex items-center gap-2 text-xs">
+          {tool.limitations.map((limitation) => (
+            <div key={limitation} className="flex items-center gap-2 text-xs">
               <X className="h-3 w-3 text-red-400" />
-              <span className="text-muted-foreground">{lim}</span>
+              <span className="text-muted-foreground">{limitation}</span>
             </div>
           ))}
         </div>
@@ -153,7 +142,7 @@ function GranytConsolidatedCard({ isVisible }: { isVisible: boolean }) {
   return (
     <div 
       className={`
-        relative p-6 rounded-2xl border-2 border-primary/50 bg-gradient-to-b from-primary/10 to-primary/5
+        relative p-4 sm:p-5 rounded-2xl border-2 border-primary/50 bg-gradient-to-b from-primary/10 to-primary/5
         transition-all duration-700
         ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}
       `}
@@ -161,39 +150,39 @@ function GranytConsolidatedCard({ isVisible }: { isVisible: boolean }) {
       {/* Glow effect */}
       <div className="absolute inset-0 rounded-2xl bg-primary/20 blur-xl -z-10" />
       
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">
-          <Zap className="h-6 w-6 text-primary" />
+      <div className="flex items-center gap-3 mb-4">
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+          <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
         </div>
         <div>
-          <span className="font-bold text-xl">Granyt</span>
-          <p className="text-sm text-muted-foreground">All-in-one Airflow observability</p>
+          <span className="font-bold text-lg sm:text-xl">Granyt</span>
+          <p className="text-xs sm:text-sm text-muted-foreground">All-in-one Airflow observability</p>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {granytCapabilities.map((cap, i) => {
-          const Icon = cap.icon
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        {granytCapabilities.map((capability, i) => {
+          const Icon = capability.icon
           return (
             <div 
-              key={cap.name}
+              key={capability.name}
               className={`
-                p-4 rounded-lg bg-background/50 border border-border/50
+                p-3 rounded-lg bg-background/50 border border-border/50
                 transition-all duration-500 hover:border-primary/30
                 ${showCapabilities ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
               `}
               style={{ transitionDelay: `${i * 100}ms` }}
             >
               <div className="flex items-center gap-2 mb-2">
-                <Icon className="h-4 w-4 text-primary" />
-                <span className="font-medium text-sm">{cap.name}</span>
+                <Icon className="h-4 w-4 text-primary shrink-0" />
+                <span className="font-medium text-sm">{capability.name}</span>
               </div>
-              <p className="text-xs text-muted-foreground mb-2">{cap.description}</p>
+              <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{capability.description}</p>
               <ul className="space-y-1">
-                {cap.highlights.map((highlight) => (
+                {capability.highlights.map((highlight) => (
                   <li key={highlight} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <div className="h-1 w-1 rounded-full bg-primary/60" />
-                    {highlight}
+                    <div className="h-1 w-1 rounded-full bg-primary/60 shrink-0" />
+                    <span className="line-clamp-1">{highlight}</span>
                   </li>
                 ))}
               </ul>
@@ -223,9 +212,7 @@ function FlowingArrows({ isAnimating }: { isAnimating: boolean }) {
             key={i} 
             className={`
               h-6 w-6 text-primary
-              ${isAnimating ? 'animate-bounce' : ''}
             `}
-            style={{ animationDelay: `${i * 0.15}s` }}
           />
         ))}
       </div>
@@ -271,12 +258,12 @@ export function ToolConsolidationSection() {
       <div className="container mx-auto max-w-5xl px-4">
         {/* Header */}
         <div className="text-center space-y-4 mb-12">
-          <Badge variant="secondary">One Tool to Rule Them All</Badge>
+          <Badge variant="secondary">Unified Observability</Badge>
           <h2 className="text-3xl md:text-4xl font-bold">
-            The best of all worlds
+            Stop context switching
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Ever set up monitoring only to never really use it?... I did too. Granyt consolidates error tracking, metrics, lineage, and alerts into a single, easy-to-use platform built specifically for Airflow.
+            Monitoring is only useful if it&apos;s actually used. Granyt consolidates error tracking, metrics, lineage, and alerts into a single platform designed specifically for the Airflow ecosystem.
           </p>
         </div>
 

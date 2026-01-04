@@ -325,7 +325,7 @@ def train_model():
           href="/docs/notifications"
           icon={Mail}
           title="Setup Notifications"
-          description="Get alerted on Slack or Email when your pipelines fail or data quality drops."
+          description="Get alerted by Email or Webhook when your pipelines fail or data quality drops."
         />
         <LinkCard
           href="/docs/metrics"

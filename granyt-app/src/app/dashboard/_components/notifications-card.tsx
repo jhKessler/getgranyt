@@ -34,47 +34,47 @@ function NotificationItem({ alert, onClick }: { alert: NotificationAlert; onClic
   return (
     <div
       onClick={onClick}
-      className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent transition-colors cursor-pointer"
+      className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border hover:bg-accent transition-colors cursor-pointer"
     >
       {alert.alertType === "ROW_COUNT_DROP" ? (
         <TrendingDown className={cn(
-          "h-5 w-5 shrink-0 mt-0.5",
+          "h-4 w-4 sm:h-5 sm:w-5 shrink-0 mt-0.5",
           isCritical ? "text-red-500" : "text-orange-500"
         )} />
       ) : alert.alertType === "SCHEMA_CHANGE" ? (
         <Columns className={cn(
-          "h-5 w-5 shrink-0 mt-0.5",
+          "h-4 w-4 sm:h-5 sm:w-5 shrink-0 mt-0.5",
           isCritical ? "text-red-500" : "text-orange-500"
         )} />
       ) : (
         <AlertTriangle className={cn(
-          "h-5 w-5 shrink-0 mt-0.5",
+          "h-4 w-4 sm:h-5 sm:w-5 shrink-0 mt-0.5",
           isCritical ? "text-red-500" : "text-orange-500"
         )} />
       )}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <p className="font-medium text-sm truncate">{alert.srcDagId ?? "System"}</p>
+        <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+          <p className="font-medium text-xs sm:text-sm truncate">{alert.srcDagId ?? "System"}</p>
           {alert.environment && (
             <EnvironmentBadge 
               environment={alert.environment}
               variant={isCritical ? "error" : "default"}
-              className="text-[10px] px-1 py-0 h-4"
+              className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex"
             />
           )}
         </div>
-        <p className="text-xs text-muted-foreground truncate">
+        <p className="text-xs text-muted-foreground line-clamp-1 sm:truncate">
           {alert.captureId && <span className="font-mono bg-muted px-1 py-0.5 rounded mr-1">{alert.captureId}</span>}
           {getAlertPreviewText(alert.alertType, alert.metadata)}
         </p>
-        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-xs text-muted-foreground">
           <span className={cn(
             "px-1.5 py-0.5 rounded",
             isCritical ? "bg-red-500/10 text-red-500" : "bg-orange-500/10 text-orange-500"
           )}>
             {isCritical ? "Critical" : "Warning"}
           </span>
-          <span>•</span>
+          <span className="hidden sm:inline">•</span>
           <span>{formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}</span>
         </div>
       </div>

@@ -228,16 +228,16 @@ export async function getErrorDetails(
 function formatErrorDetails(error: ErrorWithOccurrences) {
   const environments = new Set<string>();
 
-  const occurrences = error.occurrences.map((occ) => {
-    const env = occ.taskRun?.environment || occ.taskRun?.dagRun?.environment;
+  const occurrences = error.occurrences.map((occurrence) => {
+    const env = occurrence.taskRun?.environment || occurrence.taskRun?.dagRun?.environment;
     if (env) environments.add(env);
 
     return {
-      ...occ,
-      dagId: occ.taskRun?.dagRun?.srcDagId ?? null,
-      taskId: occ.taskRun?.srcTaskId ?? null,
-      runId: occ.taskRun?.dagRun?.srcRunId ?? null,
-      dagRunId: occ.taskRun?.dagRun?.id ?? null,
+      ...occurrence,
+      dagId: occurrence.taskRun?.dagRun?.srcDagId ?? null,
+      taskId: occurrence.taskRun?.srcTaskId ?? null,
+      runId: occurrence.taskRun?.dagRun?.srcRunId ?? null,
+      dagRunId: occurrence.taskRun?.dagRun?.id ?? null,
       environment: env ?? null,
     };
   });

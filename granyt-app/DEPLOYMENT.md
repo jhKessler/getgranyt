@@ -115,6 +115,8 @@ spec:
 | `SMTP_FROM_EMAIL` | - | Sender email address |
 | `SMTP_FROM_NAME` | `Granyt Alerts` | Sender name |
 | `SMTP_SECURE` | `true` | Use TLS for SMTP |
+| `GRANYT_WEBHOOK_URL` | - | Global webhook URL (e.g., Slack) |
+| `GRANYT_WEBHOOK_SECRET` | - | Secret for signing webhook requests |
 
 ### Generating Secrets
 

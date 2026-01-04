@@ -27,7 +27,7 @@
 ## ✨ Features
 
 - **📊 DAG Monitoring** - Real-time visibility into your data pipelines with run history, duration trends, and success rates
-- **🚨 Smart Alerts** - Configurable alerts for failures, changes in source data, and pipeline anomalies with email/webhook notifications
+- **🚨 Smart Alerts** - Configurable alerts for failures, changes in source data, and pipeline anomalies with email, Slack, and webhook notifications
 - **🐛 Error Tracking** - Centralized error aggregation with fingerprinting and stack trace analysis
 - **🌙 Dark Mode** - Beautiful UI with light and dark theme support
 - **🐳 Docker Ready** - One-command deployment with Docker Compose

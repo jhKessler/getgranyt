@@ -53,7 +53,10 @@ function MiniAlertItem({ type, dag, severity }: { type: string; dag: string; sev
 
 function DashboardPreview() {
   return (
-    <div className="relative bg-background border rounded-xl shadow-2xl overflow-hidden">
+    <Link 
+      href="/demo" 
+      className="block relative bg-background border rounded-xl shadow-2xl overflow-hidden group transition-all duration-500 hover:border-primary/50 hover:shadow-primary/20 hover:scale-[1.01]"
+    >
       {/* Fake browser chrome */}
       <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30">
         <div className="flex gap-1.5">
@@ -69,7 +72,7 @@ function DashboardPreview() {
       </div>
 
       {/* Dashboard content preview */}
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-4 transition-all duration-300 group-hover:brightness-[0.8] group-hover:blur-[1px]">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -133,9 +136,17 @@ function DashboardPreview() {
         </div>
       </div>
 
+      {/* Hover Overlay */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+        <div className="bg-primary text-primary-foreground px-6 py-3 rounded-full font-semibold shadow-2xl flex items-center gap-2 transform scale-90 group-hover:scale-100 transition-transform duration-300">
+          <Play className="h-5 w-5 fill-current" />
+          Launch Interactive Demo
+        </div>
+      </div>
+
       {/* Gradient overlay for effect */}
-      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
-    </div>
+      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background/80 to-transparent pointer-events-none z-10" />
+    </Link>
   )
 }
 

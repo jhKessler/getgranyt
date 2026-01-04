@@ -40,9 +40,9 @@ export function DataCard({
   return (
     <Card className={className}>
       <CardHeader className={headerAction ? "flex flex-row items-center justify-between space-y-0 pb-2 px-4 sm:px-6" : "px-4 sm:px-6"}>
-        <div className="space-y-1 min-w-0">
-          <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">{displayDescription}</CardDescription>
+        <div className="space-y-0.5 sm:space-y-1 min-w-0">
+          <CardTitle className="text-sm sm:text-lg">{title}</CardTitle>
+          <CardDescription className="text-[11px] sm:text-sm">{displayDescription}</CardDescription>
         </div>
         {headerAction}
       </CardHeader>

@@ -58,6 +58,17 @@ const resendEnvVars = [
   },
 ]
 
+const webhookEnvVars = [
+  {
+    variable: "GRANYT_WEBHOOK_URL",
+    description: "The destination URL for the webhook POST requests (e.g., Slack Incoming Webhook URL)",
+  },
+  {
+    variable: "GRANYT_WEBHOOK_SECRET",
+    description: "Optional secret used to sign the request (HMAC-SHA256)",
+  },
+]
+
 export default function NotificationsDocsPage() {
   return (
     <div className="space-y-12">
@@ -66,7 +77,7 @@ export default function NotificationsDocsPage() {
         title="Notification Channels"
         badge="Configuration"
         tagline="Get alerted when things go south."
-        description="Granyt supports multiple notification channels to keep you informed about your pipeline health. You can configure these via the Dashboard UI or using environment variables."
+        description="Granyt supports multiple notification channels to keep you informed about your pipeline health, including Email (SMTP/Resend), Slack, and custom Webhooks."
       />
 
       <section className="space-y-6">
@@ -93,8 +104,19 @@ export default function NotificationsDocsPage() {
             title="Resend Configuration"
             envVars={resendEnvVars}
           />
+
+          <EnvVarTable
+            title="Webhook & Slack Configuration"
+            envVars={webhookEnvVars}
+          />
         </div>
       </section>
+
+      <InfoSection title="Slack Support">
+        <p className="text-muted-foreground">
+          Granyt supports Slack notifications via <strong>Incoming Webhooks</strong>. To set this up, create an Incoming Webhook in your Slack workspace and use the provided URL as your Webhook URL in Granyt.
+        </p>
+      </InfoSection>
 
       <InfoSection title="Testing Your Setup">
         <p className="text-muted-foreground">

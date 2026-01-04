@@ -46,12 +46,12 @@ export default function DemoErrorDetailPage({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const grouped = new Map<string, any[]>()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const occ of (error.occurrences as any)) {
-      const dagId = occ.dagId || "unknown"
+    for (const occurrence of (error.occurrences as any)) {
+      const dagId = occurrence.dagId || "unknown"
       if (!grouped.has(dagId)) {
         grouped.set(dagId, [])
       }
-      grouped.get(dagId)!.push(occ)
+      grouped.get(dagId)!.push(occurrence)
     }
     
     return Array.from(grouped.entries()).map(([dagId, occurrences]) => ({

@@ -43,8 +43,8 @@ export function AllOccurrencesCard({ occurrences, basePath = "/dashboard" }: All
             </TableRow>
           </TableHeader>
           <TableBody>
-            {occurrences.map((occ: Occurrence) => (
-              <OccurrenceRow key={occ.id} occurrence={occ} basePath={basePath} />
+            {occurrences.map((occurrence: Occurrence) => (
+              <OccurrenceRow key={occurrence.id} occurrence={occurrence} basePath={basePath} />
             ))}
           </TableBody>
         </Table>

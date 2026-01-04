@@ -398,9 +398,11 @@ print_step 5 "Writing your config..."
 
 # Check if .env already exists
 if [ -f ".env" ]; then
-    print_info "Existing .env file found, backing up to .env.backup"
-    cp ".env" ".env.backup"
-    chmod 600 ".env.backup"
+    print_error "Installation stopped: A .env file already exists in this directory."
+    print_info "Granyt may have already been installed here."
+    print_info "To reinstall, first remove or rename the existing .env file:"
+    print_info "  mv .env .env.backup"
+    exit 1
 fi
 
 # Sanitize DASHBOARD_URL - remove any newlines or shell metacharacters

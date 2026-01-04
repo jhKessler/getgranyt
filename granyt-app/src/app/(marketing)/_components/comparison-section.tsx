@@ -16,6 +16,7 @@ const comparisonData: ComparisonRow[] = [
   { feature: "Local variables capture", granyt: true, sentry: true, grafana: false },
   { feature: "DAG run tracking", granyt: true, sentry: false, grafana: "manual" },
   { feature: "DataFrame metrics", granyt: true, sentry: false, grafana: false },
+  { feature: "Automatic operator metrics", granyt: true, sentry: false, grafana: false },
   { feature: "Custom business metrics", granyt: true, sentry: false, grafana: true },
   { feature: "Zero-code setup", granyt: true, sentry: true, grafana: false },
   { feature: "Data lineage tracking", granyt: true, sentry: false, grafana: false },

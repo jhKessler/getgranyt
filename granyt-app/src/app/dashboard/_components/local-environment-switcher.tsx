@@ -50,6 +50,7 @@ export function LocalEnvironmentSwitcher({
 
   const _selectedEnvData = environments.find((e) => e.name === selectedEnvironment)
   const displayValue = selectedEnvironment ?? "All Environments"
+  const shortDisplayValue = selectedEnvironment ?? "All"
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,8 +62,9 @@ export function LocalEnvironmentSwitcher({
           className={cn("w-[180px] px-3 justify-between", className)}
         >
           <div className="flex items-center gap-2 truncate">
-            <Globe className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span className="truncate capitalize">{displayValue}</span>
+            <Globe className="h-4 w-4 shrink-0 text-muted-foreground hidden sm:block" />
+            <span className="truncate capitalize sm:hidden">{shortDisplayValue}</span>
+            <span className="truncate capitalize hidden sm:inline">{displayValue}</span>
           </div>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

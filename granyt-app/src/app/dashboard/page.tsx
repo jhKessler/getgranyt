@@ -61,8 +61,8 @@ export default function DashboardPage() {
   const timeframeDesc = getTimeframeDescription(timeframe)
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-3 md:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <PageHeader 
           title="Dashboard"
           description={`Overview of your DAGs ${timeframeDesc}`}
@@ -70,7 +70,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <TimeframeSwitcher 
             value={timeframe}
-            onChange={(tf) => setFilter("timeframe", tf)}
+            onChange={(timeframe) => setFilter("timeframe", timeframe)}
             className="flex-1 sm:flex-none sm:w-[180px]"
           />
           <LocalEnvironmentSwitcher 
@@ -82,7 +82,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total Runs"
           value={metrics?.totalRuns ?? 0}
@@ -135,7 +135,7 @@ export default function DashboardPage() {
         }}
       />
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-3 md:gap-4 lg:grid-cols-2">
         <NotificationsCard 
           alerts={alerts}
           summary={alertsSummary}
