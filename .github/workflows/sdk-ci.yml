@@ -82,16 +82,16 @@ jobs:
         run: uv python install 3.12
 
       - name: Install dependencies
-        run: uv pip install -e ".[dev]"
+        run: uv pip install --system -e ".[dev]"
 
       - name: Run linter (black)
-        run: uv run black --check src/
+        run: uv run --system black --check src/
 
       - name: Run import sorter (isort)
-        run: uv run isort --check-only src/
+        run: uv run --system isort --check-only src/
 
       - name: Run type checker (mypy)
-        run: uv run mypy src/
+        run: uv run --system mypy src/
 
   # =====================================================
   # Test
@@ -121,10 +121,10 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv pip install -e ".[dev]"
+        run: uv pip install --system -e ".[dev]"
 
       - name: Run tests
-        run: uv run pytest --cov=granyt_sdk --cov-report=xml
+        run: uv run --system pytest --cov=granyt_sdk --cov-report=xml
 
   # =====================================================
   # Build Package
