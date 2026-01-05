@@ -14,6 +14,7 @@ import pytest
 
 # ==================== Environment Fixtures ====================
 
+
 @pytest.fixture
 def clean_env(monkeypatch):
     """Remove all GRANYT_ environment variables."""
@@ -53,10 +54,12 @@ def debug_env(valid_env):
 
 # ==================== Config Fixtures ====================
 
+
 @pytest.fixture
 def valid_config():
     """Create a valid GranytConfig."""
     from granyt_sdk.core.config import GranytConfig
+
     return GranytConfig(
         endpoint="https://api.granyt.dev",
         api_key="test-api-key-12345",
@@ -75,10 +78,12 @@ def valid_config():
 def invalid_config():
     """Create an invalid GranytConfig (missing credentials)."""
     from granyt_sdk.core.config import GranytConfig
+
     return GranytConfig()
 
 
 # ==================== Mock Airflow Objects ====================
+
 
 @pytest.fixture
 def mock_task_instance():
@@ -100,7 +105,7 @@ def mock_task_instance():
     ti.start_date = datetime(2026, 1, 5, 0, 0, 1, tzinfo=timezone.utc)
     ti.end_date = None
     ti.duration = None
-    
+
     # Mock task object
     task = MagicMock()
     task.task_type = "PythonOperator"
@@ -113,7 +118,7 @@ def mock_task_instance():
     task.wait_for_downstream = False
     task.params = {"key": "value"}
     ti.task = task
-    
+
     return ti
 
 
@@ -132,7 +137,7 @@ def mock_dag_run():
     dr.conf = {"param1": "value1"}
     dr.data_interval_start = datetime(2026, 1, 4, tzinfo=timezone.utc)
     dr.data_interval_end = datetime(2026, 1, 5, tzinfo=timezone.utc)
-    
+
     # Mock dag object
     dag = MagicMock()
     dag.description = "Test DAG"
@@ -143,7 +148,7 @@ def mock_dag_run():
     dag.default_args = {"owner": "airflow"}
     dag.fileloc = "/opt/airflow/dags/test_dag.py"
     dr.dag = dag
-    
+
     return dr
 
 
@@ -162,18 +167,20 @@ def mock_context(mock_task_instance, mock_dag_run):
 
 # ==================== Exception Fixtures ====================
 
+
 @pytest.fixture
 def sample_exception():
     """Create an exception with a traceback."""
+
     def inner_function():
         local_var = "test_value"
         secret_key = "should_be_redacted"
         raise ValueError("Test error message")
-    
+
     def outer_function():
         data = {"key": "value"}
         inner_function()
-    
+
     try:
         outer_function()
     except ValueError as e:
@@ -206,17 +213,21 @@ def nested_exception():
 
 # ==================== DataFrame Fixtures ====================
 
+
 @pytest.fixture
 def pandas_df():
     """Create a sample pandas DataFrame."""
     try:
         import pandas as pd
-        return pd.DataFrame({
-            "id": [1, 2, 3, 4, 5],
-            "name": ["Alice", "Bob", "", "David", None],
-            "score": [95.5, 87.0, None, 92.3, 88.1],
-            "active": [True, False, True, True, False],
-        })
+
+        return pd.DataFrame(
+            {
+                "id": [1, 2, 3, 4, 5],
+                "name": ["Alice", "Bob", "", "David", None],
+                "score": [95.5, 87.0, None, 92.3, 88.1],
+                "active": [True, False, True, True, False],
+            }
+        )
     except ImportError:
         pytest.skip("pandas not installed")
 
@@ -226,6 +237,7 @@ def pandas_df_empty():
     """Create an empty pandas DataFrame."""
     try:
         import pandas as pd
+
         return pd.DataFrame()
     except ImportError:
         pytest.skip("pandas not installed")
@@ -236,12 +248,15 @@ def polars_df():
     """Create a sample polars DataFrame."""
     try:
         import polars as pl
-        return pl.DataFrame({
-            "id": [1, 2, 3, 4, 5],
-            "name": ["Alice", "Bob", "", "David", None],
-            "score": [95.5, 87.0, None, 92.3, 88.1],
-            "active": [True, False, True, True, False],
-        })
+
+        return pl.DataFrame(
+            {
+                "id": [1, 2, 3, 4, 5],
+                "name": ["Alice", "Bob", "", "David", None],
+                "score": [95.5, 87.0, None, 92.3, 88.1],
+                "active": [True, False, True, True, False],
+            }
+        )
     except ImportError:
         pytest.skip("polars not installed")
 
@@ -251,15 +266,19 @@ def polars_lazyframe():
     """Create a sample polars LazyFrame."""
     try:
         import polars as pl
-        return pl.LazyFrame({
-            "id": [1, 2, 3],
-            "value": [10, 20, 30],
-        })
+
+        return pl.LazyFrame(
+            {
+                "id": [1, 2, 3],
+                "value": [10, 20, 30],
+            }
+        )
     except ImportError:
         pytest.skip("polars not installed")
 
 
 # ==================== HTTP Mock Fixtures ====================
+
 
 @pytest.fixture
 def mock_response_success():
@@ -291,21 +310,22 @@ def mock_session(mock_response_success):
 
 # ==================== Client Reset Fixture ====================
 
+
 @pytest.fixture(autouse=True)
 def reset_client_singleton():
     """Reset the client singleton before and after each test."""
     from granyt_sdk.core import client
-    
+
     # Store original
     original_instance = client._client
     original_class_instance = client.GranytClient._instance
-    
+
     # Reset before test
     client._client = None
     client.GranytClient._instance = None
-    
+
     yield
-    
+
     # Reset after test
     client._client = None
     client.GranytClient._instance = None
