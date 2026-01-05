@@ -1,10 +1,11 @@
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  airflowUrl String?  // Base URL of the Airflow webserver (e.g., https://airflow.example.com)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  createdBy  String
 
   creator       User                 @relation("CreatedOrganizations", fields: [createdBy], references: [id])
   members       OrganizationMember[]

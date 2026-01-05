@@ -10,6 +10,7 @@ import {
   getRecentErrors,
   getErrorsByEnvironmentType,
   getErrorDetails,
+  getRunErrorOccurrences,
   updateErrorStatus,
   getDagsOverview,
   getDagDetails,
@@ -125,6 +126,16 @@ export const dashboardRouter = router({
     .mutation(async ({ ctx, input }) => {
       const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
       return updateErrorStatus(ctx.prisma, org.id, input.errorId, input.status);
+    }),
+
+  getRunErrorOccurrences: protectedProcedure
+    .input(z.object({
+      organizationId: z.string().optional(),
+      dagRunId: z.string(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+      return getRunErrorOccurrences(ctx.prisma, org.id, input.dagRunId);
     }),
 
   getDagsOverview: protectedProcedure

@@ -117,7 +117,7 @@ function ErrorActions({ status, onUpdateStatus, isUpdating }: {
   isUpdating: boolean
 }) {
   return (
-    <div className="flex gap-2 mt-4">
+    <div className="flex gap-2">
       {status !== ErrorStatus.Resolved && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -174,3 +174,5 @@ function ErrorActions({ status, onUpdateStatus, isUpdating }: {
     </div>
   )
 }
+
+export { ErrorActions }

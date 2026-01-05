@@ -9,6 +9,7 @@ export function useOnboarding() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [organizationName, setOrganizationName] = useState("")
+  const [airflowUrl, setAirflowUrl] = useState("")
   const [apiKey, setApiKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -42,7 +43,10 @@ export function useOnboarding() {
       toast.error("Please enter an organization name")
       return
     }
-    createOrg.mutate({ name: organizationName.trim() })
+    createOrg.mutate({ 
+      name: organizationName.trim(),
+      airflowUrl: airflowUrl.trim() || undefined,
+    })
   }
 
   const handleCopyApiKey = async () => {
@@ -67,6 +71,8 @@ export function useOnboarding() {
     goToStep,
     organizationName,
     setOrganizationName,
+    airflowUrl,
+    setAirflowUrl,
     apiKey,
     copied,
     isLoading,

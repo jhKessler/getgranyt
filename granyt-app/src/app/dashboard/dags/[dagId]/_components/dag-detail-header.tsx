@@ -12,6 +12,8 @@ import { ArrowLeft, Clock } from "lucide-react"
 import Link from "next/link"
 import { Timeframe } from "@/server/services/dashboard/types"
 import { MetricsSettingsDialog } from "./metrics-settings-dialog"
+import { AirflowLink } from "@/components/shared"
+import { trpc } from "@/lib/trpc"
 
 interface DagDetailHeaderProps {
   dagId: string
@@ -32,6 +34,9 @@ export function DagDetailHeader({
   basePath = "/dashboard",
   showSettings = true
 }: DagDetailHeaderProps) {
+  // Fetch Airflow settings for linking
+  const { data: airflowSettings } = trpc.settings.getAirflowSettings.useQuery({})
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -50,6 +55,12 @@ export function DagDetailHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
+        <AirflowLink 
+          airflowUrl={airflowSettings?.airflowUrl}
+          dagId={dagId}
+          variant="button"
+          size="sm"
+        />
         {showSettings && <MetricsSettingsDialog dagId={dagId} onSettingsChange={onMetricsSettingsChange} />}
         <Select value={timeframe} onValueChange={(v) => onTimeframeChange(v as Timeframe)}>
           <SelectTrigger className="w-[180px]">

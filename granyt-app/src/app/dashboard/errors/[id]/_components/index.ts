@@ -1,5 +1,7 @@
 export { StacktraceView, type StackFrame } from "./stacktrace-view"
-export { ErrorHeaderCard } from "./error-header-card"
+export { ErrorHeaderCard, ErrorActions } from "./error-header-card"
 export { AffectedDagsCard, type DagGroup, type Occurrence } from "./affected-dags-card"
 export { AllOccurrencesCard } from "./all-occurrences-card"
 export { SourceErrorCard } from "./source-error-card"
+export { ErrorEnvironmentBreadcrumb, type ErrorEnvironmentStatus } from "./error-environment-breadcrumb"
+export { LatestStacktraceCard } from "./latest-stacktrace-card"

@@ -16,10 +16,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ModeToggle } from "@/components/mode-toggle"
-import { MobileSidebar, type NavItem } from "@/components/shared"
+import { MobileSidebar, Breadcrumbs, type NavItem } from "@/components/shared"
 import { Shield, LayoutDashboard, LogOut, Plug, AlertTriangle, GitBranch, Play, Bell, Settings } from "lucide-react"
 import { toast } from "sonner"
 import { EnvironmentProvider } from "@/lib/environment-context"
+import { BreadcrumbProvider } from "@/lib/breadcrumb-context"
 import { motion } from "framer-motion"
 
 const navigation: NavItem[] = [
@@ -71,6 +72,7 @@ export default function DashboardLayout({
 
   return (
     <EnvironmentProvider>
+      <BreadcrumbProvider>
       <div className="min-h-screen bg-background">
         {/* Desktop Sidebar - hidden on mobile */}
         <aside className="fixed inset-y-0 left-0 z-50 w-64 border-r bg-card hidden md:block">
@@ -209,9 +211,13 @@ export default function DashboardLayout({
           </header>
 
           {/* Page content */}
-          <main className="p-4 md:p-6">{children}</main>
+          <main className="p-4 md:p-6">
+            <Breadcrumbs />
+            {children}
+          </main>
         </div>
       </div>
+      </BreadcrumbProvider>
     </EnvironmentProvider>
   )
 }

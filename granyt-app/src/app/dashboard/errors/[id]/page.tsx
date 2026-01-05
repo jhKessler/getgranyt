@@ -1,30 +1,46 @@
 "use client"
 
-import { use, useMemo } from "react"
+import { use, useMemo, useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { trpc } from "@/lib/trpc"
 import { useDocumentTitle } from "@/lib/use-document-title"
+import { useBreadcrumbContext } from "@/lib/breadcrumb-context"
 import { ErrorStatus } from "@/server/services/dashboard/types"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import {
   ErrorHeaderCard,
+  ErrorActions,
   AffectedDagsCard,
   AllOccurrencesCard,
-  SourceErrorCard,
+  ErrorEnvironmentBreadcrumb,
+  LatestStacktraceCard,
+  type ErrorEnvironmentStatus,
 } from "./_components"
 
 export default function ErrorDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const utils = trpc.useUtils()
+  const { setOverride, clearOverride } = useBreadcrumbContext()
+  const [selectedEnv, setSelectedEnv] = useState<string | null>(null)
   
   const { data: error, isLoading } = trpc.dashboard.getErrorDetails.useQuery({ 
     errorId: resolvedParams.id 
   })
+  
+  // Set breadcrumb override when error data is available
+  useEffect(() => {
+    if (error?.exceptionType) {
+      setOverride(resolvedParams.id, error.exceptionType)
+    }
+    return () => {
+      clearOverride(resolvedParams.id)
+    }
+  }, [error?.exceptionType, resolvedParams.id, setOverride, clearOverride])
   
   // Use error type as subtitle if available
   useDocumentTitle(error?.exceptionType ?? "Error Details", "Error")
@@ -61,7 +77,64 @@ export default function ErrorDetailPage({ params }: { params: Promise<{ id: stri
     }))
   }, [error?.occurrences])
 
+  // Group occurrences by environment for the environment breadcrumb
+  const environmentStatuses = useMemo<ErrorEnvironmentStatus[]>(() => {
+    if (!error?.occurrences) return []
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const grouped = new Map<string, { count: number; lastSeenAt: Date }>()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const occurrence of (error.occurrences as any)) {
+      const env = occurrence.environment || "unknown"
+      const timestamp = new Date(occurrence.timestamp)
+      
+      if (!grouped.has(env)) {
+        grouped.set(env, { count: 0, lastSeenAt: timestamp })
+      }
+      
+      const current = grouped.get(env)!
+      current.count++
+      if (timestamp > current.lastSeenAt) {
+        current.lastSeenAt = timestamp
+      }
+    }
+    
+    return Array.from(grouped.entries()).map(([environment, data]) => ({
+      environment,
+      occurrenceCount: data.count,
+      lastSeenAt: data.lastSeenAt,
+    }))
+  }, [error?.occurrences])
+
+  // Filter occurrences by selected environment
+  const filteredOccurrences = useMemo(() => {
+    if (!error?.occurrences) return []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const occurrences = error.occurrences as any[]
+    
+    if (selectedEnv === null) return occurrences
+    return occurrences.filter(o => o.environment === selectedEnv)
+  }, [error?.occurrences, selectedEnv])
+
+  // Filter occurrencesByDag by selected environment
+  const filteredOccurrencesByDag = useMemo(() => {
+    if (selectedEnv === null) return occurrencesByDag
+    
+    return occurrencesByDag
+      .map(dagGroup => ({
+        ...dagGroup,
+        occurrences: dagGroup.occurrences.filter(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (o: any) => o.environment === selectedEnv
+        ),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        occurrenceCount: dagGroup.occurrences.filter((o: any) => o.environment === selectedEnv).length,
+      }))
+      .filter(dagGroup => dagGroup.occurrenceCount > 0)
+  }, [occurrencesByDag, selectedEnv])
+
   const uniqueDagCount = occurrencesByDag.length
+  const filteredDagCount = filteredOccurrencesByDag.length
 
   if (isLoading) {
     return (
@@ -89,26 +162,49 @@ export default function ErrorDetailPage({ params }: { params: Promise<{ id: stri
         uniqueDagCount={uniqueDagCount}
         onUpdateStatus={handleUpdateStatus}
         isUpdating={updateStatus.isPending}
+        showActions={false}
       />
 
+      {/* Environment selector */}
+      {environmentStatuses.length > 1 && (
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-muted-foreground">Filter by Environment</h3>
+          <ErrorEnvironmentBreadcrumb
+            statuses={environmentStatuses}
+            selectedEnv={selectedEnv}
+            onSelectEnv={setSelectedEnv}
+          />
+        </div>
+      )}
 
-      <Tabs defaultValue="dags" className="space-y-4">
+      {/* Latest Stacktrace */}
+      <LatestStacktraceCard occurrences={filteredOccurrences} />
+
+      {/* Actions */}
+      <ErrorActions 
+        status={error.status} 
+        onUpdateStatus={handleUpdateStatus} 
+        isUpdating={updateStatus.isPending} 
+      />
+
+      <Tabs defaultValue="occurrences" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="dags">Affected DAGs ({uniqueDagCount})</TabsTrigger>
-          <TabsTrigger value="occurrences">All Occurrences ({error.occurrenceCount})</TabsTrigger>
+          <TabsTrigger value="occurrences">
+            All Occurrences ({filteredOccurrences.length})
+          </TabsTrigger>
+          <TabsTrigger value="dags">
+            Affected DAGs ({selectedEnv ? filteredDagCount : uniqueDagCount})
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dags">
-          <AffectedDagsCard occurrencesByDag={occurrencesByDag} />
+        <TabsContent value="occurrences">
+          <AllOccurrencesCard occurrences={filteredOccurrences} />
         </TabsContent>
 
-        <TabsContent value="occurrences">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <AllOccurrencesCard occurrences={error.occurrences as any} />
+        <TabsContent value="dags">
+          <AffectedDagsCard occurrencesByDag={filteredOccurrencesByDag} />
         </TabsContent>
       </Tabs>
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <SourceErrorCard occurrences={error.occurrences as any} />
     </div>
   )
 }

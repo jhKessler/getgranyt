@@ -6,6 +6,7 @@ import {
   NotificationPreferencesCard,
   EmailSetupCard,
   NotificationSettingsCard,
+  AirflowSettingsCard,
 } from ".";
 
 export function SettingsContent({
@@ -24,6 +25,10 @@ export function SettingsContent({
   isSavingChannelConfig,
   isTestingChannelConnection,
   isSendingTestNotification,
+  // Airflow settings
+  airflowSettings,
+  handleSaveAirflowUrl,
+  isSavingAirflowSettings,
 }: ReturnType<typeof useSettingsPage>) {
   if (isLoading) {
     return <PageSkeleton rows={3} />;
@@ -37,6 +42,12 @@ export function SettingsContent({
       />
 
       <div className="grid gap-6">
+        <AirflowSettingsCard
+          airflowUrl={airflowSettings?.airflowUrl}
+          onSave={handleSaveAirflowUrl}
+          isSaving={isSavingAirflowSettings}
+        />
+
         <EmailSetupCard
           channelStatuses={channelStatuses}
           onToggleChannel={handleToggleChannel}

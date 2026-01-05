@@ -271,3 +271,45 @@ export async function updateErrorStatus(
     },
   });
 }
+
+export async function getRunErrorOccurrences(
+  prisma: PrismaClient,
+  orgId: string,
+  dagRunId: string
+) {
+  const occurrences = await prisma.errorOccurrence.findMany({
+    where: { 
+      organizationId: orgId,
+      taskRun: {
+        dagRunId: dagRunId,
+      },
+    },
+    include: {
+      generalError: {
+        select: {
+          id: true,
+          exceptionType: true,
+          message: true,
+        },
+      },
+      taskRun: {
+        select: {
+          srcTaskId: true,
+        },
+      },
+    },
+    orderBy: { timestamp: "desc" },
+  });
+
+  return occurrences.map((o) => ({
+    id: o.id,
+    taskId: o.taskRun?.srcTaskId ?? null,
+    exceptionType: o.generalError.exceptionType,
+    message: o.generalError.message,
+    errorId: o.generalError.id,
+    timestamp: o.timestamp,
+    tryNumber: o.tryNumber,
+    operator: o.operator,
+    stacktrace: o.stacktrace,
+  }));
+}

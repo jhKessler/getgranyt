@@ -87,6 +87,9 @@ function RunsPageContent() {
   // Fetch dag runs with open alerts
   const { data: runAlerts } = trpc.alerts.getDagRunsWithAlerts.useQuery({})
 
+  // Fetch Airflow settings for linking
+  const { data: airflowSettings } = trpc.settings.getAirflowSettings.useQuery({})
+
   const _envLabel = filters.selectedEnvironment 
     ? filters.selectedEnvironment.charAt(0).toUpperCase() + filters.selectedEnvironment.slice(1)
     : ""
@@ -124,7 +127,12 @@ function RunsPageContent() {
         }}
       />
 
-      <RunsTable runs={runs} isLoading={isLoading || envsLoading || !isHydrated} runAlerts={runAlerts} />
+      <RunsTable 
+        runs={runs} 
+        isLoading={isLoading || envsLoading || !isHydrated} 
+        runAlerts={runAlerts} 
+        airflowUrl={airflowSettings?.airflowUrl}
+      />
     </div>
   )
 }

@@ -373,4 +373,43 @@ export const settingsRouter = router({
 
       return { success: true };
     }),
+
+  // ============================================================================
+  // AIRFLOW SETTINGS
+  // ============================================================================
+
+  /**
+   * Get Airflow settings for the organization
+   */
+  getAirflowSettings: protectedProcedure
+    .input(z.object({ organizationId: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+      
+      return {
+        airflowUrl: org.airflowUrl,
+      };
+    }),
+
+  /**
+   * Update Airflow settings for the organization
+   */
+  updateAirflowSettings: protectedProcedure
+    .input(z.object({
+      organizationId: z.string().optional(),
+      airflowUrl: z.string().url().optional().or(z.literal("")),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+
+      // Normalize URL - remove trailing slash
+      const normalizedUrl = input.airflowUrl?.trim().replace(/\/$/, "") || null;
+
+      await ctx.prisma.organization.update({
+        where: { id: org.id },
+        data: { airflowUrl: normalizedUrl },
+      });
+
+      return { success: true };
+    }),
 });

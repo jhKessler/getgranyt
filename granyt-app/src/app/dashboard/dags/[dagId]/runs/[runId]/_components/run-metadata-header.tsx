@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, AlertTriangle, CheckCircle2, XCircle, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { EnvironmentBadge } from "@/components/shared"
+import { EnvironmentBadge, AirflowLink } from "@/components/shared"
+import { trpc } from "@/lib/trpc"
 
 interface RunMetadataHeaderProps {
   run: {
@@ -30,6 +31,9 @@ interface RunMetadataHeaderProps {
 
 export function RunMetadataHeader({ run, dagId }: RunMetadataHeaderProps) {
   const router = useRouter()
+  
+  // Fetch Airflow settings for linking
+  const { data: airflowSettings } = trpc.settings.getAirflowSettings.useQuery({})
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -62,11 +66,18 @@ export function RunMetadataHeader({ run, dagId }: RunMetadataHeaderProps) {
 
   return (
     <div className="space-y-4">
-      <div>
+      <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={handleBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
+        <AirflowLink 
+          airflowUrl={airflowSettings?.airflowUrl}
+          dagId={run.srcDagId}
+          runId={run.srcRunId}
+          variant="button"
+          size="sm"
+        />
       </div>
 
       <Card className={cn("border-2 overflow-hidden", currentStyle)}>
