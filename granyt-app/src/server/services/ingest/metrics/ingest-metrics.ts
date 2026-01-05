@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
-import { randomUUID } from "crypto";
+import crypto from "crypto";
 import { resolveDagContext } from "../../dag-run";
 import { updateComputedMetricsOnMetricsIngest, updateDagRunMetricSnapshot } from "../../dag-metrics";
 import type { IngestMetricsParams, IngestMetricsResult } from "./types";
@@ -18,7 +18,13 @@ export async function ingestMetrics(
 ): Promise<IngestMetricsResult> {
   const { organizationId, environment, payload } = params;
   const capturedAt = new Date(payload.captured_at);
-  const captureId = randomUUID();
+  
+  // Generate a stable captureId based on dag_id and task_id.
+  // This ensures historical metrics can be found for the same task across runs.
+  // In the future, we may allow the SDK to provide an explicit capture_id.
+  const captureId = crypto.createHash("sha256")
+    .update(`${payload.dag_id}:${payload.task_id}`)
+    .digest("hex");
 
   logger.debug(
     { organizationId, dagId: payload.dag_id, taskId: payload.task_id, captureId },

@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { 
@@ -34,7 +33,7 @@ export default function SnowflakePage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-bold">Overview</h2>
         <p className="text-muted-foreground">
-          Granyt automatically hooks into Snowflake operators to capture query performance, data volume, and execution context. This works by inspecting the operator's internal state and the results returned to Airflow's XCom system.
+          Granyt automatically hooks into Snowflake operators to capture query performance, data volume, and execution context. This works by inspecting the operator&apos;s internal state and the results returned to Airflow&apos;s XCom system.
         </p>
       </section>
 
