@@ -45,7 +45,7 @@ def sanitize_value(value: Any, max_length: int = 1000) -> Any:
     """Sanitize a value for safe transmission."""
     if value is None:
         return None
-    
+
     try:
         str_value = str(value)
         if len(str_value) > max_length:
@@ -59,10 +59,10 @@ def sanitize_context(context: Any, depth: int = 0) -> Any:
     """Recursively sanitize a context dictionary."""
     if depth > 5:
         return "<max depth exceeded>"
-    
+
     if context is None:
         return None
-    
+
     if isinstance(context, dict):
         sanitized = {}
         for key, value in context.items():
@@ -71,8 +71,8 @@ def sanitize_context(context: Any, depth: int = 0) -> Any:
             else:
                 sanitized[key] = sanitize_context(value, depth + 1)
         return sanitized
-    
+
     if isinstance(context, (list, tuple)):
         return [sanitize_context(item, depth + 1) for item in context[:100]]
-    
+
     return sanitize_value(context)

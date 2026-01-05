@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class PythonAdapter(OperatorAdapter):
     """Adapter for Python operators.
-    
+
     Extracts metrics from:
     - PythonOperator
     - BranchPythonOperator
@@ -19,11 +19,11 @@ class PythonAdapter(OperatorAdapter):
     - PythonVirtualenvOperator
     - ExternalPythonOperator
     - etc.
-    
+
     Note: Python operators are generic, so metrics extraction
     is limited to what's returned via XCom.
     """
-    
+
     OPERATOR_PATTERNS = [
         "PythonOperator",
         "BranchPythonOperator",
@@ -34,10 +34,10 @@ class PythonAdapter(OperatorAdapter):
         "_PythonDecoratedOperator",
         "DecoratedMappedOperator",
     ]
-    
+
     OPERATOR_TYPE = "python"
     PRIORITY = 5  # Medium priority
-    
+
     def extract_metrics(
         self,
         task_instance: Any,
@@ -45,12 +45,12 @@ class PythonAdapter(OperatorAdapter):
     ) -> OperatorMetrics:
         """Extract Python operator metrics."""
         task = task or self._get_task(task_instance)
-        
+
         metrics = OperatorMetrics(
             operator_type=self.OPERATOR_TYPE,
             operator_class=self._get_operator_class(task_instance),
         )
-        
+
         if task:
             # Extract callable info
             if hasattr(task, "python_callable"):
@@ -62,7 +62,7 @@ class PythonAdapter(OperatorAdapter):
                     )
                     if hasattr(callable_obj, "__module__"):
                         metrics.custom_metrics["module"] = callable_obj.__module__
-            
+
             # Virtualenv specific
             if hasattr(task, "requirements"):
                 metrics.custom_metrics = metrics.custom_metrics or {}
@@ -70,14 +70,14 @@ class PythonAdapter(OperatorAdapter):
             if hasattr(task, "python_version"):
                 metrics.custom_metrics = metrics.custom_metrics or {}
                 metrics.custom_metrics["python_version"] = task.python_version
-        
+
         # Try to get return value from XCom
         xcom_result = self._extract_xcom_value(task_instance)
         if xcom_result:
             self._parse_python_result(metrics, xcom_result)
-        
+
         return metrics
-    
+
     def _parse_python_result(
         self,
         metrics: OperatorMetrics,

@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 def _get_client():
     """Lazily get the Granyt client."""
     from granyt_sdk.core.client import get_client
+
     return get_client()
 
 
@@ -24,7 +25,7 @@ def on_task_success(context: Dict[str, Any]) -> None:
         client = _get_client()
         if not client.is_enabled():
             return
-        
+
         task_instance = context.get("task_instance") or context.get("ti")
         if task_instance:
             client.send_task_complete(task_instance)
@@ -39,15 +40,15 @@ def on_task_failure(context: Dict[str, Any]) -> None:
         client = _get_client()
         if not client.is_enabled():
             return
-        
+
         task_instance = context.get("task_instance") or context.get("ti")
         exception = context.get("exception")
         dag_run = context.get("dag_run")
-        
+
         if task_instance:
             # Send lineage event
             client.send_task_failed(task_instance, error=exception)
-            
+
             # Capture rich error information
             if exception:
                 client.capture_exception(
@@ -61,7 +62,7 @@ def on_task_failure(context: Dict[str, Any]) -> None:
                     },
                     sync=True,
                 )
-            
+
             logger.debug(f"Task failure callback: {task_instance.task_id}")
     except Exception as e:
         logger.warning(f"Error in on_task_failure callback: {e}")
@@ -73,10 +74,10 @@ def on_task_retry(context: Dict[str, Any]) -> None:
         client = _get_client()
         if not client.is_enabled():
             return
-        
+
         task_instance = context.get("task_instance") or context.get("ti")
         exception = context.get("exception")
-        
+
         if task_instance and exception:
             # Capture the error that caused the retry
             client.capture_exception(
@@ -89,10 +90,9 @@ def on_task_retry(context: Dict[str, Any]) -> None:
                 },
                 sync=False,
             )
-            
+
             logger.debug(
-                f"Task retry callback: {task_instance.task_id} "
-                f"(try {task_instance.try_number})"
+                f"Task retry callback: {task_instance.task_id} " f"(try {task_instance.try_number})"
             )
     except Exception as e:
         logger.warning(f"Error in on_task_retry callback: {e}")
@@ -104,7 +104,7 @@ def on_task_execute(context: Dict[str, Any]) -> None:
         client = _get_client()
         if not client.is_enabled():
             return
-        
+
         task_instance = context.get("task_instance") or context.get("ti")
         if task_instance:
             client.send_task_start(task_instance)
@@ -119,7 +119,7 @@ def on_dag_success(context: Dict[str, Any]) -> None:
         client = _get_client()
         if not client.is_enabled():
             return
-        
+
         dag_run = context.get("dag_run")
         if dag_run:
             client.send_dag_run_complete(dag_run)
@@ -134,7 +134,7 @@ def on_dag_failure(context: Dict[str, Any]) -> None:
         client = _get_client()
         if not client.is_enabled():
             return
-        
+
         dag_run = context.get("dag_run")
         if dag_run:
             client.send_dag_run_failed(dag_run)
@@ -151,7 +151,7 @@ def create_GRANYT_callbacks(
 ) -> Dict[str, Any]:
     """Create a dictionary of Granyt callbacks for use with task parameters."""
     callbacks = {}
-    
+
     if include_success:
         callbacks["on_success_callback"] = on_task_success
     if include_failure:
@@ -160,7 +160,7 @@ def create_GRANYT_callbacks(
         callbacks["on_retry_callback"] = on_task_retry
     if include_execute:
         callbacks["on_execute_callback"] = on_task_execute
-    
+
     return callbacks
 
 
@@ -170,10 +170,10 @@ def create_dag_callbacks(
 ) -> Dict[str, Any]:
     """Create a dictionary of Granyt callbacks for use with DAG parameters."""
     callbacks = {}
-    
+
     if include_success:
         callbacks["on_success_callback"] = on_dag_success
     if include_failure:
         callbacks["on_failure_callback"] = on_dag_failure
-    
+
     return callbacks
