@@ -68,6 +68,9 @@ jobs:
     defaults:
       run:
         working-directory: ./granyt-sdk
+    env:
+      UV_SYSTEM_PYTHON: 1
+      UV_BREAK_SYSTEM_PACKAGES: 1
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -82,16 +85,16 @@ jobs:
         run: uv python install 3.12
 
       - name: Install dependencies
-        run: uv pip install --system -e ".[dev]"
+        run: uv pip install -e ".[dev]"
 
       - name: Run linter (black)
-        run: uv run --system black --check src/
+        run: uv run black --check src/
 
       - name: Run import sorter (isort)
-        run: uv run --system isort --check-only src/
+        run: uv run isort --check-only src/
 
       - name: Run type checker (mypy)
-        run: uv run --system mypy src/
+        run: uv run mypy src/
 
   # =====================================================
   # Test
@@ -102,6 +105,9 @@ jobs:
     defaults:
       run:
         working-directory: ./granyt-sdk
+    env:
+      UV_SYSTEM_PYTHON: 1
+      UV_BREAK_SYSTEM_PACKAGES: 1
 
     strategy:
       matrix:
@@ -121,10 +127,10 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv pip install --system -e ".[dev]"
+        run: uv pip install -e ".[dev]"
 
       - name: Run tests
-        run: uv run --system pytest --cov=granyt_sdk --cov-report=xml
+        run: uv run pytest --cov=granyt_sdk --cov-report=xml
 
   # =====================================================
   # Build Package
@@ -135,6 +141,9 @@ jobs:
     defaults:
       run:
         working-directory: ./granyt-sdk
+    env:
+      UV_SYSTEM_PYTHON: 1
+      UV_BREAK_SYSTEM_PACKAGES: 1
 
     outputs:
       version: ${{ steps.version.outputs.version }}
