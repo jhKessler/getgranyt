@@ -393,13 +393,6 @@ class GranytClient:
 
     # ==================== Data Metrics Methods ====================
 
-    def send_data_metrics(self, metrics) -> bool:
-        """Send data metrics to the backend."""
-        if not self.is_enabled():
-            return False
-
-        return bool(self._transport.send_data_metrics(metrics.to_dict()))
-
     def send_operator_metrics(self, metrics) -> bool:
         """Send operator-specific metrics to the backend."""
         if not self.is_enabled():

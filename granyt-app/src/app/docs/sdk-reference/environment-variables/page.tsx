@@ -119,7 +119,7 @@ export default function EnvironmentVariablesPage() {
         />
         <Callout variant="info">
           The <code className="text-xs">GRANYT_COMPUTE_STATS</code> setting can be overridden on a per-call basis 
-          using the <code className="text-xs">compute_stats</code> argument in <code className="text-xs">capture_data_metrics()</code>.
+          using the <code className="text-xs">compute_stats</code> argument in <code className="text-xs">compute_df_metrics()</code>.
         </Callout>
       </section>
 

@@ -124,39 +124,60 @@ print(f"SDK Enabled: {client.is_enabled()}")
 print(f"Configuration: {client.get_config()}")
 ```
 
-### Capturing Data Metrics
+### Reporting Metrics from Python Tasks
 
-The SDK can capture metrics from your DataFrames (Pandas or Polars) and link them to your lineage events:
+The most flexible way to report metrics from an Airflow `@task` or `PythonOperator` is to include a `granyt_metrics` key in your return value. The SDK automatically captures everything inside this dictionary.
+
+#### Simple Manual Metrics
+You can pass any key-value pairs you want to track in your dashboard:
 
 ```python
-from granyt_sdk import capture_data_metrics, capture_and_send_data_metrics
-import pandas as pd
-
-df = pd.DataFrame({
-    "user_id": [1, 2, None, 4],
-    "name": ["Alice", "", "Charlie", "David"],
-    "score": [95.5, 87.3, 91.2, 88.8]
-})
-
-# Capture metrics only (without sending)
-metrics = capture_data_metrics(df, capture_id="my_dataset")
-print(f"Row count: {metrics.row_count}")
-print(f"Columns: {[c.name for c in metrics.columns]}")
-
-# Capture and send in one call
-metrics = capture_and_send_data_metrics(df, capture_id="my_dataset")
-
-# With computed statistics (null counts, empty strings, memory usage)
-metrics = capture_data_metrics(df, compute_stats=True)
-for col in metrics.columns:
-    print(f"{col.name}: {col.null_count} nulls, {col.empty_string_count} empty strings")
+@task
+def process_data():
+    # ... your logic ...
+    return {
+        "granyt_metrics": {
+            "row_count": 1500,
+            "data_quality_passed": True,
+            "source_file": "users.csv"
+        }
+    }
 ```
 
-By default, expensive computations (null counts, empty strings, memory usage) are disabled. Enable them via:
-- Pass `compute_stats=True` to the function
-- Set `GRANYT_COMPUTE_STATS=true` environment variable
+#### Automatic Metric Calculation
+For deep data insights, use `compute_df_metrics`. It automatically calculates row counts, null counts, and column types from your Pandas or Polars DataFrames. You can easily merge these with your own custom metrics:
 
-When running inside an Airflow task, the `capture_id` defaults to `{dag_id}.{task_id}` and lineage fields are auto-populated.
+```python
+from granyt_sdk import compute_df_metrics
+
+@task
+def transform_data():
+    df = pd.read_parquet("data.parquet")
+    
+    # Automatically calculates valuable metrics like null counts and memory usage
+    metrics = compute_df_metrics(df, compute_stats=True)
+    
+    return {
+        "granyt_metrics": {
+            **metrics,
+            "data_quality_passed": True
+        }
+    }
+```
+
+### Automatic Operator Support
+
+Beyond Python tasks, Granyt works with the Airflow lifecycle to automatically gather valuable metrics from several popular operators without any extra code:
+
+*   **SQL & Data Warehouses**: Snowflake, BigQuery, Redshift, and Postgres (captures `row_count`, `query_id`, `bytes_processed`, etc.)
+*   **Cloud Storage**: AWS S3 and Google Cloud Storage (captures `files_processed` and `bytes_processed`)
+*   **Transformation**: dbt Cloud and dbt Core (captures `models_run`, `tests_passed`, and `tests_failed`)
+
+Granyt detects these operators during execution and extracts the relevant metadata automatically.
+
+#### Custom Operator Support
+
+Need support for a custom operator? You can easily build and register your own adapters to extract any metadata you need. See the [Operator Adapters guide](docs/operator_adapters.md) for more details.
 
 #### Custom DataFrame Support
 

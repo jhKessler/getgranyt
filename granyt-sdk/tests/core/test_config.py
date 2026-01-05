@@ -3,8 +3,10 @@ Tests for granyt_sdk.core.config module.
 """
 
 import os
+
 import pytest
-from granyt_sdk.core.config import GranytConfig, EndpointConfig, _str_to_bool
+
+from granyt_sdk.core.config import EndpointConfig, GranytConfig, _str_to_bool
 
 
 class TestStrToBool:
@@ -175,9 +177,9 @@ class TestGranytConfigUrls:
         """Test heartbeat URL is built correctly."""
         assert valid_config.get_heartbeat_url() == "https://api.granyt.dev/api/v1/heartbeat"
 
-    def test_get_data_metrics_url(self, valid_config):
-        """Test data metrics URL is built correctly."""
-        assert valid_config.get_data_metrics_url() == "https://api.granyt.dev/api/v1/metrics"
+    def test_get_operator_metrics_url(self, valid_config):
+        """Test operator metrics URL is built correctly."""
+        assert valid_config.get_operator_metrics_url() == "https://api.granyt.dev/api/v1/metrics"
 
     def test_urls_strip_trailing_slash(self):
         """Test URLs strip trailing slashes from endpoint."""
@@ -250,7 +252,6 @@ class TestEndpointConfig:
         assert ep.get_lineage_url() == "https://api.granyt.io/api/v1/lineage"
         assert ep.get_errors_url() == "https://api.granyt.io/api/v1/errors"
         assert ep.get_heartbeat_url() == "https://api.granyt.io/api/v1/heartbeat"
-        assert ep.get_data_metrics_url() == "https://api.granyt.io/api/v1/metrics"
         assert ep.get_operator_metrics_url() == "https://api.granyt.io/api/v1/metrics"
 
     def test_endpoint_config_strips_trailing_slash(self):

@@ -68,7 +68,7 @@ export function DataValidationSection() {
               <TabsContent value="pandas">
                 <CodeBlock 
                   code={`from airflow.decorators import task
-import granyt_sdk
+from granyt_sdk import compute_df_metrics
 import pandas as pd
 
 @task
@@ -76,21 +76,20 @@ def transform_data():
     # Load raw data
     df_raw = pd.read_sql("SELECT * FROM raw_events", conn)
     
-    # Capture metrics with a suffix. 
-    # The base capture ID is automatically inferred from the Airflow context!
-    granyt_sdk.capture_metrics(df_raw, suffix="raw")
-    
     # Perform transformation
     df_clean = df_raw.dropna()
     
-    # Capture final metrics with custom business KPIs
-    granyt_sdk.capture_metrics(
-        df_clean, 
-        suffix="clean",
-        custom_metrics={
+    # Compute metrics with custom business KPIs
+    metrics = compute_df_metrics(df_clean)
+    
+    # Return data and metrics via granyt_metrics
+    return {
+        "data": df_clean.to_dict(),
+        "granyt_metrics": {
+            **metrics,
             "high_value_orders": len(df_clean[df_clean["amount"] > 1000])
         }
-    )`}
+    }`}
                   title="your_dag.py"
                   language="python"
                 />
@@ -98,7 +97,7 @@ def transform_data():
               <TabsContent value="polars">
                 <CodeBlock 
                   code={`from airflow.decorators import task
-import granyt_sdk as granyt
+from granyt_sdk import compute_df_metrics
 import polars as pl
 
 @task
@@ -106,21 +105,20 @@ def transform_data():
     # Load raw data
     df_raw = pl.read_database("SELECT * FROM raw_events", conn)
     
-    # Capture metrics with a suffix. 
-    # The base capture ID is automatically inferred from the Airflow context!
-    granyt.capture_metrics(df_raw, suffix="raw")
-    
     # Perform transformation
     df_clean = df_raw.drop_nulls()
     
-    # Capture final metrics with custom business KPIs
-    granyt.capture_metrics(
-        df_clean, 
-        suffix="clean",
-        custom_metrics={
+    # Compute metrics with custom business KPIs
+    metrics = compute_df_metrics(df_clean)
+    
+    # Return data and metrics via granyt_metrics
+    return {
+        "data": df_clean.to_dicts(),
+        "granyt_metrics": {
+            **metrics,
             "high_value_orders": df_clean.filter(pl.col("amount") > 1000).height
         }
-    )`}
+    }`}
                   title="your_dag.py"
                   language="python"
                 />
@@ -128,7 +126,7 @@ def transform_data():
               <TabsContent value="pyspark">
                 <CodeBlock 
                   code={`from airflow.decorators import task
-import granyt_sdk as granyt
+from granyt_sdk import compute_df_metrics
 from pyspark.sql import SparkSession
 
 @task
@@ -137,21 +135,19 @@ def transform_data():
     # Load raw data
     df_raw = spark.read.table("raw_events")
     
-    # Capture metrics with a suffix. 
-    # The base capture ID is automatically inferred from the Airflow context!
-    granyt.capture_metrics(df_raw, suffix="raw")
-    
     # Perform transformation
     df_clean = df_raw.dropna()
     
-    # Capture final metrics with custom business KPIs
-    granyt.capture_metrics(
-        df_clean, 
-        suffix="clean",
-        custom_metrics={
+    # Compute metrics with custom business KPIs
+    metrics = compute_df_metrics(df_clean)
+    
+    # Return metrics via granyt_metrics
+    return {
+        "granyt_metrics": {
+            **metrics,
             "high_value_orders": df_clean.filter(df_clean["amount"] > 1000).count()
         }
-    )`}
+    }`}
                   title="your_dag.py"
                   language="python"
                 />

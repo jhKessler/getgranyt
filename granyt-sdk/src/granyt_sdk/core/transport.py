@@ -281,24 +281,6 @@ class GranytTransport:
             "heartbeat",
         )
 
-    def send_data_metrics(self, metrics: Dict[str, Any]) -> bool:
-        """Send data metrics to all configured endpoints.
-
-        Args:
-            metrics: Data metrics dictionary
-
-        Returns:
-            True if metrics were sent to at least one endpoint successfully, False otherwise
-        """
-        if self.config.debug:
-            logger.debug(f"Sending data metrics: {json.dumps(metrics, default=str)[:500]}...")
-
-        return self._broadcast_to_all_endpoints(
-            lambda ep: ep.get_data_metrics_url(),
-            metrics,
-            "data metrics",
-        )
-
     def send_operator_metrics(self, metrics: Dict[str, Any]) -> bool:
         """Send operator-specific metrics to all configured endpoints.
 

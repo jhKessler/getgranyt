@@ -382,16 +382,17 @@ register_adapter(MyCustomAdapter)`}
           <h2 className="text-2xl font-bold">Manual Metric Capture</h2>
         </div>
         <p className="text-muted-foreground">
-          The <InlineCode>capture_data_metrics</InlineCode> function 
+          The <InlineCode>compute_df_metrics</InlineCode> function 
           lets you capture statistics from your DataFrames at any point in your DAG. 
           Use it to track row counts, schema information, data quality metrics, and custom KPIs.
+          Metrics are passed to Granyt via the <InlineCode>granyt_metrics</InlineCode> key in your task&apos;s return value.
         </p>
         <Card className="bg-muted/30">
           <CardContent className="pt-6">
             <CodeBlock 
               language="python"
               code={`from airflow.decorators import task
-from granyt_sdk import capture_data_metrics
+from granyt_sdk import compute_df_metrics
 import pandas as pd
 
 @task
@@ -402,9 +403,16 @@ def process_users():
         "score": [95.5, 87.3, 91.2, 88.8]
     })
 
-    # Capture and send metrics. 
-    # capture_id is automatically inferred from the Airflow task!
-    metrics = capture_data_metrics(df)`}
+    # Compute metrics from the DataFrame
+    metrics = compute_df_metrics(df)
+    
+    # Return via granyt_metrics - this is how metrics reach Granyt
+    return {
+        "granyt_metrics": {
+            **metrics,
+            "custom_metric": 42
+        }
+    }`}
             />
           </CardContent>
         </Card>
@@ -458,26 +466,20 @@ def process_users():
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-mono text-lg">
               <Code2 className="h-5 w-5 text-primary" />
-              capture_data_metrics()
+              compute_df_metrics()
             </CardTitle>
           </CardHeader>
           <CardContent>
             <CodeBlock 
               language="python"
-              code={`def capture_data_metrics(
-    df: Any = None,
-    capture_id: Optional[str] = None,
+              code={`def compute_df_metrics(
+    df: Any,
     compute_stats: Optional[bool] = None,
-    dag_id: Optional[str] = None,
-    task_id: Optional[str] = None,
-    run_id: Optional[str] = None,
-    upstream: Optional[List[str]] = None,
-    custom_metrics: Optional[Dict[str, Union[int, float]]] = None,
-    suffix: Optional[str] = None,
-) -> DataFrameMetrics`}
+) -> Dict[str, Any]`}
             />
             <p className="text-sm text-muted-foreground mb-4 mt-6">
-              Captures metrics from a DataFrame and sends them to the Granyt backend.
+              Computes metrics from a DataFrame for use with <InlineCode>granyt_metrics</InlineCode> XCom.
+              Returns a dictionary that can be spread directly into your return value.
             </p>
           </CardContent>
         </Card>
@@ -489,25 +491,9 @@ def process_users():
         
         <ParameterCard
           name="df"
-          description="The DataFrame to capture metrics from. Supports Pandas, Polars, or any custom registered type. Can be None if only custom metrics are being captured."
+          description="The DataFrame to compute metrics from. Supports Pandas, Polars, PySpark, or any custom registered type."
           type="Any"
           typeLabel="DataFrame-like object"
-        />
-
-        <ParameterCard
-          name="suffix"
-          description="Optional suffix to append to the auto-generated capture_id. Useful when capturing multiple DataFrames in a single task."
-          type="Optional[str]"
-          defaultValue="None"
-        />
-
-        <ParameterCard
-          name="capture_id"
-          description={<>A unique identifier for this capture point. Used to track metrics over time and link data flow. <strong>Automatically inferred</strong> from the Airflow context when running inside a task.</>}
-          type="Optional[str]"
-          defaultValue='{"{dag_id}.{task_id}"}'
-          defaultNote="when running in Airflow, otherwise a timestamp-based ID"
-          example='capture_data_metrics(df, capture_id="raw_users")'
         />
 
         <ParameterCard
@@ -516,7 +502,7 @@ def process_users():
           type="Optional[bool]"
           defaultValue="GRANYT_COMPUTE_STATS"
           defaultNote="env var (default: false)"
-          example="capture_data_metrics(df, compute_stats=True)"
+          example="compute_df_metrics(df, compute_stats=True)"
         >
           <div className="mt-4 space-y-2">
             <p className="text-sm font-medium">When enabled, captures:</p>
@@ -527,63 +513,6 @@ def process_users():
             ]} />
           </div>
         </ParameterCard>
-
-        <ParameterCard
-          name="dag_id, task_id, run_id"
-          description={<>Lineage linkage fields. These are <strong>automatically detected</strong> when running inside an Airflow task - you typically don&apos;t need to set them manually.</>}
-          type="Optional[str]"
-          typeLabel="each"
-          defaultValue="Auto-detected from Airflow context"
-        >
-          <Callout variant="tip">
-            Only set these manually if you need to override the auto-detected values, 
-            such as when testing outside Airflow.
-          </Callout>
-        </ParameterCard>
-
-        <ParameterCard
-          name="upstream"
-          description="List of capture IDs that this DataFrame depends on. Use this when you have complex task dependencies and want to track data flow between transformation steps within your DAG."
-          type="Optional[List[str]]"
-          defaultValue="None"
-        >
-          <CodeBlock 
-            language="python"
-            code={`# Track data lineage through transformations
-raw_df = load_data()
-capture_data_metrics(raw_df, capture_id="raw_data")
-
-cleaned_df = clean(raw_df)
-capture_data_metrics(cleaned_df, capture_id="cleaned_data", upstream=["raw_data"])
-
-enriched_df = enrich(cleaned_df)
-capture_data_metrics(enriched_df, capture_id="enriched_data", upstream=["cleaned_data"])`}
-          />
-        </ParameterCard>
-
-        <ParameterCard
-          name="custom_metrics"
-          description="Dictionary of custom metrics for this specific capture point. All values must be numbers (int or float). These are stored with the capture and displayed in the dashboard."
-          type="Optional[Dict[str, Union[int, float]]]"
-          defaultValue="None"
-        >
-          <CodeBlock 
-            language="python"
-            code={`capture_data_metrics(
-    df,
-    capture_id="model_predictions",
-    custom_metrics={
-        "accuracy": 0.95,
-        "precision": 0.92,
-        "recall": 0.88,
-        "processed_records": 10000
-    }
-)`}
-          />
-          <Callout variant="error" className="mt-4">
-            Raises <InlineCode>TypeError</InlineCode> if any value is not a number.
-          </Callout>
-        </ParameterCard>
       </section>
 
       {/* Return Value */}
@@ -593,27 +522,23 @@ capture_data_metrics(enriched_df, capture_id="enriched_data", upstream=["cleaned
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-mono text-lg">
               <Layers className="h-5 w-5 text-primary" />
-              DataFrameMetrics
+              Dict[str, Any]
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              The function returns a <InlineCode>DataFrameMetrics</InlineCode> dataclass 
-              containing all captured information:
+              The function returns a dictionary containing all computed metrics, ready to be spread into your <InlineCode>granyt_metrics</InlineCode> return value:
             </p>
             <DataTable
               headers={["Field", "Type", "Description"]}
               rows={[
-                ["capture_id", "str", "Identifier for this capture"],
-                ["captured_at", "str", "ISO timestamp"],
                 ["row_count", "int", "Number of rows"],
                 ["column_count", "int", "Number of columns"],
-                ["columns", "List[ColumnMetrics]", "Per-column metrics"],
-                ["memory_bytes", "Optional[int]", "Memory usage (if computed)"],
-                ["dataframe_type", "str", '"pandas", "polars", etc.'],
-                ["dag_id, task_id, run_id", "Optional[str]", "Airflow context"],
-                ["upstream", "Optional[List[str]]", "Upstream capture IDs"],
-                ["custom_metrics", "Optional[Dict]", "Custom metrics for this capture"],
+                ["dataframe_type", "str", '"pandas", "polars", "spark", etc.'],
+                ["column_dtypes", "Dict[str, str]", "Column name to dtype mapping"],
+                ["null_counts", "Dict[str, int]", "Null counts per column (if computed)"],
+                ["empty_string_counts", "Dict[str, int]", "Empty string counts (if computed)"],
+                ["memory_bytes", "int", "Memory usage (if computed)"],
               ]}
               monospaceColumns={[0, 1]}
             />
@@ -753,69 +678,72 @@ register_adapter(DaskAdapter)`}
           <CardContent className="pt-6">
             <CodeBlock 
               language="python"
-              code={`from airflow import DAG
-from airflow.operators.python import PythonOperator
-from granyt_sdk import capture_data_metrics
+              code={`from airflow.decorators import dag, task
+from granyt_sdk import compute_df_metrics
 import pandas as pd
 from datetime import datetime
 
+@task
 def extract_users():
     """Extract user data from source."""
     df = pd.read_csv("users.csv")
     
-    # Capture raw data metrics
-    capture_data_metrics(df, capture_id="raw_users")
+    # Compute metrics for the raw data
+    metrics = compute_df_metrics(df)
     
-    return df.to_dict()
+    # Return data and metrics
+    return {
+        "data": df.to_dict(),
+        "granyt_metrics": metrics
+    }
 
-def transform_users(**context):
+@task
+def transform_users(payload):
     """Transform and enrich user data."""
-    data = context['ti'].xcom_pull(task_ids='extract')
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(payload["data"])
     
     # Apply transformations
     df['full_name'] = df['first_name'] + ' ' + df['last_name']
     df['signup_date'] = pd.to_datetime(df['signup_date'])
     
-    # Capture transformed data with upstream linkage
-    capture_data_metrics(
-        df,
-        capture_id="transformed_users",
-        upstream=["raw_users"],
-        compute_stats=True,  # Get null counts
-        custom_metrics={
+    # Compute metrics with deep stats and custom KPIs
+    metrics = compute_df_metrics(df, compute_stats=True)
+    
+    return {
+        "data": df.to_dict(),
+        "granyt_metrics": {
+            **metrics,
             "valid_emails": int((df['email'].str.contains('@')).sum()),
             "active_users": int((df['status'] == 'active').sum())
         }
-    )
-    
-    return df.to_dict()
+    }
 
-def load_users(**context):
+@task
+def load_users(payload):
     """Load users to destination."""
-    data = context['ti'].xcom_pull(task_ids='transform')
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(payload["data"])
     
     # Load to database...
     rows_loaded = len(df)
     
-    # Capture final metrics with custom KPIs
-    capture_data_metrics(
-        df,
-        capture_id="loaded_users",
-        upstream=["transformed_users"],
-        custom_metrics={
-            "total_users_loaded": rows_loaded,
-            "new_signups_today": int((df['signup_date'].dt.date == datetime.today().date()).sum())
-        }
-    )
-
-with DAG('user_pipeline', start_date=datetime(2024, 1, 1), schedule='@daily') as dag:
-    extract = PythonOperator(task_id='extract', python_callable=extract_users)
-    transform = PythonOperator(task_id='transform', python_callable=transform_users)
-    load = PythonOperator(task_id='load', python_callable=load_users)
+    # Compute final metrics
+    metrics = compute_df_metrics(df)
     
-    extract >> transform >> load`}
+    return {
+        "rows_loaded": rows_loaded,
+        "granyt_metrics": {
+            **metrics,
+            "total_users_loaded": rows_loaded
+        }
+    }
+
+@dag(start_date=datetime(2024, 1, 1), schedule='@daily', catchup=False)
+def user_pipeline():
+    raw_data = extract_users()
+    transformed_data = transform_users(raw_data)
+    load_users(transformed_data)
+
+user_pipeline()`}
             />
           </CardContent>
         </Card>
@@ -824,8 +752,9 @@ with DAG('user_pipeline', start_date=datetime(2024, 1, 1), schedule='@daily') as
       {/* Best Practices */}
       <InfoSection title="Best Practices">
         <CheckList items={[
-          <>Use descriptive <InlineCode>capture_id</InlineCode> values that reflect the data&apos;s purpose (e.g., &quot;raw_orders&quot;, &quot;cleaned_customers&quot;)</>,
+          <>Use descriptive metric names that reflect the data&apos;s purpose (e.g., row_count, null_rate)</>,
           <>Be mindful of performance when enabling <InlineCode>compute_stats=True</InlineCode>. Computing null counts and memory usage can be slow for large DataFrames</>,
+          <>Always return metrics via the <InlineCode>granyt_metrics</InlineCode> key in your task&apos;s return value</>,
         ]} />
       </InfoSection>
     </div>

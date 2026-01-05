@@ -1,15 +1,14 @@
 """
 Data Metrics module for Granyt SDK.
 
-Captures metrics from DataFrames (Pandas, Polars, etc.) and sends them
-to the Granyt backend for monitoring and lineage tracking.
+Computes metrics from DataFrames (Pandas, Polars, etc.) for use with
+granyt_metrics XCom in Airflow tasks.
 """
 
 import logging
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Protocol, Type, Union, runtime_checkable
 
 logger = logging.getLogger(__name__)
@@ -200,183 +199,81 @@ def _get_adapter(df: Any) -> Optional[Type[DataFrameAdapter]]:
     return None
 
 
-def _get_current_airflow_context() -> tuple:
-    """Try to get current Airflow dag_id and task_id from context."""
-    try:
-        from airflow.operators.python import get_current_context
-
-        context = get_current_context()
-        ti = context.get("ti") or context.get("task_instance")
-        if ti:
-            return (ti.dag_id, ti.task_id, ti.run_id)
-    except Exception:
-        pass
-    return (None, None, None)
-
-
-def _validate_custom_metrics(
-    metrics: Optional[Dict[str, Any]], name: str
-) -> Optional[Dict[str, Union[int, float]]]:
-    """Validate that custom metrics dictionary contains only numeric values."""
-    if metrics is None:
-        return None
-
-    if not isinstance(metrics, dict):
-        raise TypeError(f"{name} must be a dictionary, got {type(metrics).__name__}")
-
-    validated: Dict[str, Union[int, float]] = {}
-    for key, value in metrics.items():
-        if not isinstance(key, str):
-            raise TypeError(
-                f"{name} keys must be strings, got {type(key).__name__} for key '{key}'"
-            )
-        if not isinstance(value, (int, float)):
-            raise TypeError(
-                f"{name} values must be numbers (int or float), "
-                f"got {type(value).__name__} for key '{key}'"
-            )
-        validated[key] = value
-
-    return validated
-
-
-def create_data_metrics(
-    df: Any = None,
-    capture_id: Optional[str] = None,
+def compute_df_metrics(
+    df: Any,
     compute_stats: Optional[bool] = None,
-    dag_id: Optional[str] = None,
-    task_id: Optional[str] = None,
-    run_id: Optional[str] = None,
-    upstream: Optional[List[str]] = None,
-    custom_metrics: Optional[Dict[str, Any]] = None,
-    suffix: Optional[str] = None,
-) -> DataFrameMetrics:
-    """Capture metrics from a DataFrame."""
-    # Validate custom metrics
-    validated_custom_metrics = _validate_custom_metrics(custom_metrics, "custom_metrics")
+) -> Dict[str, Any]:
+    """Compute metrics from a DataFrame for use with granyt_metrics XCom.
 
-    # Find appropriate adapter if df is provided
-    adapter = None
-    if df is not None:
-        adapter = _get_adapter(df)
-        if adapter is None:
-            supported = [a.get_type_name() for a in _ADAPTERS]
-            raise TypeError(
-                f"Unsupported DataFrame type: {type(df).__name__}. "
-                f"Supported types: {supported}. "
-                f"Use register_adapter() to add support for custom types."
-            )
+    This function calculates DataFrame statistics that can be returned
+    via the granyt_metrics key in your task's return value. The metrics
+    are automatically captured by the SDK via XCom and sent to the backend.
 
-    # Get Airflow context if not provided
-    if dag_id is None or task_id is None or run_id is None:
-        ctx_dag_id, ctx_task_id, ctx_run_id = _get_current_airflow_context()
-        dag_id = dag_id or ctx_dag_id
-        task_id = task_id or ctx_task_id
-        run_id = run_id or ctx_run_id
+    Args:
+        df: The DataFrame to compute metrics from. Supports Pandas, Polars,
+            or any custom registered type.
+        compute_stats: Whether to compute expensive statistics like null counts,
+            empty string counts, and memory usage. Defaults to GRANYT_COMPUTE_STATS
+            environment variable (default: false).
 
-    # Generate capture_id if not provided
-    if capture_id is None:
-        if dag_id and task_id:
-            capture_id = f"{dag_id}.{task_id}"
-        else:
-            capture_id = f"capture_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}"
+    Returns:
+        A dictionary containing the computed metrics, ready to be spread into
+        your granyt_metrics return value.
 
-        # Append suffix if provided
-        if suffix:
-            capture_id = f"{capture_id}.{suffix}"
+    Example:
+        @task
+        def transform_data():
+            df = pd.read_parquet("data.parquet")
+            metrics = compute_df_metrics(df, compute_stats=True)
+            return {
+                "granyt_metrics": {
+                    **metrics,
+                    "custom_metric": 42
+                }
+            }
+    """
+    # Find appropriate adapter
+    adapter = _get_adapter(df)
+    if adapter is None:
+        supported = [a.get_type_name() for a in _ADAPTERS]
+        raise TypeError(
+            f"Unsupported DataFrame type: {type(df).__name__}. "
+            f"Supported types: {supported}. "
+            f"Use register_adapter() to add support for custom types."
+        )
 
     # Determine if we should compute expensive stats
     should_compute = compute_stats if compute_stats is not None else _get_compute_stats_default()
 
-    # Get metrics from adapter if available
-    columns_dtypes = []
-    row_count = 0
-    null_counts = {}
-    empty_counts = {}
-    memory_bytes = None
-    dataframe_type = "none"
+    # Prepare DF (e.g. for Spark Observation or Caching)
+    df = adapter.prepare(df, should_compute)
 
-    if adapter and df is not None:
-        # Prepare DF (e.g. for Spark Observation or Caching)
-        df = adapter.prepare(df, should_compute)
+    # Get basic metrics (always computed)
+    columns_dtypes = adapter.get_columns_with_dtypes(df)
+    row_count = adapter.get_row_count(df)
 
-        # Get basic metrics (always computed)
-        columns_dtypes = adapter.get_columns_with_dtypes(df)
-        row_count = adapter.get_row_count(df)
+    # Build the metrics dictionary
+    metrics: Dict[str, Any] = {
+        "row_count": row_count,
+        "column_count": len(columns_dtypes),
+        "dataframe_type": adapter.get_type_name(),
+        "column_dtypes": {col_name: dtype for col_name, dtype in columns_dtypes},
+    }
 
-        # Get computed metrics (only if enabled)
-        null_counts = adapter.get_null_counts(df) if should_compute else {}
-        empty_counts = adapter.get_empty_string_counts(df) if should_compute else {}
-        memory_bytes = adapter.get_memory_bytes(df) if should_compute else None
-        dataframe_type = adapter.get_type_name()
+    # Get computed metrics (only if enabled)
+    if should_compute:
+        null_counts = adapter.get_null_counts(df)
+        if null_counts:
+            metrics["null_counts"] = null_counts
 
-    # Build column metrics
-    columns = [
-        ColumnMetrics(
-            name=col_name,
-            dtype=dtype,
-            null_count=null_counts.get(col_name),
-            empty_string_count=empty_counts.get(col_name),
-        )
-        for col_name, dtype in columns_dtypes
-    ]
+        empty_counts = adapter.get_empty_string_counts(df)
+        if empty_counts:
+            metrics["empty_string_counts"] = empty_counts
 
-    metrics = DataFrameMetrics(
-        capture_id=capture_id,
-        captured_at=datetime.now(timezone.utc).isoformat(),
-        row_count=row_count,
-        column_count=len(columns),
-        columns=columns,
-        memory_bytes=memory_bytes,
-        dataframe_type=dataframe_type,
-        dag_id=dag_id,
-        task_id=task_id,
-        run_id=run_id,
-        upstream=upstream,
-        custom_metrics=validated_custom_metrics,
-    )
+        memory_bytes = adapter.get_memory_bytes(df)
+        if memory_bytes is not None:
+            metrics["memory_bytes"] = memory_bytes
 
-    logger.debug(f"Captured metrics for {dataframe_type} DataFrame: {capture_id}")
-
-    return metrics
-
-
-def send_data_metrics(metrics: DataFrameMetrics) -> bool:
-    """Send captured metrics to the Granyt backend."""
-    from granyt_sdk.core.client import get_client
-
-    client = get_client()
-    if not client.is_enabled():
-        logger.debug("Granyt SDK disabled - metrics not sent")
-        return False
-
-    return client.send_data_metrics(metrics)
-
-
-def capture_data_metrics(
-    df: Any = None,
-    capture_id: Optional[str] = None,
-    compute_stats: Optional[bool] = None,
-    dag_id: Optional[str] = None,
-    task_id: Optional[str] = None,
-    run_id: Optional[str] = None,
-    upstream: Optional[List[str]] = None,
-    custom_metrics: Optional[Dict[str, Any]] = None,
-    suffix: Optional[str] = None,
-) -> DataFrameMetrics:
-    """Capture metrics from a DataFrame and send them to the backend."""
-    metrics = create_data_metrics(
-        df=df,
-        capture_id=capture_id,
-        compute_stats=compute_stats,
-        dag_id=dag_id,
-        task_id=task_id,
-        run_id=run_id,
-        upstream=upstream,
-        custom_metrics=custom_metrics,
-        suffix=suffix,
-    )
-
-    send_data_metrics(metrics)
+    logger.debug(f"Computed metrics for {adapter.get_type_name()} DataFrame: {row_count} rows")
 
     return metrics

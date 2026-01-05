@@ -8,8 +8,9 @@ These tests verify that the adapter correctly extracts metrics from BigQuery ope
 based on their documented parameters.
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from granyt_sdk.integrations.airflow.operator_adapters.sql.bigquery import BigQueryAdapter
 

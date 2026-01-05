@@ -2,8 +2,9 @@
 Tests for granyt_sdk.integrations.airflow.listener module.
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestListenerAvailability:

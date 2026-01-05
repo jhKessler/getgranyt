@@ -5,6 +5,7 @@ import {
   InstallSection,
   DemoPreviewSection,
   DataValidationSection,
+  OperatorMetricsSection,
   CTASection,
 } from "./_components"
 import { getPostHogBootstrapData } from "@/lib/posthog-server"
@@ -36,9 +37,10 @@ export default async function LandingPage() {
     <>
       <HeroSection serverVariant={headlineVariant} />
       <ToolConsolidationSection />
+      <OperatorMetricsSection />
       <InstallSection />
-      <DataValidationSection />
       <DemoPreviewSection />
+      <DataValidationSection />
       <CTASection />
     </>
   )

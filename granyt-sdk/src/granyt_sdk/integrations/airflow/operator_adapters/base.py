@@ -243,7 +243,7 @@ class OperatorAdapter(ABC):
         self,
         task_instance: Any,
         task: Optional[Any] = None,
-    ) -> OperatorMetrics:
+    ) -> Optional[OperatorMetrics]:
         """Extract metrics from a task execution.
 
         Args:
@@ -407,6 +407,9 @@ def extract_operator_metrics(
 
     try:
         metrics = adapter.extract_metrics(task_instance, task)
+
+        if metrics is None:
+            return None
 
         # Add lineage linkage
         if hasattr(task_instance, "dag_id"):

@@ -226,29 +226,33 @@ export default function QuickstartPage() {
                 Manual Capture
               </h4>
               <p className="text-sm text-muted-foreground">
-                Use the <InlineCode>capture_data_metrics</InlineCode> function to track custom KPIs, data quality stats, and lineage directly from your DataFrames (Pandas, Polars, Spark).
+                Use the <InlineCode>compute_df_metrics</InlineCode> helper to extract metrics from your DataFrames (Pandas, Polars, Spark) and return them via Airflow XCom.
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-semibold">How capture_data_metrics works</h4>
+            <h4 className="font-semibold">How Manual Metrics Work</h4>
             <p className="text-sm text-muted-foreground">
-              The <InlineCode>capture_data_metrics</InlineCode> function inspects your DataFrame and sends a snapshot of its metadata to Granyt. It automatically detects the Airflow context (DAG ID, Task ID, Run ID) so you don&apos;t have to pass them manually.
+              Granyt automatically captures any dictionary returned under the <InlineCode>granyt_metrics</InlineCode> key in your task&apos;s return value. Use <InlineCode>compute_df_metrics</InlineCode> to easily generate this dictionary from a DataFrame.
             </p>
             <CodeBlock 
               language="python"
-              code={`from granyt_sdk import capture_data_metrics
+              code={`from granyt_sdk import compute_df_metrics
 
-# Inside an Airflow task
-capture_data_metrics(df, suffix="processed")`}
+@task
+def my_task():
+    df = pd.read_csv(...)
+    return {
+        "granyt_metrics": compute_df_metrics(df)
+    }`}
             />
           </div>
 
           <div className="space-y-4">
             <h4 className="font-semibold">Example: Data Validation</h4>
             <p className="text-sm text-muted-foreground">
-              Capture metrics before and after a transformation to ensure data integrity. Use the <InlineCode>suffix</InlineCode> argument to distinguish multiple capture points in one task.
+              Capture metrics from your final DataFrame to ensure data integrity.
             </p>
             
             <Tabs defaultValue="pandas" className="w-full">
@@ -261,96 +265,85 @@ capture_data_metrics(df, suffix="processed")`}
                 <CodeBlock 
                   language="python"
                   code={`from airflow.decorators import task
-from granyt_sdk import capture_data_metrics
+from granyt_sdk import compute_df_metrics
 import pandas as pd
 
 @task
 def transform_data():
-    # Load raw data
-    df_raw = pd.read_sql("SELECT * FROM raw_events", conn)
+    # Load and transform data
+    df = pd.read_sql("SELECT * FROM raw_events", conn)
+    df_clean = df.dropna()
     
-    # Capture metrics with a suffix. 
-    # The base capture ID is automatically inferred from the Airflow context!
-    capture_data_metrics(df_raw, suffix="raw")
-    
-    # Perform transformation
-    df_clean = df_raw.dropna()
-    
-    # Capture final metrics
-    capture_data_metrics(df_clean, suffix="clean")`}
+    # Return metrics via XCom
+    return {
+        "granyt_metrics": compute_df_metrics(df_clean)
+    }`}
                 />
               </TabsContent>
               <TabsContent value="polars" className="mt-4">
                 <CodeBlock 
                   language="python"
                   code={`from airflow.decorators import task
-from granyt_sdk import capture_data_metrics
+from granyt_sdk import compute_df_metrics
 import polars as pl
 
 @task
 def transform_data():
-    # Load raw data
-    df_raw = pl.read_database("SELECT * FROM raw_events", conn)
+    # Load and transform data
+    df = pl.read_database("SELECT * FROM raw_events", conn)
+    df_clean = df.drop_nulls()
     
-    # Capture metrics with a suffix
-    capture_data_metrics(df_raw, suffix="raw")
-    
-    # Perform transformation
-    df_clean = df_raw.drop_nulls()
-    
-    # Capture final metrics
-    capture_data_metrics(df_clean, suffix="clean")`}
+    # Return metrics via XCom
+    return {
+        "granyt_metrics": compute_df_metrics(df_clean)
+    }`}
                 />
               </TabsContent>
               <TabsContent value="spark" className="mt-4 space-y-4">
                 <CodeBlock 
                   language="python"
                   code={`from airflow.decorators import task
-from granyt_sdk import capture_data_metrics
+from granyt_sdk import compute_df_metrics
 
 @task
 def transform_spark_data():
-    # Load data into a Spark DataFrame
+    # Load and transform data
     df = spark.read.table("raw_events")
+    df_clean = df.filter(df.value.isNotNull())
     
-    # Capture metrics using Spark's Observation API.
+    # Return metrics via XCom.
     # Setting compute_stats=True triggers a single pass over the data
     # to collect null counts and other stats efficiently.
-    capture_data_metrics(df, suffix="raw", compute_stats=True)
-    
-    # Continue with your transformation
-    df_clean = df.filter(df.value.isNotNull())
-    return df_clean`}
+    return {
+        "granyt_metrics": compute_df_metrics(df_clean, compute_stats=True)
+    }`}
                 />
-                <Callout variant="warning">
-                  <strong>Note on PySpark Execution:</strong> Calling <InlineCode>capture_data_metrics</InlineCode> with Spark is a <strong>non-lazy operation</strong>. It triggers an immediate Spark action (<InlineCode>count()</InlineCode>) and automatically <strong>caches the DataFrame</strong> at that point. This ensures everything in your tree is only calculated once and subsequent transformations use the cached data, but it does create an execution barrier.
-                </Callout>
               </TabsContent>
             </Tabs>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-semibold">Example: ML Model Monitoring</h4>
+            <h4 className="font-semibold">Example: Custom Metrics</h4>
             <p className="text-sm text-muted-foreground">
-              You can pass <InlineCode>df=None</InlineCode> if you only want to capture custom metrics without a DataFrame.
+              You can also return custom metrics directly in the <InlineCode>granyt_metrics</InlineCode> dictionary.
             </p>
             <CodeBlock 
               language="python"
               code={`from airflow.decorators import task
-from granyt_sdk import capture_data_metrics
 
 @task
 def train_model():
     # ... training logic ...
     f1_score = 0.92
     
-    # Capture custom metrics only. 
-    # No need to specify a capture ID - it's inferred from your Airflow task!
-    capture_data_metrics(
-        df=None, 
-        suffix="model_perf",
-        custom_metrics={"f1_score": f1_score}
-    )`}
+    return {
+        "granyt_metrics": {
+            "custom": {
+                "f1_score": f1_score,
+                "model_type": "random_forest"
+            }
+        }
+    }`}
             />
           </div>
           
