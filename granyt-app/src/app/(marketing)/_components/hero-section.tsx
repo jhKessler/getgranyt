@@ -44,13 +44,13 @@ function InstallCommand({ onCopy }: { onCopy: () => void }) {
 function HeadlineControl() {
   return (
     <>
-      <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
         Pipeline Monitoring{" "}
         <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           you&apos;ll actually use
         </span>
       </h1>
-      <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+      <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
         Rock-solid Airflow monitoring built for data engineers. <br className="hidden sm:block" /> Not for sales demos.
       </p>
     </>
@@ -60,15 +60,15 @@ function HeadlineControl() {
 function HeadlineTest() {
   return (
     <>
-      <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
         Catch data problems{" "}
         <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           before they reach production
         </span>
       </h1>
-      <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+      <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
         Open source observability for Apache Airflow. <br className="hidden sm:block" /> 
-        Monitor your DAGs, track data quality, and get alerted before bad data breaks your pipelines.
+        Track errors, data quality, and get alerted before bad data breaks your upstream pipelines.
       </p>
     </>
   )
@@ -89,7 +89,7 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
   // - "test" → show test headline
   // - "control" → show control headline  
   // - undefined/null → flags loading, default to control (but don't track as control)
-  const showTestHeadline = variant === "test"
+  const showTestHeadline = "control" //variant === "test"
   const flagsLoaded = variant !== undefined && variant !== null
 
   // Track CTA clicks - only include variant if flags are loaded

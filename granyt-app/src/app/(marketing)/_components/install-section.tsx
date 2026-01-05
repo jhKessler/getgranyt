@@ -132,7 +132,8 @@ export function InstallSection() {
                 code={`# ✓ DAG run status
 # ✓ Task failures with stack traces
 # ✓ Execution timing and metadata
-# ✓ Custom metrics for popular operators`}
+# ✓ Additional metrics for popular operators
+# ✓ Your own custom metrics`}
                 title="✓ Automatic capture"
                 language="python"
               />
