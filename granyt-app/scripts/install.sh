@@ -8,8 +8,8 @@
 # Report issues:    ${GITHUB_URL}/issues
 # Security policy:  ${GITHUB_URL}/blob/main/granyt-app/SECURITY.md
 #
-# Usage: curl -fsSL https://granyt.sh | sh
-#    or: ./granyt.sh [--help] [--dry-run]
+# Usage: curl -fsSL https://granyt.sh/install.sh | sh
+#    or: ./install.sh [--help] [--dry-run]
 
 set -eu
 
@@ -30,7 +30,7 @@ GITHUB_RAW_URL="https://raw.githubusercontent.com/${GITHUB_REPO}"
 
 show_help() {
     printf "Granyt Deployment Script\n\n"
-    printf "Usage: ./granyt.sh [OPTIONS]\n\n"
+    printf "Usage: ./install.sh [OPTIONS]\n\n"
     printf "Options:\n"
     printf "  --help, -h     Show this help message and exit\n"
     printf "  --dry-run      Show what would be done without making changes\n\n"
