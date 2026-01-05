@@ -17,6 +17,7 @@ import {
   type NotificationRecipient,
 } from "../types";
 import { createLogger } from "@/lib/logger";
+import { env } from "@/env";
 
 const logger = createLogger("ResendChannel");
 
@@ -49,9 +50,9 @@ export class ResendChannel extends NotificationChannel<ResendChannelConfig> {
   }
 
   getEnvConfig(): ResendChannelConfig | null {
-    const apiKey = process.env.GRANYT_RESEND_API_KEY;
-    const fromEmail = process.env.RESEND_FROM_EMAIL;
-    const fromName = process.env.RESEND_FROM_NAME;
+    const apiKey = env.GRANYT_RESEND_API_KEY;
+    const fromEmail = env.RESEND_FROM_EMAIL;
+    const fromName = env.RESEND_FROM_NAME;
 
     if (apiKey && fromEmail) {
       return {

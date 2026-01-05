@@ -4,6 +4,7 @@ import { prisma } from "./prisma";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { APIError } from "better-auth/api";
+import { env } from "@/env";
 
 const scryptAsync = promisify(scrypt);
 
@@ -56,6 +57,6 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    env.BETTER_AUTH_URL,
   ],
 });

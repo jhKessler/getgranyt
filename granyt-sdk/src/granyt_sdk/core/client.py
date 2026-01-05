@@ -64,7 +64,9 @@ class GranytClient:
         self._initialized = True
 
         if self._config.is_valid():
-            logger.info(f"Granyt SDK initialized (endpoint: {self._config.endpoint})")
+            endpoints = self._config.get_all_endpoints()
+            endpoint_info = ", ".join(ep.endpoint for ep in endpoints)
+            logger.info(f"Granyt SDK initialized ({len(endpoints)} endpoint(s): {endpoint_info})")
         else:
             logger.warning("Granyt SDK disabled - missing or invalid configuration")
 

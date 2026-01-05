@@ -29,10 +29,10 @@ def mock_task():
 @pytest.fixture
 def mock_snowflake_task():
     """Create a mock Snowflake operator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-snowflake/stable/_api/airflow/providers/snowflake/operators/snowflake/index.html
-    
+
     Confirmed attributes:
     - snowflake_conn_id: Connection ID for Snowflake
     - warehouse: Snowflake warehouse name
@@ -59,17 +59,17 @@ def mock_snowflake_task():
 @pytest.fixture
 def mock_bigquery_task():
     """Create a mock BigQuery operator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-google/stable/_api/airflow/providers/google/cloud/operators/bigquery/index.html
-    
+
     Confirmed attributes for BigQueryInsertJobOperator:
     - configuration: Job configuration dictionary
     - job_id: Optional job ID
     - project_id: Google Cloud project ID
     - location: BigQuery dataset location
     - gcp_conn_id: Connection ID for GCP
-    
+
     Confirmed attributes for BigQueryCheckOperator:
     - sql: SQL query
     - gcp_conn_id: Connection ID
@@ -92,10 +92,10 @@ def mock_bigquery_task():
 @pytest.fixture
 def mock_s3_copy_task():
     """Create a mock S3CopyObjectOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/_api/airflow/providers/amazon/aws/operators/s3/index.html
-    
+
     Confirmed attributes for S3CopyObjectOperator:
     - source_bucket_key: Source bucket/key path
     - dest_bucket_key: Destination bucket/key path
@@ -120,10 +120,10 @@ def mock_s3_copy_task():
 @pytest.fixture
 def mock_s3_delete_task():
     """Create a mock S3DeleteObjectsOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/_api/airflow/providers/amazon/aws/operators/s3/index.html
-    
+
     Confirmed attributes for S3DeleteObjectsOperator:
     - bucket: Bucket name
     - keys: List of keys to delete
@@ -144,10 +144,10 @@ def mock_s3_delete_task():
 @pytest.fixture
 def mock_s3_list_task():
     """Create a mock S3ListOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/_api/airflow/providers/amazon/aws/operators/s3/index.html
-    
+
     Confirmed attributes for S3ListOperator:
     - bucket: Bucket name to list
     - prefix: Prefix to filter objects
@@ -167,10 +167,10 @@ def mock_s3_list_task():
 @pytest.fixture
 def mock_gcs_create_bucket_task():
     """Create a mock GCSCreateBucketOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-google/stable/_api/airflow/providers/google/cloud/operators/gcs/index.html
-    
+
     Confirmed attributes for GCSCreateBucketOperator:
     - bucket_name: Name of the bucket to create
     - storage_class: Storage class (MULTI_REGIONAL, REGIONAL, STANDARD, etc.)
@@ -196,10 +196,10 @@ def mock_gcs_create_bucket_task():
 @pytest.fixture
 def mock_gcs_list_task():
     """Create a mock GCSListObjectsOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-google/stable/_api/airflow/providers/google/cloud/operators/gcs/index.html
-    
+
     Confirmed attributes for GCSListObjectsOperator:
     - bucket: Bucket name to list
     - prefix: Prefix to filter objects
@@ -221,10 +221,10 @@ def mock_gcs_list_task():
 @pytest.fixture
 def mock_gcs_delete_task():
     """Create a mock GCSDeleteObjectsOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-google/stable/_api/airflow/providers/google/cloud/operators/gcs/index.html
-    
+
     Confirmed attributes for GCSDeleteObjectsOperator:
     - bucket_name: GCS bucket name
     - objects: List of object names to delete
@@ -244,10 +244,10 @@ def mock_gcs_delete_task():
 @pytest.fixture
 def mock_sql_execute_task():
     """Create a mock SQLExecuteQueryOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/_api/airflow/providers/common/sql/operators/sql/index.html
-    
+
     Confirmed attributes for SQLExecuteQueryOperator:
     - sql: SQL code to execute
     - autocommit: Whether to autocommit each command
@@ -272,10 +272,10 @@ def mock_sql_execute_task():
 @pytest.fixture
 def mock_sql_check_task():
     """Create a mock SQLCheckOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-common-sql/stable/_api/airflow/providers/common/sql/operators/sql/index.html
-    
+
     Confirmed attributes for SQLCheckOperator:
     - sql: SQL code to execute (templated)
     - conn_id: Connection ID for the database
@@ -295,10 +295,10 @@ def mock_sql_check_task():
 @pytest.fixture
 def mock_dbt_cloud_run_task():
     """Create a mock DbtCloudRunJobOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-dbt-cloud/stable/_api/airflow/providers/dbt/cloud/operators/dbt/index.html
-    
+
     Confirmed attributes for DbtCloudRunJobOperator:
     - dbt_cloud_conn_id: Connection ID for dbt Cloud
     - job_id: ID of dbt Cloud job
@@ -330,10 +330,10 @@ def mock_dbt_cloud_run_task():
 @pytest.fixture
 def mock_dbt_artifact_task():
     """Create a mock DbtCloudGetJobRunArtifactOperator.
-    
+
     Documented attributes from:
     https://airflow.apache.org/docs/apache-airflow-providers-dbt-cloud/stable/_api/airflow/providers/dbt/cloud/operators/dbt/index.html
-    
+
     Confirmed attributes for DbtCloudGetJobRunArtifactOperator:
     - dbt_cloud_conn_id: Connection ID for dbt Cloud
     - run_id: ID of the dbt Cloud job run

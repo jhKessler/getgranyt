@@ -5,6 +5,7 @@ import { createErrorOccurrence } from "./create-error-occurrence";
 import { notify, NotificationEventType } from "../../notifications";
 import type { IngestErrorParams, IngestErrorResult } from "./types";
 import { createLogger } from "@/lib/logger";
+import { env } from "@/env";
 
 const logger = createLogger("ErrorIngest");
 
@@ -76,8 +77,8 @@ export async function ingestError(
     runId: srcRunId,
     stackTrace: formattedStackTrace,
     isNewError,
-    dashboardUrl: process.env.NEXT_PUBLIC_APP_URL
-      ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/errors`
+    dashboardUrl: env.NEXT_PUBLIC_APP_URL
+      ? `${env.NEXT_PUBLIC_APP_URL}/dashboard/errors`
       : undefined,
   }).catch((err) => {
     logger.error({ error: err, organizationId }, "Failed to send error notification");

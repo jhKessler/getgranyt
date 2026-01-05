@@ -29,7 +29,7 @@ Usage:
 """
 
 from granyt_sdk.core.client import GranytClient, get_client
-from granyt_sdk.core.config import GranytConfig
+from granyt_sdk.core.config import EndpointConfig, GranytConfig
 from granyt_sdk.features.errors.capture import ErrorCapture
 from granyt_sdk.features.lineage.adapter import OpenLineageAdapter
 from granyt_sdk.features.metrics.core import (
@@ -59,6 +59,7 @@ __all__ = [
     "get_client",
     # Configuration
     "GranytConfig",
+    "EndpointConfig",
     # Error capture
     "ErrorCapture",
     # Lineage

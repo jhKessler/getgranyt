@@ -8,7 +8,7 @@
 # Report issues:    ${GITHUB_URL}/issues
 # Security policy:  ${GITHUB_URL}/blob/main/granyt-app/SECURITY.md
 #
-# Usage: curl -fsSL https://granyt.sh/install.sh | sh
+# Usage: curl -fsSL https://granyt.dev/install.sh | sh
 #    or: ./install.sh [--help] [--dry-run]
 
 set -eu
