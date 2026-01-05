@@ -29,3 +29,5 @@ ENV/
 # Environment variables
 .env
 .env.local
+
+.mypy_cache/

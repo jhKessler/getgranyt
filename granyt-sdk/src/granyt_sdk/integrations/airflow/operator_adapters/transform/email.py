@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class EmailAdapter(OperatorAdapter):
     """Adapter for Email operators."""
-    
+
     OPERATOR_PATTERNS = [
         "EmailOperator",
         "SlackAPIPostOperator",
@@ -20,10 +20,10 @@ class EmailAdapter(OperatorAdapter):
         "MsTeamsOperator",
         "DiscordWebhookOperator",
     ]
-    
+
     OPERATOR_TYPE = "notification"
     PRIORITY = 2
-    
+
     def extract_metrics(
         self,
         task_instance: Any,
@@ -31,13 +31,13 @@ class EmailAdapter(OperatorAdapter):
     ) -> OperatorMetrics:
         """Extract notification operator metrics."""
         task = task or self._get_task(task_instance)
-        
+
         metrics = OperatorMetrics(
             operator_type=self.OPERATOR_TYPE,
             operator_class=self._get_operator_class(task_instance),
             connection_id=self._get_connection_id(task) if task else None,
         )
-        
+
         if task:
             # Just capture notification type, not content
             if hasattr(task, "to"):
@@ -46,9 +46,9 @@ class EmailAdapter(OperatorAdapter):
                     recipients = [recipients]
                 metrics.custom_metrics = metrics.custom_metrics or {}
                 metrics.custom_metrics["recipient_count"] = len(recipients) if recipients else 0
-            
+
             if hasattr(task, "channel"):
                 metrics.custom_metrics = metrics.custom_metrics or {}
                 metrics.custom_metrics["channel"] = task.channel
-        
+
         return metrics

@@ -12,32 +12,37 @@ logger = logging.getLogger(__name__)
 
 try:
     from airflow.plugins_manager import AirflowPlugin
+
     AIRFLOW_AVAILABLE = True
 except ImportError:
     AIRFLOW_AVAILABLE = False
-    AirflowPlugin = object
+
+    class AirflowPlugin:  # type: ignore[no-redef]
+        """Stub for AirflowPlugin."""
+
+        pass
 
 
 if AIRFLOW_AVAILABLE:
     # Import the listener module
     from granyt_sdk.integrations.airflow import listener
-    
-    class GranytPlugin(AirflowPlugin):
+
+    class GranytPlugin(AirflowPlugin):  # type: ignore[misc]
         """Airflow plugin for Granyt SDK."""
-        
+
         name = "GRANYT_plugin"
-        
+
         # Register the listener module with Airflow
-        listeners = [listener]
-        
+        listeners: list = [listener]
+
         @classmethod
         def on_load(cls, *args, **kwargs):
             """Called when the plugin is loaded by Airflow."""
             try:
                 from granyt_sdk.core.client import get_client
-                
+
                 client = get_client()
-                
+
                 if client.is_enabled():
                     logger.info(
                         f"Granyt plugin loaded successfully "
@@ -52,7 +57,9 @@ if AIRFLOW_AVAILABLE:
                 logger.error(f"Failed to initialize Granyt plugin: {e}")
 
 else:
-    class GranytPlugin:
+
+    class GranytPlugin:  # type: ignore[no-redef]
         """Stub plugin for when Airflow is not installed."""
+
         name = "GRANYT_plugin"
-        listeners = []
+        listeners: list = []

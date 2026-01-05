@@ -4,10 +4,10 @@ Configuration module for Granyt SDK.
 Handles all configuration from environment variables with sensible defaults.
 """
 
+import logging
 import os
 from dataclasses import dataclass, field
-from typing import Optional
-import logging
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ def _str_to_bool(value: str) -> bool:
 @dataclass
 class GranytConfig:
     """Configuration for Granyt SDK.
-    
+
     All configuration is read from environment variables:
     - GRANYT_ENDPOINT: Backend API endpoint (required)
     - GRANYT_API_KEY: API key for authentication (required)
@@ -33,7 +33,7 @@ class GranytConfig:
     - GRANYT_FLUSH_INTERVAL: Flush interval in seconds (default: 5.0)
     - GRANYT_TIMEOUT: Request timeout in seconds (default: 30)
     """
-    
+
     endpoint: Optional[str] = field(default=None)
     api_key: Optional[str] = field(default=None)
     debug: bool = field(default=False)
@@ -44,13 +44,13 @@ class GranytConfig:
     batch_size: int = field(default=10)
     flush_interval: float = field(default=5.0)
     timeout: float = field(default=30.0)
-    
+
     @classmethod
     def from_environment(cls) -> "GranytConfig":
         """Create configuration from environment variables."""
         endpoint = os.environ.get("GRANYT_ENDPOINT")
         api_key = os.environ.get("GRANYT_API_KEY")
-        
+
         config = cls(
             endpoint=endpoint,
             api_key=api_key,
@@ -63,9 +63,9 @@ class GranytConfig:
             flush_interval=float(os.environ.get("GRANYT_FLUSH_INTERVAL", "5.0")),
             timeout=float(os.environ.get("GRANYT_TIMEOUT", "30.0")),
         )
-        
+
         return config
-    
+
     def is_valid(self) -> bool:
         """Check if configuration is valid for SDK operation."""
         if self.disabled:
@@ -77,8 +77,8 @@ class GranytConfig:
             logger.warning("GRANYT_API_KEY not set - SDK will be disabled")
             return False
         return True
-    
-    def get_headers(self) -> dict:
+
+    def get_headers(self) -> Dict[str, str]:
         """Get HTTP headers for API requests."""
         return {
             "Authorization": f"Bearer {self.api_key}",
@@ -86,28 +86,32 @@ class GranytConfig:
             "X-granyt-sdk-Version": "0.1.0",
             "User-Agent": "granyt-sdk-python/0.1.0",
         }
-    
+
     def get_lineage_url(self) -> str:
         """Get the lineage endpoint URL."""
-        return f"{self.endpoint.rstrip('/')}/api/v1/lineage"
-    
+        endpoint = self.endpoint or ""
+        return f"{endpoint.rstrip('/')}/api/v1/lineage"
+
     def get_errors_url(self) -> str:
         """Get the errors endpoint URL."""
-        return f"{self.endpoint.rstrip('/')}/api/v1/errors"
-    
+        endpoint = self.endpoint or ""
+        return f"{endpoint.rstrip('/')}/api/v1/errors"
+
     def get_heartbeat_url(self) -> str:
         """Get the heartbeat endpoint URL."""
-        return f"{self.endpoint.rstrip('/')}/api/v1/heartbeat"
-    
+        endpoint = self.endpoint or ""
+        return f"{endpoint.rstrip('/')}/api/v1/heartbeat"
+
     def get_data_metrics_url(self) -> str:
         """Get the data metrics endpoint URL."""
-        return f"{self.endpoint.rstrip('/')}/api/v1/metrics"
-    
+        endpoint = self.endpoint or ""
+        return f"{endpoint.rstrip('/')}/api/v1/metrics"
+
     def get_operator_metrics_url(self) -> str:
         """Get the operator metrics endpoint URL (now using data-metrics)."""
         return self.get_data_metrics_url()
-    
-    def to_dict(self) -> dict:
+
+    def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary (excluding sensitive data)."""
         return {
             "endpoint": self.endpoint,
