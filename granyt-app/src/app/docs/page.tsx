@@ -217,7 +217,7 @@ export default function QuickstartPage() {
                 Automatic Tracking
               </h4>
               <p className="text-sm text-muted-foreground">
-                Granyt automatically hooks into supported Airflow operators (like Snowflake, BigQuery, and Postgres) to capture row counts, query IDs, and execution metadata without any extra code.
+                Granyt automatically hooks into supported Airflow operators (Snowflake, BigQuery, S3, GCS, dbt, and generic SQL) to capture row counts, query IDs, and execution metadata without any extra code.
               </p>
             </div>
             <div className="space-y-3">

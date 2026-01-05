@@ -10,12 +10,37 @@ detects the operator type and extracts relevant metrics like:
 - Data transfer metrics
 
 Supported Operators:
-- Snowflake operators (rows affected, query ID, warehouse, etc.)
-- BigQuery operators (bytes processed, slot milliseconds, etc.)
-- Postgres/MySQL/SQL operators (rows affected, query stats)
-- S3/GCS operators (files transferred, bytes transferred)
-- dbt operators (model stats, test results)
-- Spark operators (stages, tasks, shuffle stats)
+
+SQL & Data Warehouse:
+- Snowflake: SnowflakeOperator, SnowflakeSqlApiOperator, SnowflakeCheckOperator, S3ToSnowflakeOperator
+  Metrics: row_count, query_id, warehouse, database, schema, role
+  
+- BigQuery: BigQueryInsertJobOperator, BigQueryCheckOperator, BigQueryValueCheckOperator, 
+            BigQueryGetDataOperator, GCSToBigQueryOperator
+  Metrics: bytes_processed, bytes_billed, row_count, query_id, slot_milliseconds
+  
+- Generic SQL: SQLExecuteQueryOperator, SQLColumnCheckOperator, SQLTableCheckOperator,
+               SQLCheckOperator, SQLValueCheckOperator, SQLIntervalCheckOperator, BranchSQLOperator
+  Metrics: row_count, database, schema, table, query_text
+
+Cloud Storage:
+- AWS S3: S3CopyObjectOperator, S3CreateObjectOperator, S3DeleteObjectsOperator, S3ListOperator,
+          S3FileTransformOperator, S3CreateBucketOperator, S3DeleteBucketOperator
+  Metrics: files_processed, bytes_processed, source_path, destination_path
+  
+- Google Cloud Storage: GCSCreateBucketOperator, GCSListObjectsOperator, GCSDeleteObjectsOperator,
+                        GCSSynchronizeBucketsOperator, GCSDeleteBucketOperator, LocalFilesystemToGCSOperator
+  Metrics: files_processed, bytes_processed, source_path, destination_path, region
+
+Transformation & Compute:
+- dbt Cloud: DbtCloudRunJobOperator, DbtCloudGetJobRunArtifactOperator, DbtCloudListJobsOperator
+  Metrics: models_run, tests_passed, tests_failed, row_count, job_id, account_id, run_id
+  
+- dbt Core: DbtRunOperator, DbtTestOperator, DbtSeedOperator, DbtSnapshotOperator
+  Metrics: models_run, tests_passed, tests_failed, row_count, path
+
+- Spark: SparkSubmitOperator, DataprocSubmitJobOperator, EmrAddStepsOperator
+  Metrics: stages_completed, tasks_completed, shuffle_bytes, row_count
 """
 
 from granyt_sdk.integrations.airflow.operator_adapters.base import (
