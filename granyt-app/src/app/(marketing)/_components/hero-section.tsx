@@ -61,14 +61,14 @@ function HeadlineTest() {
   return (
     <>
       <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-        Observability for{" "}
+        Catch data problems{" "}
         <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          Apache Airflow
+          before they reach production
         </span>
       </h1>
       <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-        Open source, self-hosted monitoring for your DAGs. <br className="hidden sm:block" /> 
-        Capture errors, metrics, and data flow with zero-code instrumentation.
+        Open source observability for Apache Airflow. <br className="hidden sm:block" /> 
+        Monitor your DAGs, track data quality, and get alerted before bad data breaks your pipelines.
       </p>
     </>
   )

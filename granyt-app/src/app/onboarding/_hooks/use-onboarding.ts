@@ -75,7 +75,7 @@ export function useOnboarding() {
   }
 
   const handleFinish = () => {
-    router.push("/dashboard")
+    router.push("/dashboard/settings")
     router.refresh()
   }
 

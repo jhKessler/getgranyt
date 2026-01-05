@@ -57,7 +57,7 @@ export function ApiKeyStep({
       </CardContent>
       <CardFooter>
         <Button className="w-full" onClick={onFinish}>
-          Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+          Go to Settings <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
