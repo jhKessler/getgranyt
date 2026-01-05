@@ -130,6 +130,6 @@ class PythonAdapter(OperatorAdapter):
             metrics.custom_metrics["schema"] = granyt_metrics["schema"]
 
         # Capture other metadata from compute_df_metrics
-        for key in ["dataframe_type", "column_count", "capture_id"]:
+        for key in ["dataframe_type", "column_count"]:
             if key in source_data:
                 metrics.custom_metrics[key] = source_data[key]

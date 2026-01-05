@@ -312,10 +312,9 @@ def transform_spark_data():
     df_clean = df.filter(df.value.isNotNull())
     
     # Return metrics via XCom.
-    # Setting compute_stats=True triggers a single pass over the data
-    # to collect null counts and other stats efficiently.
+    # The SDK collects null counts and other stats efficiently.
     return {
-        "granyt_metrics": compute_df_metrics(df_clean, compute_stats=True)
+        "granyt_metrics": compute_df_metrics(df_clean)
     }`}
                 />
               </TabsContent>

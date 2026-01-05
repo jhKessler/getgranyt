@@ -41,7 +41,7 @@ export async function seedSharedErrorDAGs(
       fingerprint: sharedFingerprint,
       exceptionType: sharedErrorType,
       message: "could not connect to server: Connection refused\n\tIs the server running on host \"postgres-primary.internal\" and accepting TCP/IP connections on port 5432?",
-      status: "open",
+      status: "resolved",
       occurrenceCount: 4,
       firstSeenAt: hoursAgo(6),
       lastSeenAt: hoursAgo(1),

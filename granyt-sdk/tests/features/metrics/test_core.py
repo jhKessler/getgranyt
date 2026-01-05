@@ -49,14 +49,12 @@ class TestDataFrameMetrics:
     def test_basic_creation(self):
         """Test basic dataframe metrics creation."""
         metrics = DataFrameMetrics(
-            capture_id="test_capture",
             captured_at="2026-01-05T00:00:00Z",
             row_count=100,
             column_count=5,
             columns=[],
         )
 
-        assert metrics.capture_id == "test_capture"
         assert metrics.row_count == 100
         assert metrics.column_count == 5
 
@@ -67,7 +65,6 @@ class TestDataFrameMetrics:
             ColumnMetrics(name="col2", dtype="object", null_count=2, empty_string_count=1),
         ]
         metrics = DataFrameMetrics(
-            capture_id="test_capture",
             captured_at="2026-01-05T00:00:00Z",
             row_count=100,
             column_count=2,
@@ -79,7 +76,6 @@ class TestDataFrameMetrics:
 
         result = metrics.to_dict()
 
-        assert result["capture_id"] == "test_capture"
         assert result["dag_id"] == "my_dag"
         assert result["task_id"] == "my_task"
         assert result["run_id"] == "my_run"
@@ -92,7 +88,6 @@ class TestDataFrameMetrics:
     def test_to_dict_with_custom_metrics(self):
         """Test to_dict includes custom metrics."""
         metrics = DataFrameMetrics(
-            capture_id="test",
             captured_at="2026-01-05T00:00:00Z",
             row_count=100,
             column_count=2,
@@ -108,7 +103,6 @@ class TestDataFrameMetrics:
     def test_to_dict_with_upstream(self):
         """Test to_dict includes upstream references."""
         metrics = DataFrameMetrics(
-            capture_id="test",
             captured_at="2026-01-05T00:00:00Z",
             row_count=100,
             column_count=2,
@@ -199,6 +193,10 @@ class TestComputeDfMetrics:
         assert metrics["column_count"] == 4
         assert "column_dtypes" in metrics
         assert "id" in metrics["column_dtypes"]
+        # Stats should be computed by default
+        assert "null_counts" in metrics
+        assert "empty_string_counts" in metrics
+        assert "memory_bytes" in metrics
 
     def test_computes_metrics_for_polars(self, polars_df):
         """Test computing metrics for polars DataFrame."""
@@ -207,39 +205,19 @@ class TestComputeDfMetrics:
         assert metrics["dataframe_type"] == "polars"
         assert metrics["row_count"] == 5
         assert metrics["column_count"] == 4
+        # Stats should be computed by default
+        assert "null_counts" in metrics
+        assert "empty_string_counts" in metrics
+        assert "memory_bytes" in metrics
 
     def test_raises_for_unsupported_type(self):
         """Test that unsupported types raise TypeError."""
         with pytest.raises(TypeError, match="Unsupported DataFrame type"):
             compute_df_metrics(df="not a dataframe")
 
-    def test_compute_stats_false(self, pandas_df):
-        """Test that stats are not computed when disabled."""
-        metrics = compute_df_metrics(
-            df=pandas_df,
-            compute_stats=False,
-        )
-
-        # Null counts should not be included
-        assert "null_counts" not in metrics
-        assert "empty_string_counts" not in metrics
-        assert "memory_bytes" not in metrics
-
-    def test_compute_stats_true(self, pandas_df):
-        """Test that stats are computed when enabled."""
-        metrics = compute_df_metrics(
-            df=pandas_df,
-            compute_stats=True,
-        )
-
-        # Null counts should be computed
-        assert "null_counts" in metrics
-        assert metrics["null_counts"]["name"] == 1  # One None value
-        assert metrics["null_counts"]["score"] == 1  # One None value
-
     def test_returns_dict_for_xcom(self, pandas_df):
         """Test that metrics can be used directly in granyt_metrics."""
-        metrics = compute_df_metrics(df=pandas_df, compute_stats=True)
+        metrics = compute_df_metrics(df=pandas_df)
 
         # Should be a plain dict that can be spread into granyt_metrics
         assert isinstance(metrics, dict)
@@ -267,16 +245,16 @@ class TestComputeDfMetrics:
         assert "score" in metrics["column_dtypes"]
 
     def test_empty_string_counts_when_computed(self, pandas_df):
-        """Test that empty string counts are included when computed."""
-        metrics = compute_df_metrics(df=pandas_df, compute_stats=True)
+        """Test that empty string counts are included."""
+        metrics = compute_df_metrics(df=pandas_df)
 
         # Should include empty string counts
         assert "empty_string_counts" in metrics
         assert metrics["empty_string_counts"]["name"] == 1  # One empty string
 
     def test_memory_bytes_when_computed(self, pandas_df):
-        """Test that memory bytes are included when computed."""
-        metrics = compute_df_metrics(df=pandas_df, compute_stats=True)
+        """Test that memory bytes are included."""
+        metrics = compute_df_metrics(df=pandas_df)
 
         # Should include memory bytes
         assert "memory_bytes" in metrics

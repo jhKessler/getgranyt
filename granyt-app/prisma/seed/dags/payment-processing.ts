@@ -66,7 +66,7 @@ export async function seedPaymentProcessingDAG(
       fingerprint: schemaFingerprint,
       exceptionType: schemaErrorType,
       message: schemaErrorMessage,
-      status: "open",
+      status: "resolved",
       occurrenceCount: 2,
       firstSeenAt: hoursAgo(6),
       lastSeenAt: hoursAgo(3),

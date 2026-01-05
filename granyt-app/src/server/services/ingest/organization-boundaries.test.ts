@@ -57,7 +57,6 @@ describe('Edge Cases: Organization Boundaries', () => {
     vi.mocked(prisma.dagComputedMetrics.upsert).mockResolvedValue({} as any);
 
     const metrics: MetricsPayload = {
-      capture_id: 'capture-org1',
       captured_at: '2025-01-01T12:00:00.000Z',
       dag_id: 'shared_dag_name', // Same dag_id
       task_id: 'task_1',
@@ -83,7 +82,7 @@ describe('Edge Cases: Organization Boundaries', () => {
 
     await ingestMetrics({
       organizationId: 'org-2',
-      payload: { ...metrics, capture_id: 'capture-org2' },
+      payload: { ...metrics },
     });
 
     // Verify each org gets its own records

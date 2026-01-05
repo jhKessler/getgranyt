@@ -27,7 +27,6 @@ const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
 
 const DAG_ID = "alert_test_pipeline";
 const TASK_ID = "process_data";
-const CAPTURE_ID = "output_dataset";
 const HISTORICAL_RUNS = 15;
 const BASELINE_ROW_COUNT = 1000;
 
@@ -101,25 +100,33 @@ async function sendDataMetrics(
   capturedAt: string, 
   rowCount: number
 ): Promise<void> {
-  await sendRequest("data-metrics", {
-    capture_id: CAPTURE_ID,
+  await sendRequest("metrics", {
     captured_at: capturedAt,
-    row_count: rowCount,
-    column_count: 5,
-    columns: [
-      { name: "id", dtype: "int64", null_count: 0, empty_string_count: null },
-      { name: "name", dtype: "string", null_count: 10, empty_string_count: 5 },
-      { name: "value", dtype: "float64", null_count: 0, empty_string_count: null },
-      { name: "created_at", dtype: "datetime64", null_count: 0, empty_string_count: null },
-      { name: "status", dtype: "string", null_count: 0, empty_string_count: 0 },
-    ],
-    memory_bytes: rowCount * 200, // Approximate
-    dataframe_type: "pandas",
     dag_id: DAG_ID,
     task_id: TASK_ID,
     run_id: runId,
-    upstream: null,
-    custom_metrics: null,
+    metrics: {
+      row_count: rowCount,
+      column_count: 5,
+      memory_bytes: rowCount * 200,
+      dataframe_type: "pandas",
+    },
+    schema: {
+      column_dtypes: {
+        id: "int64",
+        name: "string",
+        value: "float64",
+        created_at: "datetime64",
+        status: "string",
+      },
+      null_counts: {
+        id: 0,
+        name: 10,
+        value: 0,
+        created_at: 0,
+        status: 0,
+      },
+    },
   });
 }
 
@@ -131,7 +138,6 @@ async function main(): Promise<void> {
   console.log(`\nTarget: ${BASE_URL}`);
   console.log(`DAG ID: ${DAG_ID}`);
   console.log(`Task ID: ${TASK_ID}`);
-  console.log(`Capture ID: ${CAPTURE_ID}`);
   console.log(`Historical runs: ${HISTORICAL_RUNS}`);
   console.log(`Baseline row count: ${BASELINE_ROW_COUNT}`);
   console.log();

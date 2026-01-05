@@ -17,6 +17,7 @@ export const metricsJsonSchema = z.record(
     z.string(), 
     z.boolean(), 
     z.null(),
+    z.array(z.string()),
   ])
 ).nullable();
 

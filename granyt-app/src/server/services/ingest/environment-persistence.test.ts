@@ -67,7 +67,6 @@ describe('Edge Cases: API Key Deletion and Data Persistence', () => {
       vi.mocked(prisma.dagComputedMetrics.upsert).mockResolvedValue({} as any);
 
       const metrics: MetricsPayload = {
-        capture_id: 'capture-123',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',
@@ -196,7 +195,6 @@ describe('Edge Cases: Multi-Environment Data Scenarios', () => {
     vi.mocked(prisma.dagComputedMetrics.upsert).mockResolvedValue({} as any);
 
     const metricsBase: MetricsPayload = {
-      capture_id: 'capture-prod',
       captured_at: '2025-01-01T12:00:00.000Z',
       dag_id: 'shared_dag',
       task_id: 'task_1',
@@ -227,7 +225,7 @@ describe('Edge Cases: Multi-Environment Data Scenarios', () => {
     await ingestMetrics({
       organizationId: 'org-123',
       environment: 'development',
-      payload: { ...metricsBase, capture_id: 'capture-dev', run_id: 'manual__2025-01-01T13:00:00' },
+      payload: { ...metricsBase, run_id: 'manual__2025-01-01T13:00:00' },
     });
 
     // Both should have different environment values

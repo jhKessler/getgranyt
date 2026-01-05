@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       status: "received",
-      capture_id: result.captureId,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

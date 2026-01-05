@@ -14,16 +14,6 @@ from typing import Any, Dict, List, Optional, Protocol, Type, Union, runtime_che
 logger = logging.getLogger(__name__)
 
 
-def _str_to_bool(value: str) -> bool:
-    """Convert string to boolean."""
-    return value.lower() in ("true", "1", "yes", "on")
-
-
-def _get_compute_stats_default() -> bool:
-    """Get default value for compute_stats from environment."""
-    return _str_to_bool(os.environ.get("GRANYT_COMPUTE_STATS", "false"))
-
-
 @dataclass
 class ColumnMetrics:
     """Metrics for a single column."""
@@ -38,7 +28,6 @@ class ColumnMetrics:
 class DataFrameMetrics:
     """Captured metrics from a DataFrame."""
 
-    capture_id: str
     captured_at: str
     row_count: int
     column_count: int
@@ -105,7 +94,6 @@ class DataFrameMetrics:
 
         # Return structure matching backend schema
         return {
-            "capture_id": self.capture_id,
             "captured_at": self.captured_at,
             "dag_id": self.dag_id,
             "task_id": self.task_id,
@@ -139,7 +127,7 @@ class DataFrameAdapter(ABC):
         pass
 
     @classmethod
-    def prepare(cls, df: Any, should_compute: bool) -> Any:
+    def prepare(cls, df: Any) -> Any:
         """Prepare the DataFrame for metric capture."""
         return df
 
@@ -201,7 +189,6 @@ def _get_adapter(df: Any) -> Optional[Type[DataFrameAdapter]]:
 
 def compute_df_metrics(
     df: Any,
-    compute_stats: Optional[bool] = None,
 ) -> Dict[str, Any]:
     """Compute metrics from a DataFrame for use with granyt_metrics XCom.
 
@@ -212,9 +199,6 @@ def compute_df_metrics(
     Args:
         df: The DataFrame to compute metrics from. Supports Pandas, Polars,
             or any custom registered type.
-        compute_stats: Whether to compute expensive statistics like null counts,
-            empty string counts, and memory usage. Defaults to GRANYT_COMPUTE_STATS
-            environment variable (default: false).
 
     Returns:
         A dictionary containing the computed metrics, ready to be spread into
@@ -224,7 +208,7 @@ def compute_df_metrics(
         @task
         def transform_data():
             df = pd.read_parquet("data.parquet")
-            metrics = compute_df_metrics(df, compute_stats=True)
+            metrics = compute_df_metrics(df)
             return {
                 "granyt_metrics": {
                     **metrics,
@@ -242,11 +226,8 @@ def compute_df_metrics(
             f"Use register_adapter() to add support for custom types."
         )
 
-    # Determine if we should compute expensive stats
-    should_compute = compute_stats if compute_stats is not None else _get_compute_stats_default()
-
     # Prepare DF (e.g. for Spark Observation or Caching)
-    df = adapter.prepare(df, should_compute)
+    df = adapter.prepare(df)
 
     # Get basic metrics (always computed)
     columns_dtypes = adapter.get_columns_with_dtypes(df)
@@ -260,19 +241,18 @@ def compute_df_metrics(
         "column_dtypes": {col_name: dtype for col_name, dtype in columns_dtypes},
     }
 
-    # Get computed metrics (only if enabled)
-    if should_compute:
-        null_counts = adapter.get_null_counts(df)
-        if null_counts:
-            metrics["null_counts"] = null_counts
+    # Get computed metrics
+    null_counts = adapter.get_null_counts(df)
+    if null_counts:
+        metrics["null_counts"] = null_counts
 
-        empty_counts = adapter.get_empty_string_counts(df)
-        if empty_counts:
-            metrics["empty_string_counts"] = empty_counts
+    empty_counts = adapter.get_empty_string_counts(df)
+    if empty_counts:
+        metrics["empty_string_counts"] = empty_counts
 
-        memory_bytes = adapter.get_memory_bytes(df)
-        if memory_bytes is not None:
-            metrics["memory_bytes"] = memory_bytes
+    memory_bytes = adapter.get_memory_bytes(df)
+    if memory_bytes is not None:
+        metrics["memory_bytes"] = memory_bytes
 
     logger.debug(f"Computed metrics for {adapter.get_type_name()} DataFrame: {row_count} rows")
 

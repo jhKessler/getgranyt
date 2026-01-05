@@ -155,7 +155,7 @@ def transform_data():
     df = pd.read_parquet("data.parquet")
     
     # Automatically calculates valuable metrics like null counts and memory usage
-    metrics = compute_df_metrics(df, compute_stats=True)
+    metrics = compute_df_metrics(df)
     
     return {
         "granyt_metrics": {
@@ -222,7 +222,6 @@ register_adapter(SparkAdapter)
 | `GRANYT_RETRY_DELAY` | Delay between retries (seconds) | `1.0` |
 | `GRANYT_BATCH_SIZE` | Batch size for error events | `10` |
 | `GRANYT_FLUSH_INTERVAL` | Flush interval (seconds) | `5.0` |
-| `GRANYT_COMPUTE_STATS` | Enable computed stats for data metrics | `false` |
 
 *Either `GRANYT_ENDPOINT`/`GRANYT_API_KEY` or `GRANYT_ENDPOINTS` must be set.
 

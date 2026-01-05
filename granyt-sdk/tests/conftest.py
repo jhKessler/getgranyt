@@ -29,7 +29,6 @@ def clean_env(monkeypatch):
         "GRANYT_BATCH_SIZE",
         "GRANYT_FLUSH_INTERVAL",
         "GRANYT_TIMEOUT",
-        "GRANYT_COMPUTE_STATS",
     ]
     for var in env_vars:
         monkeypatch.delenv(var, raising=False)

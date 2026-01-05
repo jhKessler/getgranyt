@@ -36,8 +36,8 @@ export default async function LandingPage() {
   return (
     <>
       <HeroSection serverVariant={headlineVariant} />
-      <ToolConsolidationSection />
       <OperatorMetricsSection />
+      <ToolConsolidationSection />
       <InstallSection />
       <DemoPreviewSection />
       <DataValidationSection />

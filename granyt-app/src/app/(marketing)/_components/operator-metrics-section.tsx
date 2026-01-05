@@ -45,17 +45,31 @@ export function OperatorMetricsSection() {
     {
       title: "SQL & Warehouses",
       icon: <Database className="h-5 w-5 text-blue-500" />,
-      items: ["Snowflake", "BigQuery", "Redshift", "Postgres"]
+      items: [
+        { name: "Snowflake", href: "/docs/operators/snowflake" },
+        { name: "BigQuery", href: "/docs/operators/bigquery" },
+        { name: "Redshift", href: "/docs/operators/redshift" },
+        { name: "Postgres", href: "/docs/operators/postgres" }
+      ]
     },
     {
       title: "Cloud Storage",
       icon: <Cloud className="h-5 w-5 text-sky-500" />,
-      items: ["AWS S3", "Google Cloud Storage", "Azure Blob"]
+      items: [
+        { name: "AWS S3", href: "/docs/operators/s3" },
+        { name: "Google Cloud Storage", href: "/docs/operators/gcs" },
+        { name: "Azure Blob", href: "/docs/operators/azure-blob" }
+      ]
     },
     {
       title: "Transformation",
       icon: <Zap className="h-5 w-5 text-yellow-500" />,
-      items: ["dbt Cloud", "dbt Core", "Spark", "Bash"]
+      items: [
+        { name: "dbt Cloud", href: "/docs/operators/dbt-cloud" },
+        { name: "dbt Core", href: "/docs/operators/dbt-core" },
+        { name: "Spark", href: "/docs/operators/spark" },
+        { name: "Bash", href: "/docs/operators/bash" }
+      ]
     }
   ]
 
@@ -72,7 +86,7 @@ export function OperatorMetricsSection() {
               Granyt works with the Airflow lifecycle to automatically capture metrics from Snowflake, BigQuery, S3, dbt, and more. For PythonOperators, simply return your metrics and Granyt handles the rest.
             </p>
             <p className="text-muted-foreground mb-8">
-              Need support for a custom operator? You can easily build and register your own adapters to extract any metadata you need. <Link href="/docs/metrics" className="text-primary hover:underline inline-flex items-center gap-1">Learn more in our docs <ExternalLink className="h-3 w-3" /></Link>
+              Need support for a custom operator? You can easily build and register your own adapters to extract any metadata you need. <Link href="/docs/operators" className="text-primary hover:underline inline-flex items-center gap-1">Learn more in our docs <ExternalLink className="h-3 w-3" /></Link>
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -84,9 +98,11 @@ export function OperatorMetricsSection() {
                   </div>
                   <ul className="space-y-1">
                     {op.items.map((item) => (
-                      <li key={item} className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <li key={item.name} className="text-xs text-muted-foreground flex items-center gap-1.5">
                         <div className="h-1 w-1 rounded-full bg-border" />
-                        {item}
+                        <Link href={item.href} className="hover:text-primary hover:underline transition-colors">
+                          {item.name}
+                        </Link>
                       </li>
                     ))}
                   </ul>

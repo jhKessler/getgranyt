@@ -8,3 +8,5 @@ export { seedDailyReportDAG } from "./daily-report";
 export { seedPaymentProcessingDAG } from "./payment-processing";
 export { seedExternalApiSyncDAG } from "./external-api-sync";
 export { seedDataWarehouseLoadDAG } from "./data-warehouse-load";
+export { seedAirflowFullSuiteDAGs } from "./airflow-full-suite";
+export { seedHappyPathDAGs } from "./happy-path-dags";
