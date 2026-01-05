@@ -22,7 +22,7 @@ export const env = createEnv({
    */
   server: {
     // ==================== Core ====================
-    DATABASE_URL: z.string().url().describe("PostgreSQL connection string"),
+    DATABASE_URL: z.string().url().describe("PostgreSQL connection string").optional(),
     BETTER_AUTH_SECRET: z.string().min(16).describe("Auth secret key (min 16 chars)"),
     BETTER_AUTH_URL: z.string().url().default("http://localhost:3000").describe("Auth trusted origin URL"),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
