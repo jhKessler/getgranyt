@@ -20,6 +20,7 @@ def clean_env(monkeypatch):
     env_vars = [
         "GRANYT_ENDPOINT",
         "GRANYT_API_KEY",
+        "GRANYT_ENDPOINTS",
         "GRANYT_DEBUG",
         "GRANYT_DISABLED",
         "GRANYT_NAMESPACE",

@@ -2,53 +2,41 @@
 HTTP Transport module for Granyt SDK.
 
 Handles all HTTP communication with the Granyt backend with retry logic
-and proper error handling.
+and proper error handling. Supports multi-endpoint broadcasting.
 """
 
 import json
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import Empty, Queue
 from threading import Event, Thread
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from granyt_sdk.core.config import GranytConfig
+from granyt_sdk.core.config import EndpointConfig, GranytConfig
 
 logger = logging.getLogger(__name__)
 
 
-class GranytTransport:
-    """HTTP Transport for sending events to Granyt backend.
+class EndpointSession:
+    """HTTP session for a single endpoint."""
 
-    Features:
-    - Automatic retries with exponential backoff
-    - Connection pooling
-    - Async batch processing for error events
-    - Graceful shutdown
-    """
+    def __init__(self, endpoint_config: EndpointConfig, global_config: GranytConfig):
+        self.endpoint_config = endpoint_config
+        self.global_config = global_config
+        self.session = self._create_session()
 
-    def __init__(self, config: GranytConfig):
-        self.config = config
-        self._session: Optional[requests.Session] = None
-        self._error_queue: Queue = Queue()
-        self._shutdown_event = Event()
-        self._flush_thread: Optional[Thread] = None
-
-        if config.is_valid():
-            self._init_session()
-            self._start_flush_thread()
-
-    def _init_session(self) -> None:
-        """Initialize HTTP session with retry configuration."""
-        self._session = requests.Session()
+    def _create_session(self) -> requests.Session:
+        """Create HTTP session with retry configuration."""
+        session = requests.Session()
 
         retry_strategy = Retry(
-            total=self.config.max_retries,
-            backoff_factor=self.config.retry_delay,
+            total=self.global_config.max_retries,
+            backoff_factor=self.global_config.retry_delay,
             status_forcelist=[429, 500, 502, 503, 504],
             allowed_methods=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE"],
             raise_on_status=False,
@@ -60,9 +48,56 @@ class GranytTransport:
             pool_maxsize=20,
         )
 
-        self._session.mount("http://", adapter)
-        self._session.mount("https://", adapter)
-        self._session.headers.update(self.config.get_headers())
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        session.headers.update(self.endpoint_config.get_headers())
+
+        return session
+
+    def close(self) -> None:
+        """Close the session."""
+        self.session.close()
+
+
+class GranytTransport:
+    """HTTP Transport for sending events to Granyt backend.
+
+    Features:
+    - Multi-endpoint support: broadcasts events to all configured endpoints
+    - Automatic retries with exponential backoff per endpoint
+    - Connection pooling
+    - Async batch processing for error events
+    - Graceful shutdown
+    - Parallel sending via ThreadPoolExecutor
+    """
+
+    def __init__(self, config: GranytConfig):
+        self.config = config
+        self._endpoint_sessions: List[EndpointSession] = []
+        self._error_queue: Queue = Queue()
+        self._shutdown_event = Event()
+        self._flush_thread: Optional[Thread] = None
+        self._executor: Optional[ThreadPoolExecutor] = None
+
+        if config.is_valid():
+            self._init_sessions()
+            self._start_flush_thread()
+
+    def _init_sessions(self) -> None:
+        """Initialize HTTP sessions for all configured endpoints."""
+        endpoints = self.config.get_all_endpoints()
+        self._endpoint_sessions = [
+            EndpointSession(ep, self.config) for ep in endpoints
+        ]
+        # Create thread pool for parallel sending
+        self._executor = ThreadPoolExecutor(max_workers=max(len(endpoints), 2))
+
+        if self.config.debug:
+            logger.debug(f"Initialized {len(endpoints)} endpoint session(s)")
+
+    def _init_session(self) -> None:
+        """Legacy method - calls _init_sessions for backward compatibility."""
+        self._init_sessions()
 
     def _start_flush_thread(self) -> None:
         """Start background thread for flushing error events."""
@@ -93,65 +128,112 @@ class GranytTransport:
         if errors:
             self._send_errors_batch(errors)
 
-    def _send_errors_batch(self, errors: list) -> None:
-        """Send a batch of errors to the backend."""
-        if not self._session or not self.config.is_valid():
-            return
+    def _send_to_single_endpoint(
+        self,
+        endpoint_session: EndpointSession,
+        url: str,
+        payload: Dict[str, Any],
+    ) -> Tuple[str, bool, Optional[str]]:
+        """Send data to a single endpoint.
 
+        Returns:
+            Tuple of (endpoint_url, success, error_message)
+        """
         try:
-            response = self._session.post(
-                self.config.get_errors_url(),
-                json={"errors": errors},
+            response = endpoint_session.session.post(
+                url,
+                json=payload,
                 timeout=self.config.timeout,
             )
 
             if response.status_code >= 400:
-                logger.warning(
-                    f"Failed to send error batch: {response.status_code} - {response.text}"
+                return (
+                    endpoint_session.endpoint_config.endpoint,
+                    False,
+                    f"{response.status_code} - {response.text}",
                 )
-            elif self.config.debug:
-                logger.debug(f"Sent {len(errors)} errors to backend")
+
+            return (endpoint_session.endpoint_config.endpoint, True, None)
 
         except requests.RequestException as e:
-            logger.error(f"Failed to send error batch: {e}")
+            return (endpoint_session.endpoint_config.endpoint, False, str(e))
+
+    def _broadcast_to_all_endpoints(
+        self,
+        url_getter: Callable[[EndpointConfig], str],
+        payload: Dict[str, Any],
+        event_type: str,
+    ) -> bool:
+        """Broadcast data to all configured endpoints in parallel.
+
+        Args:
+            url_getter: Function to get URL from EndpointConfig
+            payload: Data to send
+            event_type: Type of event for logging
+
+        Returns:
+            True if at least one endpoint received the event successfully
+        """
+        if not self._endpoint_sessions or not self.config.is_valid():
+            if self.config.debug:
+                logger.debug(f"SDK disabled or no endpoints - skipping {event_type}")
+            return False
+
+        if not self._executor:
+            return False
+
+        futures = []
+        for ep_session in self._endpoint_sessions:
+            url = url_getter(ep_session.endpoint_config)
+            future = self._executor.submit(
+                self._send_to_single_endpoint, ep_session, url, payload
+            )
+            futures.append(future)
+
+        success_count = 0
+        for future in as_completed(futures):
+            endpoint, success, error = future.result()
+            if success:
+                success_count += 1
+                if self.config.debug:
+                    logger.debug(f"{event_type} sent successfully to {endpoint}")
+            else:
+                logger.warning(f"Failed to send {event_type} to {endpoint}: {error}")
+
+        return success_count > 0
+
+    def _send_errors_batch(self, errors: list) -> None:
+        """Send a batch of errors to all endpoints."""
+        if not self._endpoint_sessions or not self.config.is_valid():
+            return
+
+        payload = {"errors": errors}
+        success = self._broadcast_to_all_endpoints(
+            lambda ep: ep.get_errors_url(),
+            payload,
+            f"error batch ({len(errors)} errors)",
+        )
+
+        if success and self.config.debug:
+            logger.debug(f"Sent {len(errors)} errors to backend(s)")
 
     def send_lineage_event(self, event: Dict[str, Any]) -> bool:
-        """Send a lineage event to the backend.
+        """Send a lineage event to all configured endpoints.
 
         Args:
             event: OpenLineage-compatible event dictionary
 
         Returns:
-            True if event was sent successfully, False otherwise
+            True if event was sent to at least one endpoint successfully, False otherwise
         """
-        if not self._session or not self.config.is_valid():
-            if self.config.debug:
-                logger.debug("SDK disabled or invalid config - skipping lineage event")
-            return False
+        if self.config.debug:
+            logger.debug(f"Sending lineage event: {json.dumps(event, default=str)[:500]}...")
 
-        try:
-            if self.config.debug:
-                logger.debug(f"Sending lineage event: {json.dumps(event, default=str)[:500]}...")
-
-            response = self._session.post(
-                self.config.get_lineage_url(),
-                json=event,
-                timeout=self.config.timeout,
-            )
-
-            if response.status_code >= 400:
-                logger.warning(
-                    f"Failed to send lineage event: {response.status_code} - {response.text}"
-                )
-                return False
-
-            if self.config.debug:
-                logger.debug(f"Lineage event sent successfully")
-            return True
-
-        except requests.RequestException as e:
-            logger.error(f"Failed to send lineage event: {e}")
-            return False
+        return self._broadcast_to_all_endpoints(
+            lambda ep: ep.get_lineage_url(),
+            event,
+            "lineage event",
+        )
 
     def send_error_event(self, error: Dict[str, Any]) -> None:
         """Queue an error event for batch sending.
@@ -170,106 +252,59 @@ class GranytTransport:
             logger.debug(f"Error event queued (queue size: {self._error_queue.qsize()})")
 
     def send_error_event_sync(self, error: Dict[str, Any]) -> bool:
-        """Send an error event synchronously (for critical errors).
+        """Send an error event synchronously to all endpoints (for critical errors).
 
         Args:
             error: Error event dictionary
 
         Returns:
-            True if event was sent successfully, False otherwise
+            True if event was sent to at least one endpoint successfully, False otherwise
         """
-        if not self._session or not self.config.is_valid():
-            logger.warning("Cannot send error event: session not initialized or invalid config")
+        if not self._endpoint_sessions or not self.config.is_valid():
+            logger.warning("Cannot send error event: no endpoints configured or invalid config")
             return False
 
-        try:
-            url = self.config.get_errors_url()
-            logger.debug(f"Sending error event to {url}")
-
-            response = self._session.post(
-                url,
-                json={"errors": [error]},
-                timeout=self.config.timeout,
-            )
-
-            if response.status_code >= 400:
-                logger.warning(
-                    f"Failed to send error event: {response.status_code} - {response.text}"
-                )
-                return False
-
-            logger.debug(f"Error event sent successfully: {response.status_code}")
-            return True
-
-        except requests.RequestException as e:
-            logger.error(f"Failed to send error event: {e}")
-            return False
+        return self._broadcast_to_all_endpoints(
+            lambda ep: ep.get_errors_url(),
+            {"errors": [error]},
+            "error event (sync)",
+        )
 
     def send_heartbeat(self, metadata: Dict[str, Any]) -> bool:
-        """Send a heartbeat to the backend.
+        """Send a heartbeat to all configured endpoints.
 
         Args:
             metadata: Heartbeat metadata
 
         Returns:
-            True if heartbeat was sent successfully, False otherwise
+            True if heartbeat was sent to at least one endpoint successfully, False otherwise
         """
-        if not self._session or not self.config.is_valid():
-            return False
-
-        try:
-            response = self._session.post(
-                self.config.get_heartbeat_url(),
-                json=metadata,
-                timeout=self.config.timeout,
-            )
-
-            return bool(response.status_code < 400)
-
-        except requests.RequestException as e:
-            logger.error(f"Failed to send heartbeat: {e}")
-            return False
+        return self._broadcast_to_all_endpoints(
+            lambda ep: ep.get_heartbeat_url(),
+            metadata,
+            "heartbeat",
+        )
 
     def send_data_metrics(self, metrics: Dict[str, Any]) -> bool:
-        """Send data metrics to the backend.
+        """Send data metrics to all configured endpoints.
 
         Args:
             metrics: Data metrics dictionary
 
         Returns:
-            True if metrics were sent successfully, False otherwise
+            True if metrics were sent to at least one endpoint successfully, False otherwise
         """
-        if not self._session or not self.config.is_valid():
-            if self.config.debug:
-                logger.debug("SDK disabled or invalid config - skipping data metrics")
-            return False
+        if self.config.debug:
+            logger.debug(f"Sending data metrics: {json.dumps(metrics, default=str)[:500]}...")
 
-        try:
-            if self.config.debug:
-                logger.debug(f"Sending data metrics: {json.dumps(metrics, default=str)[:500]}...")
-
-            response = self._session.post(
-                self.config.get_data_metrics_url(),
-                json=metrics,
-                timeout=self.config.timeout,
-            )
-
-            if response.status_code >= 400:
-                logger.warning(
-                    f"Failed to send data metrics: {response.status_code} - {response.text}"
-                )
-                return False
-
-            if self.config.debug:
-                logger.debug("Data metrics sent successfully")
-            return True
-
-        except requests.RequestException as e:
-            logger.error(f"Failed to send data metrics: {e}")
-            return False
+        return self._broadcast_to_all_endpoints(
+            lambda ep: ep.get_data_metrics_url(),
+            metrics,
+            "data metrics",
+        )
 
     def send_operator_metrics(self, metrics: Dict[str, Any]) -> bool:
-        """Send operator-specific metrics to the backend.
+        """Send operator-specific metrics to all configured endpoints.
 
         These metrics include operator-specific data like rows processed,
         query stats, bytes transferred, etc.
@@ -278,39 +313,19 @@ class GranytTransport:
             metrics: Operator metrics dictionary
 
         Returns:
-            True if metrics were sent successfully, False otherwise
+            True if metrics were sent to at least one endpoint successfully, False otherwise
         """
-        if not self._session or not self.config.is_valid():
-            if self.config.debug:
-                logger.debug("SDK disabled or invalid config - skipping operator metrics")
-            return False
-
-        try:
-            if self.config.debug:
-                logger.debug(
-                    f"Sending operator metrics ({metrics.get('operator_type', 'unknown')}): "
-                    f"{json.dumps(metrics, default=str)[:500]}..."
-                )
-
-            response = self._session.post(
-                self.config.get_operator_metrics_url(),
-                json=metrics,
-                timeout=self.config.timeout,
+        if self.config.debug:
+            logger.debug(
+                f"Sending operator metrics ({metrics.get('operator_type', 'unknown')}): "
+                f"{json.dumps(metrics, default=str)[:500]}..."
             )
 
-            if response.status_code >= 400:
-                logger.warning(
-                    f"Failed to send operator metrics: {response.status_code} - {response.text}"
-                )
-                return False
-
-            if self.config.debug:
-                logger.debug("Operator metrics sent successfully")
-            return True
-
-        except requests.RequestException as e:
-            logger.error(f"Failed to send operator metrics: {e}")
-            return False
+        return self._broadcast_to_all_endpoints(
+            lambda ep: ep.get_operator_metrics_url(),
+            metrics,
+            "operator metrics",
+        )
 
     def flush(self) -> None:
         """Force flush all queued events."""
@@ -328,7 +343,12 @@ class GranytTransport:
         if self._flush_thread and self._flush_thread.is_alive():
             self._flush_thread.join(timeout=5.0)
 
-        # Close session
-        if self._session:
-            self._session.close()
-            self._session = None
+        # Shutdown executor
+        if self._executor:
+            self._executor.shutdown(wait=True)
+            self._executor = None
+
+        # Close all endpoint sessions
+        for ep_session in self._endpoint_sessions:
+            ep_session.close()
+        self._endpoint_sessions = []

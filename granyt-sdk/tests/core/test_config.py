@@ -4,7 +4,7 @@ Tests for granyt_sdk.core.config module.
 
 import os
 import pytest
-from granyt_sdk.core.config import GranytConfig, _str_to_bool
+from granyt_sdk.core.config import GranytConfig, EndpointConfig, _str_to_bool
 
 
 class TestStrToBool:
@@ -212,7 +212,167 @@ class TestGranytConfigToDict:
         
         expected_keys = [
             "endpoint", "api_key", "debug", "disabled", "namespace",
-            "max_retries", "retry_delay", "batch_size", "flush_interval", "timeout"
+            "max_retries", "retry_delay", "batch_size", "flush_interval", "timeout",
+            "endpoints", "endpoints_count"
         ]
         for key in expected_keys:
             assert key in result
+
+
+class TestEndpointConfig:
+    """Tests for EndpointConfig dataclass."""
+
+    def test_endpoint_config_creation(self):
+        """Test creating an EndpointConfig."""
+        ep = EndpointConfig(endpoint="https://api.granyt.io", api_key="test-key")
+        assert ep.endpoint == "https://api.granyt.io"
+        assert ep.api_key == "test-key"
+
+    def test_endpoint_config_get_headers(self):
+        """Test get_headers returns correct headers."""
+        ep = EndpointConfig(endpoint="https://api.granyt.io", api_key="test-key")
+        headers = ep.get_headers()
+
+        assert headers["Authorization"] == "Bearer test-key"
+        assert headers["Content-Type"] == "application/json"
+        assert "X-granyt-sdk-Version" in headers
+
+    def test_endpoint_config_urls(self):
+        """Test URL builder methods on EndpointConfig."""
+        ep = EndpointConfig(endpoint="https://api.granyt.io", api_key="test-key")
+
+        assert ep.get_lineage_url() == "https://api.granyt.io/api/v1/lineage"
+        assert ep.get_errors_url() == "https://api.granyt.io/api/v1/errors"
+        assert ep.get_heartbeat_url() == "https://api.granyt.io/api/v1/heartbeat"
+        assert ep.get_data_metrics_url() == "https://api.granyt.io/api/v1/metrics"
+        assert ep.get_operator_metrics_url() == "https://api.granyt.io/api/v1/metrics"
+
+    def test_endpoint_config_strips_trailing_slash(self):
+        """Test URL methods strip trailing slashes."""
+        ep = EndpointConfig(endpoint="https://api.granyt.io/", api_key="test-key")
+        assert ep.get_lineage_url() == "https://api.granyt.io/api/v1/lineage"
+
+
+class TestGetAllEndpoints:
+    """Tests for GranytConfig.get_all_endpoints()."""
+
+    def test_single_endpoint_fallback(self, valid_config):
+        """Test get_all_endpoints returns single endpoint when no GRANYT_ENDPOINTS."""
+        endpoints = valid_config.get_all_endpoints()
+
+        assert len(endpoints) == 1
+        assert endpoints[0].endpoint == "https://api.granyt.dev"
+        assert endpoints[0].api_key == "test-api-key-12345"
+
+    def test_multi_endpoint_from_json(self, clean_env):
+        """Test parsing multi-endpoint from GRANYT_ENDPOINTS JSON."""
+        json_endpoints = '[{"endpoint":"https://prod.granyt.io","api_key":"prod-key"},{"endpoint":"https://dev.granyt.io","api_key":"dev-key"}]'
+        clean_env.setenv("GRANYT_ENDPOINTS", json_endpoints)
+
+        config = GranytConfig.from_environment()
+        endpoints = config.get_all_endpoints()
+
+        assert len(endpoints) == 2
+        assert endpoints[0].endpoint == "https://prod.granyt.io"
+        assert endpoints[0].api_key == "prod-key"
+        assert endpoints[1].endpoint == "https://dev.granyt.io"
+        assert endpoints[1].api_key == "dev-key"
+
+    def test_multi_endpoint_takes_precedence(self, valid_env):
+        """Test GRANYT_ENDPOINTS takes precedence over single endpoint."""
+        json_endpoints = '[{"endpoint":"https://override.granyt.io","api_key":"override-key"}]'
+        valid_env.setenv("GRANYT_ENDPOINTS", json_endpoints)
+
+        config = GranytConfig.from_environment()
+        endpoints = config.get_all_endpoints()
+
+        assert len(endpoints) == 1
+        assert endpoints[0].endpoint == "https://override.granyt.io"
+        assert endpoints[0].api_key == "override-key"
+
+    def test_invalid_json_returns_empty(self, clean_env):
+        """Test invalid JSON returns empty list."""
+        clean_env.setenv("GRANYT_ENDPOINTS", "not valid json")
+
+        config = GranytConfig.from_environment()
+        endpoints = config.get_all_endpoints()
+
+        assert len(endpoints) == 0
+
+    def test_non_array_json_returns_empty(self, clean_env):
+        """Test non-array JSON returns empty list."""
+        clean_env.setenv("GRANYT_ENDPOINTS", '{"endpoint":"https://api.granyt.io","api_key":"key"}')
+
+        config = GranytConfig.from_environment()
+        endpoints = config.get_all_endpoints()
+
+        assert len(endpoints) == 0
+
+    def test_missing_fields_skipped(self, clean_env):
+        """Test endpoints missing required fields are skipped."""
+        json_endpoints = '[{"endpoint":"https://valid.io","api_key":"key"},{"endpoint":"https://missing-key.io"},{"api_key":"missing-endpoint"}]'
+        clean_env.setenv("GRANYT_ENDPOINTS", json_endpoints)
+
+        config = GranytConfig.from_environment()
+        endpoints = config.get_all_endpoints()
+
+        assert len(endpoints) == 1
+        assert endpoints[0].endpoint == "https://valid.io"
+
+    def test_non_object_items_skipped(self, clean_env):
+        """Test non-object items in array are skipped."""
+        json_endpoints = '[{"endpoint":"https://valid.io","api_key":"key"},"invalid",123]'
+        clean_env.setenv("GRANYT_ENDPOINTS", json_endpoints)
+
+        config = GranytConfig.from_environment()
+        endpoints = config.get_all_endpoints()
+
+        assert len(endpoints) == 1
+
+    def test_empty_credentials_returns_empty(self, clean_env):
+        """Test missing single endpoint credentials returns empty list."""
+        config = GranytConfig.from_environment()
+        endpoints = config.get_all_endpoints()
+
+        assert len(endpoints) == 0
+
+    def test_is_valid_with_multi_endpoint(self, clean_env):
+        """Test is_valid returns True with valid multi-endpoint config."""
+        json_endpoints = '[{"endpoint":"https://api.granyt.io","api_key":"key"}]'
+        clean_env.setenv("GRANYT_ENDPOINTS", json_endpoints)
+
+        config = GranytConfig.from_environment()
+        assert config.is_valid() is True
+
+    def test_is_valid_false_with_invalid_multi_endpoint(self, clean_env):
+        """Test is_valid returns False with invalid multi-endpoint JSON."""
+        clean_env.setenv("GRANYT_ENDPOINTS", "invalid json")
+
+        config = GranytConfig.from_environment()
+        assert config.is_valid() is False
+
+
+class TestToDictMultiEndpoint:
+    """Tests for to_dict with multi-endpoint configuration."""
+
+    def test_to_dict_includes_endpoints_info(self, valid_config):
+        """Test to_dict includes endpoints info."""
+        result = valid_config.to_dict()
+
+        assert "endpoints" in result
+        assert "endpoints_count" in result
+        assert result["endpoints_count"] == 1
+        assert len(result["endpoints"]) == 1
+        assert result["endpoints"][0]["api_key"] == "***"
+
+    def test_to_dict_multi_endpoint_masks_keys(self, clean_env):
+        """Test to_dict masks API keys in multi-endpoint config."""
+        json_endpoints = '[{"endpoint":"https://prod.granyt.io","api_key":"secret1"},{"endpoint":"https://dev.granyt.io","api_key":"secret2"}]'
+        clean_env.setenv("GRANYT_ENDPOINTS", json_endpoints)
+
+        config = GranytConfig.from_environment()
+        result = config.to_dict()
+
+        assert result["endpoints_count"] == 2
+        for ep in result["endpoints"]:
+            assert ep["api_key"] == "***"

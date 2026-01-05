@@ -24,6 +24,16 @@ export GRANYT_ENDPOINT="https://your-granyt-backend.com"
 export GRANYT_API_KEY="your-api-key"
 ```
 
+### Multi-Endpoint Configuration
+
+To send events to multiple Granyt backends simultaneously (e.g., for dev/prod mirroring or multi-region deployments), use the `GRANYT_ENDPOINTS` environment variable with a JSON array:
+
+```bash
+export GRANYT_ENDPOINTS='[{"endpoint":"https://prod.granyt.io","api_key":"prod-key"},{"endpoint":"https://dev.granyt.io","api_key":"dev-key"}]'
+```
+
+When `GRANYT_ENDPOINTS` is set, it takes precedence over `GRANYT_ENDPOINT`/`GRANYT_API_KEY`. Events are broadcast to all configured endpoints in parallel, with warnings logged for any failures. The SDK considers an event successfully sent if at least one endpoint receives it.
+
 ### Optional Configuration
 
 ```bash
@@ -181,8 +191,9 @@ register_adapter(SparkAdapter)
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `GRANYT_ENDPOINT` | Backend API endpoint | Required |
-| `GRANYT_API_KEY` | API key for authentication | Required |
+| `GRANYT_ENDPOINT` | Backend API endpoint (single endpoint mode) | Required* |
+| `GRANYT_API_KEY` | API key for authentication (single endpoint mode) | Required* |
+| `GRANYT_ENDPOINTS` | JSON array of endpoints for multi-endpoint mode | Optional |
 | `GRANYT_DEBUG` | Enable debug logging | `false` |
 | `GRANYT_DISABLED` | Disable the SDK | `false` |
 | `GRANYT_NAMESPACE` | OpenLineage namespace | `airflow` |
@@ -191,6 +202,8 @@ register_adapter(SparkAdapter)
 | `GRANYT_BATCH_SIZE` | Batch size for error events | `10` |
 | `GRANYT_FLUSH_INTERVAL` | Flush interval (seconds) | `5.0` |
 | `GRANYT_COMPUTE_STATS` | Enable computed stats for data metrics | `false` |
+
+*Either `GRANYT_ENDPOINT`/`GRANYT_API_KEY` or `GRANYT_ENDPOINTS` must be set.
 
 ### Event Types
 
