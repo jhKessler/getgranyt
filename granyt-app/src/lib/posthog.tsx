@@ -4,10 +4,10 @@ import posthog from "posthog-js"
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { useEffect, Suspense, useRef } from "react"
+import { env } from "@/env"
 
-const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
-const POSTHOG_HOST =
-  process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com"
+const POSTHOG_KEY = env.NEXT_PUBLIC_POSTHOG_KEY
+const POSTHOG_HOST = env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com"
 
 function PostHogPageView() {
   const pathname = usePathname()

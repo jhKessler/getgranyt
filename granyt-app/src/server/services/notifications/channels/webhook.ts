@@ -16,6 +16,7 @@ import {
   type NotificationRecipient,
 } from "../types";
 import { createLogger } from "@/lib/logger";
+import { env } from "@/env";
 
 const logger = createLogger("WebhookChannel");
 
@@ -48,8 +49,8 @@ export class WebhookChannel extends NotificationChannel<WebhookChannelConfig> {
   }
 
   getEnvConfig(): WebhookChannelConfig | null {
-    const url = process.env.GRANYT_WEBHOOK_URL;
-    const secret = process.env.GRANYT_WEBHOOK_SECRET;
+    const url = env.GRANYT_WEBHOOK_URL;
+    const secret = env.GRANYT_WEBHOOK_SECRET;
 
     if (url) {
       return {

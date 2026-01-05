@@ -16,6 +16,7 @@ import {
   type NotificationRecipient,
 } from "../types";
 import { createLogger } from "@/lib/logger";
+import { env } from "@/env";
 
 const logger = createLogger("SmtpChannel");
 
@@ -48,18 +49,18 @@ export class SmtpChannel extends NotificationChannel<SmtpChannelConfig> {
   }
 
   getEnvConfig(): SmtpChannelConfig | null {
-    const host = process.env.SMTP_HOST;
-    const port = process.env.SMTP_PORT;
-    const user = process.env.SMTP_USER;
-    const password = process.env.SMTP_PASSWORD;
-    const fromEmail = process.env.SMTP_FROM_EMAIL;
-    const fromName = process.env.SMTP_FROM_NAME;
-    const secure = process.env.SMTP_SECURE;
+    const host = env.SMTP_HOST;
+    const port = env.SMTP_PORT;
+    const user = env.SMTP_USER;
+    const password = env.SMTP_PASSWORD;
+    const fromEmail = env.SMTP_FROM_EMAIL;
+    const fromName = env.SMTP_FROM_NAME;
+    const secure = env.SMTP_SECURE;
 
     if (host && port && user && password && fromEmail) {
       return {
         host,
-        port: parseInt(port, 10),
+        port,
         user,
         password,
         secure: secure !== "false",

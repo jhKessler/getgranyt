@@ -4,6 +4,7 @@ import { useDocumentTitle } from "@/lib/use-document-title"
 import {
   ProgressSteps,
   OrganizationStep,
+  EmailSetupStep,
   ApiKeyStep,
 } from "./_components"
 import { useOnboarding } from "./_hooks"
@@ -19,7 +20,10 @@ export default function OnboardingPage() {
     apiKey,
     copied,
     isLoading,
+    isEmailConfigured,
     handleCreateOrg,
+    handleEmailStepContinue,
+    handleEmailStepSkip,
     handleCopyApiKey,
     handleFinish,
   } = useOnboarding()
@@ -41,6 +45,14 @@ export default function OnboardingPage() {
         )}
 
         {step === 2 && (
+          <EmailSetupStep
+            isEmailConfigured={isEmailConfigured}
+            onSkip={handleEmailStepSkip}
+            onContinue={handleEmailStepContinue}
+          />
+        )}
+
+        {step === 3 && (
           <ApiKeyStep
             apiKey={apiKey}
             onCopyApiKey={handleCopyApiKey}

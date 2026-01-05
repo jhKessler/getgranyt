@@ -8,20 +8,20 @@ import { toast } from "sonner"
 export function useOnboarding() {
   const router = useRouter()
   const [step, setStep] = useState(1)
+  const [organizationId, setOrganizationId] = useState<string | null>(null)
   const [organizationName, setOrganizationName] = useState("")
   const [airflowUrl, setAirflowUrl] = useState("")
   const [apiKey, setApiKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
+  // Query email configuration status
+  const { data: emailStatus } = trpc.settings.getEmailEnvStatus.useQuery()
+
   const createOrg = trpc.organization.create.useMutation({
     onSuccess: (data: { id: string }) => {
-      setStep(2)
+      setOrganizationId(data.id)
+      setStep(2) // Move to email setup step
       toast.success("Organization created!")
-      generateKey.mutate({
-        organizationId: data.id,
-        name: "Default Key",
-        type: "sdk",
-      })
     },
     onError: (error: { message?: string }) => {
       toast.error(error.message || "Failed to create organization")
@@ -47,6 +47,23 @@ export function useOnboarding() {
       name: organizationName.trim(),
       airflowUrl: airflowUrl.trim() || undefined,
     })
+  }
+
+  const handleEmailStepContinue = () => {
+    // Move to API key step and generate the key
+    setStep(3)
+    if (organizationId) {
+      generateKey.mutate({
+        organizationId,
+        name: "Default Key",
+        type: "sdk",
+      })
+    }
+  }
+
+  const handleEmailStepSkip = () => {
+    // Same as continue - move to API key step
+    handleEmailStepContinue()
   }
 
   const handleCopyApiKey = async () => {
@@ -76,7 +93,10 @@ export function useOnboarding() {
     apiKey,
     copied,
     isLoading,
+    isEmailConfigured: emailStatus?.isEmailConfigured ?? false,
     handleCreateOrg,
+    handleEmailStepContinue,
+    handleEmailStepSkip,
     handleCopyApiKey,
     handleFinish,
   }

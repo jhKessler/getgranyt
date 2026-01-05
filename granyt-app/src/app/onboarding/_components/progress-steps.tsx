@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { Building2, Key, Check } from "lucide-react"
+import { Building2, Key, Check, Mail } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 interface Step {
@@ -12,7 +12,8 @@ interface Step {
 
 const STEPS: Step[] = [
   { id: 1, name: "Organization", icon: Building2 },
-  { id: 2, name: "API Key", icon: Key },
+  { id: 2, name: "Email", icon: Mail },
+  { id: 3, name: "API Key", icon: Key },
 ]
 
 interface ProgressStepsProps {

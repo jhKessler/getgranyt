@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { env } from "@/env";
 
 /**
  * GRANYT_MODE controls which parts of the app are accessible:
@@ -36,7 +37,7 @@ const ALWAYS_ALLOWED_PREFIXES = [
 
 function getGranytMode(): GranytMode {
   // Check both env vars for compatibility - prefer NEXT_PUBLIC for client/server consistency
-  const mode = (process.env.NEXT_PUBLIC_GRANYT_MODE || process.env.GRANYT_MODE)?.toUpperCase();
+  const mode = (env.NEXT_PUBLIC_GRANYT_MODE ?? env.GRANYT_MODE)?.toUpperCase();
   if (mode === "DOCS" || mode === "DEV") {
     return mode;
   }

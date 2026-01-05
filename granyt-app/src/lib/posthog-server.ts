@@ -1,9 +1,9 @@
 import { PostHog } from "posthog-node"
 import { cookies } from "next/headers"
+import { env } from "@/env"
 
-const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
-const POSTHOG_HOST =
-  process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com"
+const POSTHOG_KEY = env.NEXT_PUBLIC_POSTHOG_KEY
+const POSTHOG_HOST = env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com"
 
 // Cookie name PostHog uses to store the distinct_id
 const getPostHogCookieName = () => `ph_${POSTHOG_KEY}_posthog`

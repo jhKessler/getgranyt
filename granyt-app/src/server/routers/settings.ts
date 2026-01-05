@@ -7,8 +7,44 @@ import {
   getChannel,
   ChannelType,
 } from "../services/notifications";
+import { env } from "@/env";
+
+/**
+ * Check if SMTP is configured via environment variables
+ */
+function isSmtpEnvConfigured(): boolean {
+  return !!(
+    env.SMTP_HOST &&
+    env.SMTP_PORT &&
+    env.SMTP_USER &&
+    env.SMTP_PASSWORD &&
+    env.SMTP_FROM_EMAIL
+  );
+}
+
+/**
+ * Check if Resend is configured via environment variables
+ */
+function isResendEnvConfigured(): boolean {
+  return !!(env.GRANYT_RESEND_API_KEY && env.RESEND_FROM_EMAIL);
+}
 
 export const settingsRouter = router({
+  /**
+   * Check if email is configured via environment variables
+   * Used during onboarding to nudge users to set up email
+   */
+  getEmailEnvStatus: protectedProcedure.query(() => {
+    const smtpConfigured = isSmtpEnvConfigured();
+    const resendConfigured = isResendEnvConfigured();
+    
+    return {
+      isEmailConfigured: smtpConfigured || resendConfigured,
+      smtp: smtpConfigured,
+      resend: resendConfigured,
+    };
+  }),
+
   /**
    * Get notification settings
    */

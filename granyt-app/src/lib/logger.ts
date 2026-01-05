@@ -1,6 +1,7 @@
 import pino from 'pino';
+import { env } from "@/env";
 
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = env.NODE_ENV === 'development';
 const isServer = typeof window === 'undefined';
 
 /**
@@ -11,7 +12,7 @@ const isServer = typeof window === 'undefined';
  */
 const createLoggerInstance = () => {
   const options: pino.LoggerOptions = {
-    level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
+    level: env.LOG_LEVEL ?? (isDev ? 'debug' : 'info'),
     browser: {
       asObject: true,
     },
