@@ -14,7 +14,7 @@ type GranytMode = "APP" | "DOCS" | "DEV";
 
 const EXTERNAL_DOCS_BASE_URL = "https://granyt.dev";
 
-function getGranytMode(): GranytMode {
+export function getGranytMode(): GranytMode {
   const mode = process.env.NEXT_PUBLIC_GRANYT_MODE?.toUpperCase();
   if (mode === "DOCS" || mode === "DEV") {
     return mode;

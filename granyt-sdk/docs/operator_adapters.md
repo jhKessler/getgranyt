@@ -100,9 +100,27 @@ register_adapter(MyCustomAdapter)
 
 Granyt SDK comes with built-in support for many popular operators:
 
-*   **SQL**: Snowflake, BigQuery, Postgres, MySQL, Redshift, and a Generic SQL adapter.
-*   **Storage**: S3, GCS, Azure Blob Storage.
-*   **Transform**: dbt (via `DbtCloudOperator` or `DbtRunOperator`), Spark.
-*   **Utilities**: Python, Bash, HTTP, Email.
+### SQL & Data Warehouse
+
+| Adapter | Supported Operators | Metrics Captured |
+|---------|---------------------|------------------|
+| **Snowflake** | `SnowflakeOperator`, `SnowflakeSqlApiOperator`, `SnowflakeCheckOperator`, `S3ToSnowflakeOperator` | `row_count`, `query_id`, `warehouse`, `database`, `schema`, `role` |
+| **BigQuery** | `BigQueryInsertJobOperator`, `BigQueryCheckOperator`, `BigQueryValueCheckOperator`, `BigQueryGetDataOperator`, `GCSToBigQueryOperator` | `bytes_processed`, `bytes_billed`, `row_count`, `query_id`, `slot_milliseconds` |
+| **Generic SQL** | `SQLExecuteQueryOperator`, `SQLColumnCheckOperator`, `SQLTableCheckOperator`, `SQLCheckOperator`, `SQLValueCheckOperator`, `SQLIntervalCheckOperator`, `BranchSQLOperator` | `row_count`, `database`, `schema`, `table`, `query_text` |
+
+### Cloud Storage
+
+| Adapter | Supported Operators | Metrics Captured |
+|---------|---------------------|------------------|
+| **AWS S3** | `S3CopyObjectOperator`, `S3CreateObjectOperator`, `S3DeleteObjectsOperator`, `S3ListOperator`, `S3FileTransformOperator`, `S3CreateBucketOperator`, `S3DeleteBucketOperator` | `files_processed`, `bytes_processed`, `source_path`, `destination_path` |
+| **Google Cloud Storage** | `GCSCreateBucketOperator`, `GCSListObjectsOperator`, `GCSDeleteObjectsOperator`, `GCSSynchronizeBucketsOperator`, `GCSDeleteBucketOperator`, `LocalFilesystemToGCSOperator`, `GCSToLocalFilesystemOperator` | `files_processed`, `bytes_processed`, `source_path`, `destination_path`, `region` |
+
+### Transformation & Compute
+
+| Adapter | Supported Operators | Metrics Captured |
+|---------|---------------------|------------------|
+| **dbt Cloud** | `DbtCloudRunJobOperator`, `DbtCloudGetJobRunArtifactOperator`, `DbtCloudListJobsOperator` | `models_run`, `tests_passed`, `tests_failed`, `row_count`, `job_id`, `account_id`, `run_id` |
+| **dbt Core** | `DbtRunOperator`, `DbtTestOperator`, `DbtSeedOperator`, `DbtSnapshotOperator` | `models_run`, `tests_passed`, `tests_failed`, `row_count`, `path` |
+| **Spark** | `SparkSubmitOperator`, `DataprocSubmitJobOperator`, `EmrAddStepsOperator` | `stages_completed`, `tasks_completed`, `shuffle_bytes`, `row_count` |
 
 You can find the implementations of these adapters in `granyt_sdk.integrations.airflow.operator_adapters/`.

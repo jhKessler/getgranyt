@@ -75,7 +75,7 @@ export default function MetricsPage() {
                   <h3 className="font-semibold text-lg">Snowflake</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports <code className="text-xs">SnowflakeOperator</code>, <code className="text-xs">SnowflakeSqlApiOperator</code>, and various Snowflake transfer operators.
+                  Supports <code className="text-xs">SnowflakeOperator</code>, <code className="text-xs">SnowflakeSqlApiOperator</code>, <code className="text-xs">SnowflakeCheckOperator</code>, and <code className="text-xs">S3ToSnowflakeOperator</code>.
                 </p>
                 <DataTable
                   headers={["Metric", "Description"]}
@@ -86,7 +86,8 @@ export default function MetricsPage() {
                     ["warehouse", "The Snowflake warehouse used for execution"],
                     ["database", "Target database name"],
                     ["schema", "Target schema name"],
-                    ["query_duration_ms", "Total execution time in Snowflake"],
+                    ["role", "Snowflake role used for the query (in custom_metrics)"],
+                    ["connection_id", "Airflow connection ID used"],
                   ]}
                 />
               </CardContent>
@@ -99,7 +100,7 @@ export default function MetricsPage() {
                   <h3 className="font-semibold text-lg">BigQuery</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports <code className="text-xs">BigQueryExecuteQueryOperator</code>, <code className="text-xs">BigQueryInsertJobOperator</code>, and GCS transfer operators.
+                  Supports <code className="text-xs">BigQueryInsertJobOperator</code>, <code className="text-xs">BigQueryCheckOperator</code>, <code className="text-xs">BigQueryValueCheckOperator</code>, <code className="text-xs">BigQueryGetDataOperator</code>, and <code className="text-xs">GCSToBigQueryOperator</code>.
                 </p>
                 <DataTable
                   headers={["Metric", "Description"]}
@@ -107,9 +108,10 @@ export default function MetricsPage() {
                   rows={[
                     ["bytes_processed", "Total bytes processed by the job (billable)"],
                     ["bytes_billed", "Total bytes billed for the query"],
-                    ["row_count", "Number of rows modified or returned by the job"],
+                    ["row_count", "Number of rows modified (from numDmlAffectedRows) or returned"],
                     ["query_id", "BigQuery Job ID"],
                     ["slot_milliseconds", "Total slot time consumed by the query"],
+                    ["connection_id", "Airflow connection ID (gcp_conn_id)"],
                   ]}
                 />
               </CardContent>
@@ -119,18 +121,20 @@ export default function MetricsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 mb-4">
                   <Database className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-lg">PostgreSQL & MySQL</h3>
+                  <h3 className="font-semibold text-lg">Generic SQL</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports standard Postgres and MySQL operators and hooks.
+                  Supports <code className="text-xs">SQLExecuteQueryOperator</code>, <code className="text-xs">SQLColumnCheckOperator</code>, <code className="text-xs">SQLTableCheckOperator</code>, <code className="text-xs">SQLCheckOperator</code>, <code className="text-xs">SQLValueCheckOperator</code>, <code className="text-xs">SQLIntervalCheckOperator</code>, and <code className="text-xs">BranchSQLOperator</code>.
                 </p>
                 <DataTable
                   headers={["Metric", "Description"]}
                   monospaceColumns={[0]}
                   rows={[
-                    ["row_count", "Number of rows modified or returned by the query"],
+                    ["row_count", "Number of rows returned by the query"],
                     ["database", "Target database name"],
-                    ["schema", "Target schema name (Postgres only)"],
+                    ["schema", "Target schema name"],
+                    ["table", "Target table name (for check operators)"],
+                    ["query_text", "SQL query text executed"],
                   ]}
                 />
               </CardContent>
@@ -148,19 +152,19 @@ export default function MetricsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 mb-4">
                   <HardDrive className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-lg">AWS S3 & Google Cloud Storage</h3>
+                  <h3 className="font-semibold text-lg">AWS S3</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports S3 and GCS operators for creation, deletion, and transfer.
+                  Supports <code className="text-xs">S3CopyObjectOperator</code>, <code className="text-xs">S3CreateObjectOperator</code>, <code className="text-xs">S3DeleteObjectsOperator</code>, <code className="text-xs">S3ListOperator</code>, <code className="text-xs">S3FileTransformOperator</code>, <code className="text-xs">S3CreateBucketOperator</code>, and <code className="text-xs">S3DeleteBucketOperator</code>.
                 </p>
                 <DataTable
                   headers={["Metric", "Description"]}
                   monospaceColumns={[0]}
                   rows={[
-                    ["files_processed", "Number of files transferred or modified"],
+                    ["files_processed", "Number of files/keys transferred or modified"],
                     ["bytes_processed", "Total size of data transferred in bytes"],
-                    ["source_path", "Source URI (e.g., s3://bucket/key or gs://bucket/obj)"],
-                    ["destination_path", "Destination URI for transfer operations"],
+                    ["source_path", "Source bucket name (e.g., source_bucket_name, bucket)"],
+                    ["destination_path", "Destination bucket/key (e.g., dest_bucket_name, s3_bucket/s3_key)"],
                   ]}
                 />
               </CardContent>
@@ -170,18 +174,20 @@ export default function MetricsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 mb-4">
                   <HardDrive className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-lg">Azure Blob Storage</h3>
+                  <h3 className="font-semibold text-lg">Google Cloud Storage</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports Azure Blob Storage operators and sensors.
+                  Supports <code className="text-xs">GCSCreateBucketOperator</code>, <code className="text-xs">GCSListObjectsOperator</code>, <code className="text-xs">GCSDeleteObjectsOperator</code>, <code className="text-xs">GCSSynchronizeBucketsOperator</code>, <code className="text-xs">GCSDeleteBucketOperator</code>, <code className="text-xs">LocalFilesystemToGCSOperator</code>, and <code className="text-xs">GCSToLocalFilesystemOperator</code>.
                 </p>
                 <DataTable
                   headers={["Metric", "Description"]}
                   monospaceColumns={[0]}
                   rows={[
-                    ["files_processed", "Number of blobs processed"],
-                    ["bytes_processed", "Total size of blobs in bytes"],
-                    ["source_path", "Azure WASB URI"],
+                    ["files_processed", "Number of objects processed (from XCom results)"],
+                    ["bytes_processed", "Total size of objects in bytes"],
+                    ["source_path", "Source bucket name"],
+                    ["destination_path", "Destination bucket name (bucket_name attribute)"],
+                    ["region", "GCS location/region for bucket operations"],
                   ]}
                 />
               </CardContent>
@@ -202,16 +208,20 @@ export default function MetricsPage() {
                   <h3 className="font-semibold text-lg">dbt (data build tool)</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports all dbt operators, including Astronomer Cosmos.
+                  Supports dbt Cloud operators (<code className="text-xs">DbtCloudRunJobOperator</code>, <code className="text-xs">DbtCloudGetJobRunArtifactOperator</code>, <code className="text-xs">DbtCloudListJobsOperator</code>) and dbt Core operators (<code className="text-xs">DbtRunOperator</code>, <code className="text-xs">DbtTestOperator</code>, <code className="text-xs">DbtSeedOperator</code>, <code className="text-xs">DbtSnapshotOperator</code>).
                 </p>
                 <DataTable
                   headers={["Metric", "Description"]}
                   monospaceColumns={[0]}
                   rows={[
-                    ["models_run", "Number of dbt models executed"],
+                    ["models_run", "Number of dbt models executed (from run_results)"],
                     ["tests_passed", "Number of dbt tests that passed"],
                     ["tests_failed", "Number of dbt tests that failed"],
-                    ["row_count", "Total rows affected across all models in the run"],
+                    ["row_count", "Total rows affected (sum of adapter_response.rows_affected)"],
+                    ["job_id", "dbt Cloud Job ID (custom_metrics)"],
+                    ["account_id", "dbt Cloud Account ID (custom_metrics)"],
+                    ["run_id", "dbt Cloud Run ID (query_id)"],
+                    ["path", "dbt project path for Core operators (custom_metrics)"],
                   ]}
                 />
               </CardContent>

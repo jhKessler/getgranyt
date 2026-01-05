@@ -55,6 +55,19 @@ The SDK integrates with Airflow's plugin system and listener mechanism to automa
 2. Extract OpenLineage-compatible metadata
 3. Send lineage events to your Granyt backend
 
+### Operator Adapters
+
+The SDK includes built-in adapters for popular Airflow operators that automatically extract rich metrics:
+
+| Category | Operators | Key Metrics |
+|----------|-----------|-------------|
+| **Snowflake** | `SnowflakeOperator`, `SnowflakeSqlApiOperator`, `S3ToSnowflakeOperator` | `row_count`, `query_id`, `warehouse`, `database`, `schema` |
+| **BigQuery** | `BigQueryInsertJobOperator`, `BigQueryCheckOperator`, `GCSToBigQueryOperator` | `bytes_processed`, `row_count`, `query_id`, `slot_milliseconds` |
+| **Generic SQL** | `SQLExecuteQueryOperator`, `SQLColumnCheckOperator`, `BranchSQLOperator` | `row_count`, `database`, `schema`, `table` |
+| **AWS S3** | `S3CopyObjectOperator`, `S3ListOperator`, `S3DeleteObjectsOperator` | `files_processed`, `bytes_processed`, `source_path`, `destination_path` |
+| **GCS** | `GCSCreateBucketOperator`, `GCSListObjectsOperator`, `GCSSynchronizeBucketsOperator` | `files_processed`, `bytes_processed`, `source_path`, `destination_path` |
+| **dbt** | `DbtCloudRunJobOperator`, `DbtRunOperator`, `DbtTestOperator` | `models_run`, `tests_passed`, `tests_failed`, `row_count` |
+
 For more details on how we extract metrics from specific operators, see the [Operator Adapters documentation](docs/operator_adapters.md).
 
 ### Rich Error Capture
