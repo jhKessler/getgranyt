@@ -209,9 +209,7 @@ class GranytConfig:
         return {
             "endpoint": self.endpoint,
             "api_key": "***" if self.api_key else None,
-            "endpoints": [
-                {"endpoint": ep.endpoint, "api_key": "***"} for ep in endpoints
-            ],
+            "endpoints": [{"endpoint": ep.endpoint, "api_key": "***"} for ep in endpoints],
             "endpoints_count": len(endpoints),
             "debug": self.debug,
             "disabled": self.disabled,

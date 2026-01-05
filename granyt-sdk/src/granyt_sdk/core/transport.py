@@ -86,9 +86,7 @@ class GranytTransport:
     def _init_sessions(self) -> None:
         """Initialize HTTP sessions for all configured endpoints."""
         endpoints = self.config.get_all_endpoints()
-        self._endpoint_sessions = [
-            EndpointSession(ep, self.config) for ep in endpoints
-        ]
+        self._endpoint_sessions = [EndpointSession(ep, self.config) for ep in endpoints]
         # Create thread pool for parallel sending
         self._executor = ThreadPoolExecutor(max_workers=max(len(endpoints), 2))
 
@@ -185,9 +183,7 @@ class GranytTransport:
         futures = []
         for ep_session in self._endpoint_sessions:
             url = url_getter(ep_session.endpoint_config)
-            future = self._executor.submit(
-                self._send_to_single_endpoint, ep_session, url, payload
-            )
+            future = self._executor.submit(self._send_to_single_endpoint, ep_session, url, payload)
             futures.append(future)
 
         success_count = 0
