@@ -13,7 +13,8 @@ const DOCS_ROUTES = [
   "/", // Landing page (marketing)
   "/docs", // Documentation
   "/demo", // Demo page
-  "/sitemap.xml"
+  "/sitemap.xml",
+  "/install.sh",
 ];
 
 const APP_ROUTES = [
