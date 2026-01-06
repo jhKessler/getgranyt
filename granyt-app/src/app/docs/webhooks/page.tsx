@@ -232,6 +232,31 @@ const isValid = verifySignature(JSON.stringify(req.body), signature, process.env
 
       <section className="space-y-6">
         <SectionHeader
+          title="Slack Integration"
+          description="Granyt works seamlessly with Slack using Incoming Webhooks."
+        />
+
+        <div className="space-y-4">
+          <p className="text-muted-foreground">
+            To receive Granyt notifications in Slack:
+          </p>
+          <ol className="list-decimal list-inside space-y-2 text-muted-foreground ml-4">
+            <li>Create a new app in your <a href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer" className="text-primary underline">Slack API dashboard</a>.</li>
+            <li>Enable <strong>Incoming Webhooks</strong> for your app.</li>
+            <li>Click <strong>Add New Webhook to Workspace</strong> and select a channel.</li>
+            <li>Copy the <strong>Webhook URL</strong>.</li>
+            <li>Paste this URL into the Webhook configuration in Granyt (Settings &gt; Notifications).</li>
+          </ol>
+          <Callout variant="info">
+            <p>
+              Granyt sends a standard JSON payload that Slack&apos;s Incoming Webhooks can automatically parse into a message. No additional formatting is required.
+            </p>
+          </Callout>
+        </div>
+      </section>
+
+      <section className="space-y-6">
+        <SectionHeader
           title="Headers"
           description="Standard headers included in every webhook request."
         />

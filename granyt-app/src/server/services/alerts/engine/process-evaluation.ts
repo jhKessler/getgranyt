@@ -15,6 +15,7 @@ import {
 } from "../types";
 import { notify, NotificationEventType, type BatchAlertItem } from "../../notifications";
 import { createLogger } from "@/lib/logger";
+import { env } from "@/env";
 
 const logger = createLogger("AlertEngine");
 
@@ -209,8 +210,8 @@ async function sendBatchAlertNotification(
   const overallSeverity = hasCritical ? "critical" : "warning";
 
   // Build dashboard URL pointing to the run detail page
-  const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL 
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/dags/${encodeURIComponent(dagRun.srcDagId)}/runs/${encodeURIComponent(dagRun.id)}`
+  const dashboardUrl = env.NEXT_PUBLIC_APP_URL 
+    ? `${env.NEXT_PUBLIC_APP_URL}/dashboard/dags/${encodeURIComponent(dagRun.srcDagId)}/runs/${encodeURIComponent(dagRun.id)}`
     : undefined;
 
   // Send the batch notification

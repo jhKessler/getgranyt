@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { StatusBadge, EnvironmentBadge, AlertIndicator, DataCard, TableHeadWithTooltip, EmptyState } from "@/components/shared"
+import { StatusBadge, EnvironmentBadge, AlertIndicator, DataCard, TableHeadWithTooltip, EmptyState, AirflowLink } from "@/components/shared"
 import { formatDuration } from "@/lib/format"
 import { format, formatDistanceToNow } from "date-fns"
 import { useRouter } from "next/navigation"
@@ -43,6 +43,7 @@ interface RunsTableProps {
   isLoading: boolean
   basePath?: string
   runAlerts?: Record<string, RunAlertInfo>
+  airflowUrl?: string | null
 }
 
 
@@ -63,10 +64,11 @@ function RunTypeCell({ runType }: { runType: string | null }) {
   )
 }
 
-function RunRow({ run, alertInfo, basePath = "/dashboard" }: { 
+function RunRow({ run, alertInfo, basePath = "/dashboard", airflowUrl }: { 
   run: DagRunItem;
   alertInfo?: RunAlertInfo;
   basePath?: string;
+  airflowUrl?: string | null;
 }) {
   const router = useRouter()
 
@@ -121,13 +123,22 @@ function RunRow({ run, alertInfo, basePath = "/dashboard" }: {
       <TableCell className="text-right">
         {formatDuration(run.duration)}
       </TableCell>
+      <TableCell>
+        <AirflowLink 
+          airflowUrl={airflowUrl}
+          dagId={run.srcDagId}
+          runId={run.srcRunId}
+          variant="icon"
+          size="sm"
+        />
+      </TableCell>
     </TableRow>
   )
 }
 
 
 
-export function RunsTable({ runs, isLoading, basePath = "/dashboard", runAlerts }: RunsTableProps) {
+export function RunsTable({ runs, isLoading, basePath = "/dashboard", runAlerts, airflowUrl }: RunsTableProps) {
   return (
     <DataCard
       title="All Runs"
@@ -162,6 +173,7 @@ export function RunsTable({ runs, isLoading, basePath = "/dashboard", runAlerts 
             <TableHeadWithTooltip className="text-right" tooltip="Total execution time of this run">
               Duration
             </TableHeadWithTooltip>
+            {airflowUrl && <TableHead className="w-10"></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -171,6 +183,7 @@ export function RunsTable({ runs, isLoading, basePath = "/dashboard", runAlerts 
               run={run}
               alertInfo={runAlerts?.[run.id]}
               basePath={basePath}
+              airflowUrl={airflowUrl}
             />
           ))}
         </TableBody>

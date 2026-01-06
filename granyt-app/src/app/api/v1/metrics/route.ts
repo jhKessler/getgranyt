@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Ingest metrics
-    const result = await ingestMetrics({
+    await ingestMetrics({
       organizationId: auth.organization.id,
       environment: auth.environmentName,
       payload: payload.data,
@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       status: "received",
-      capture_id: result.captureId,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

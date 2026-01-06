@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { StatusBadge, AlertIndicator, DataCard, TableHeadWithTooltip, EmptyState } from "@/components/shared"
+import { StatusBadge, AlertIndicator, DataCard, TableHeadWithTooltip, EmptyState, AirflowLink } from "@/components/shared"
 import { formatDuration } from "@/lib/format"
 import { format, formatDistanceToNow } from "date-fns"
 import { useRouter } from "next/navigation"
@@ -38,15 +38,17 @@ interface DagsTableProps {
   selectedEnvironment?: string | null
   basePath?: string
   dagAlerts?: Record<string, DagAlertInfo>
+  airflowUrl?: string | null
 }
 
 
 
-function DagRow({ dag, selectedEnvironment, alertInfo, basePath = "/dashboard" }: { 
+function DagRow({ dag, selectedEnvironment, alertInfo, basePath = "/dashboard", airflowUrl }: { 
   dag: DagOverview; 
   selectedEnvironment?: string | null;
   alertInfo?: DagAlertInfo;
   basePath?: string;
+  airflowUrl?: string | null;
 }) {
   const router = useRouter()
 
@@ -98,13 +100,21 @@ function DagRow({ dag, selectedEnvironment, alertInfo, basePath = "/dashboard" }
       <TableCell className="text-right">
         {formatDuration(dag.avgDuration)}
       </TableCell>
+      <TableCell>
+        <AirflowLink 
+          airflowUrl={airflowUrl}
+          dagId={dag.dagId}
+          variant="icon"
+          size="sm"
+        />
+      </TableCell>
     </TableRow>
   )
 }
 
 
 
-export function DagsTable({ dags, isLoading, selectedEnvironment, basePath = "/dashboard", dagAlerts }: DagsTableProps) {
+export function DagsTable({ dags, isLoading, selectedEnvironment, basePath = "/dashboard", dagAlerts, airflowUrl }: DagsTableProps) {
   return (
     <DataCard
       title="All DAGs"
@@ -133,6 +143,7 @@ export function DagsTable({ dags, isLoading, selectedEnvironment, basePath = "/d
             <TableHeadWithTooltip className="text-right" tooltip="Average execution time across all runs in the selected timeframe">
               Avg Duration
             </TableHeadWithTooltip>
+            {airflowUrl && <TableHead className="w-10"></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -143,6 +154,7 @@ export function DagsTable({ dags, isLoading, selectedEnvironment, basePath = "/d
               selectedEnvironment={selectedEnvironment}
               alertInfo={dagAlerts?.[dag.dagId]}
               basePath={basePath}
+              airflowUrl={airflowUrl}
             />
           ))}
         </TableBody>

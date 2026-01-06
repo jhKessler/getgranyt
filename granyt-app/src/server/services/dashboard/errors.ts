@@ -228,16 +228,16 @@ export async function getErrorDetails(
 function formatErrorDetails(error: ErrorWithOccurrences) {
   const environments = new Set<string>();
 
-  const occurrences = error.occurrences.map((occ) => {
-    const env = occ.taskRun?.environment || occ.taskRun?.dagRun?.environment;
+  const occurrences = error.occurrences.map((occurrence) => {
+    const env = occurrence.taskRun?.environment || occurrence.taskRun?.dagRun?.environment;
     if (env) environments.add(env);
 
     return {
-      ...occ,
-      dagId: occ.taskRun?.dagRun?.srcDagId ?? null,
-      taskId: occ.taskRun?.srcTaskId ?? null,
-      runId: occ.taskRun?.dagRun?.srcRunId ?? null,
-      dagRunId: occ.taskRun?.dagRun?.id ?? null,
+      ...occurrence,
+      dagId: occurrence.taskRun?.dagRun?.srcDagId ?? null,
+      taskId: occurrence.taskRun?.srcTaskId ?? null,
+      runId: occurrence.taskRun?.dagRun?.srcRunId ?? null,
+      dagRunId: occurrence.taskRun?.dagRun?.id ?? null,
       environment: env ?? null,
     };
   });
@@ -270,4 +270,46 @@ export async function updateErrorStatus(
       resolvedAt: status === ErrorStatus.Resolved ? new Date() : null,
     },
   });
+}
+
+export async function getRunErrorOccurrences(
+  prisma: PrismaClient,
+  orgId: string,
+  dagRunId: string
+) {
+  const occurrences = await prisma.errorOccurrence.findMany({
+    where: { 
+      organizationId: orgId,
+      taskRun: {
+        dagRunId: dagRunId,
+      },
+    },
+    include: {
+      generalError: {
+        select: {
+          id: true,
+          exceptionType: true,
+          message: true,
+        },
+      },
+      taskRun: {
+        select: {
+          srcTaskId: true,
+        },
+      },
+    },
+    orderBy: { timestamp: "desc" },
+  });
+
+  return occurrences.map((o) => ({
+    id: o.id,
+    taskId: o.taskRun?.srcTaskId ?? null,
+    exceptionType: o.generalError.exceptionType,
+    message: o.generalError.message,
+    errorId: o.generalError.id,
+    timestamp: o.timestamp,
+    tryNumber: o.tryNumber,
+    operator: o.operator,
+    stacktrace: o.stacktrace,
+  }));
 }

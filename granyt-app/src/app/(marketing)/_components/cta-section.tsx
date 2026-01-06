@@ -1,9 +1,9 @@
 import Link from "next/link"
-import { getDocsLink } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Github, BookOpen, MessageSquare } from "lucide-react"
+import { GITHUB_URL } from "@/lib/constants"
 
 export function CTASection() {
   return (
@@ -31,7 +31,7 @@ export function CTASection() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Button asChild size="lg" className="gap-2 text-base">
                   <Link 
-                    href={getDocsLink("", "cta-primary")}
+                    href="/docs"
                   >
                     <BookOpen className="h-4 w-4" />
                     Docs
@@ -45,7 +45,7 @@ export function CTASection() {
         {/* Additional links */}
         <div className="grid gap-6 md:grid-cols-3 mt-12">
           <Link 
-            href="https://github.com/jhKessler/getgranyt" 
+            href={GITHUB_URL} 
             target="_blank"
             className="group"
           >
@@ -67,7 +67,7 @@ export function CTASection() {
           </Link>
 
           <Link 
-            href={getDocsLink("", "cta-card")} 
+            href="/docs" 
             className="group"
           >
             <Card className="h-full border-border/50 hover:border-primary/30 transition-colors">
@@ -88,7 +88,7 @@ export function CTASection() {
           </Link>
 
           <Link 
-            href="https://github.com/jhKessler/getgranyt/discussions" 
+            href={`${GITHUB_URL}/discussions`} 
             target="_blank"
             className="group"
           >

@@ -19,9 +19,12 @@ export const organizationRouter = router({
   }),
 
   create: protectedProcedure
-    .input(z.object({ name: z.string().min(2).max(100) }))
+    .input(z.object({ 
+      name: z.string().min(2).max(100),
+      airflowUrl: z.string().url().optional().or(z.literal("")),
+    }))
     .mutation(({ ctx, input }) => {
-      return createOrganization(ctx.prisma, ctx.user.id, input.name);
+      return createOrganization(ctx.prisma, ctx.user.id, input.name, input.airflowUrl || undefined);
     }),
 
   generateApiKey: protectedProcedure

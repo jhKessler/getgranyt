@@ -23,13 +23,13 @@ export async function seedAlerts(
     return;
   }
 
-  // Alert 1: ROW_COUNT_DROP - Open warning on user analytics pipeline
+  // Alert 1: ROW_COUNT_DROP - Acknowledged warning on user analytics pipeline
   const dagRun1 = dagRuns[0];
   await prisma.alert.create({
     data: {
       organizationId,
       alertType: AlertType.ROW_COUNT_DROP,
-      status: AlertStatus.OPEN,
+      status: AlertStatus.ACKNOWLEDGED,
       severity: "warning",
       srcDagId: dagRun1.srcDagId,
       captureId: `${dagRun1.srcDagId}.extract_users`,

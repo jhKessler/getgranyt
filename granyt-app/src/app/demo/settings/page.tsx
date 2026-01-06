@@ -22,6 +22,9 @@ export default function DemoSettingsPage() {
       isSavingChannelConfig={false}
       isTestingChannelConnection={false}
       isSendingTestNotification={false}
+      airflowSettings={{ airflowUrl: null }}
+      handleSaveAirflowUrl={() => {}}
+      isSavingAirflowSettings={false}
     />
   )
 }

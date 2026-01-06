@@ -7,8 +7,44 @@ import {
   getChannel,
   ChannelType,
 } from "../services/notifications";
+import { env } from "@/env";
+
+/**
+ * Check if SMTP is configured via environment variables
+ */
+function isSmtpEnvConfigured(): boolean {
+  return !!(
+    env.SMTP_HOST &&
+    env.SMTP_PORT &&
+    env.SMTP_USER &&
+    env.SMTP_PASSWORD &&
+    env.SMTP_FROM_EMAIL
+  );
+}
+
+/**
+ * Check if Resend is configured via environment variables
+ */
+function isResendEnvConfigured(): boolean {
+  return !!(env.GRANYT_RESEND_API_KEY && env.RESEND_FROM_EMAIL);
+}
 
 export const settingsRouter = router({
+  /**
+   * Check if email is configured via environment variables
+   * Used during onboarding to nudge users to set up email
+   */
+  getEmailEnvStatus: protectedProcedure.query(() => {
+    const smtpConfigured = isSmtpEnvConfigured();
+    const resendConfigured = isResendEnvConfigured();
+    
+    return {
+      isEmailConfigured: smtpConfigured || resendConfigured,
+      smtp: smtpConfigured,
+      resend: resendConfigured,
+    };
+  }),
+
   /**
    * Get notification settings
    */
@@ -369,6 +405,45 @@ export const settingsRouter = router({
           organizationId: org.id,
           channelType: input.channelType,
         },
+      });
+
+      return { success: true };
+    }),
+
+  // ============================================================================
+  // AIRFLOW SETTINGS
+  // ============================================================================
+
+  /**
+   * Get Airflow settings for the organization
+   */
+  getAirflowSettings: protectedProcedure
+    .input(z.object({ organizationId: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+      
+      return {
+        airflowUrl: org.airflowUrl,
+      };
+    }),
+
+  /**
+   * Update Airflow settings for the organization
+   */
+  updateAirflowSettings: protectedProcedure
+    .input(z.object({
+      organizationId: z.string().optional(),
+      airflowUrl: z.string().url().optional().or(z.literal("")),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+
+      // Normalize URL - remove trailing slash
+      const normalizedUrl = input.airflowUrl?.trim().replace(/\/$/, "") || null;
+
+      await ctx.prisma.organization.update({
+        where: { id: org.id },
+        data: { airflowUrl: normalizedUrl },
       });
 
       return { success: true };

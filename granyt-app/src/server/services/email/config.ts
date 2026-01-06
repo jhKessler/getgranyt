@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ALERT_TYPE_TO_NOTIFICATION_TYPE, getNotificationDefaults, NotificationTypes, type NotificationTypeValue } from "@/lib/notifications";
 import type { SmtpConfig, EmailRecipient, NotificationCheckResult } from "./types";
+import { env } from "@/env";
 
 /**
  * Gets SMTP configuration for an organization.
@@ -41,20 +42,20 @@ export async function getSmtpConfig(
   }
 
   // Fall back to environment variables
-  const envHost = process.env.SMTP_HOST;
-  const envPort = process.env.SMTP_PORT;
-  const envUser = process.env.SMTP_USER;
-  const envPassword = process.env.SMTP_PASSWORD;
-  const envFromEmail = process.env.SMTP_FROM_EMAIL;
-  const envFromName = process.env.SMTP_FROM_NAME;
+  const envHost = env.SMTP_HOST;
+  const envPort = env.SMTP_PORT;
+  const envUser = env.SMTP_USER;
+  const envPassword = env.SMTP_PASSWORD;
+  const envFromEmail = env.SMTP_FROM_EMAIL;
+  const envFromName = env.SMTP_FROM_NAME;
 
   if (envHost && envPort && envUser && envPassword && envFromEmail) {
     return {
       host: envHost,
-      port: parseInt(envPort, 10),
+      port: envPort,
       user: envUser,
       password: envPassword,
-      secure: process.env.SMTP_SECURE !== "false",
+      secure: env.SMTP_SECURE !== "false",
       fromEmail: envFromEmail,
       fromName: envFromName || "Granyt",
     };

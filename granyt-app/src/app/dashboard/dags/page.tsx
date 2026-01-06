@@ -65,6 +65,9 @@ function DagsPageContent() {
   // Fetch DAGs with open alerts
   const { data: dagAlerts } = trpc.alerts.getDagsWithAlerts.useQuery({})
 
+  // Fetch Airflow settings for linking
+  const { data: airflowSettings } = trpc.settings.getAirflowSettings.useQuery({})
+
   const _envLabel = filters.selectedEnvironment 
     ? filters.selectedEnvironment.charAt(0).toUpperCase() + filters.selectedEnvironment.slice(1)
     : ""
@@ -94,6 +97,7 @@ function DagsPageContent() {
         isLoading={isLoading || envsLoading || !isHydrated} 
         selectedEnvironment={filters.selectedEnvironment}
         dagAlerts={dagAlerts}
+        airflowUrl={airflowSettings?.airflowUrl}
       />
     </div>
   )

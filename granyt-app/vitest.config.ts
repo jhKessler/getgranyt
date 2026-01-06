@@ -10,6 +10,10 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
     },
+    env: {
+      // Skip T3 env validation during tests
+      SKIP_ENV_VALIDATION: '1',
+    },
   },
   resolve: {
     alias: {

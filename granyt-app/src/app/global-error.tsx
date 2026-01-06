@@ -2,7 +2,6 @@
 
 import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { logger } from "@/lib/logger"
 
 export default function GlobalError({
   error,
@@ -12,7 +11,8 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    logger.error(error)
+    // Use console.error for client-side error boundary - logger uses server-side env vars
+    console.error("Global error:", error)
   }, [error])
 
   return (

@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/table"
 import { format } from "date-fns"
 import Link from "next/link"
-import { XCircle } from "lucide-react"
+import { XCircle, ChevronRight } from "lucide-react"
 import { EnvironmentBadge } from "@/components/shared"
 import type { Occurrence } from "./affected-dags-card"
 
@@ -40,11 +41,16 @@ export function AllOccurrencesCard({ occurrences, basePath = "/dashboard" }: All
               <TableHead>Environment</TableHead>
               <TableHead>Try</TableHead>
               <TableHead>Timestamp</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {occurrences.map((occ: Occurrence) => (
-              <OccurrenceRow key={occ.id} occurrence={occ} basePath={basePath} />
+            {occurrences.map((occurrence: Occurrence) => (
+              <OccurrenceRow 
+                key={occurrence.id} 
+                occurrence={occurrence} 
+                basePath={basePath} 
+              />
             ))}
           </TableBody>
         </Table>
@@ -54,8 +60,24 @@ export function AllOccurrencesCard({ occurrences, basePath = "/dashboard" }: All
 }
 
 function OccurrenceRow({ occurrence, basePath }: { occurrence: Occurrence; basePath: string }) {
+  const router = useRouter()
+  
+  // Link to the run page if we have dagId and dagRunId
+  const runUrl = occurrence.dagId && occurrence.dagRunId
+    ? `${basePath}/dags/${encodeURIComponent(occurrence.dagId)}/runs/${encodeURIComponent(occurrence.dagRunId)}`
+    : null
+  
+  const handleRowClick = () => {
+    if (runUrl) {
+      router.push(runUrl)
+    }
+  }
+  
   return (
-    <TableRow>
+    <TableRow 
+      className={runUrl ? "cursor-pointer hover:bg-muted/50 group" : ""}
+      onClick={handleRowClick}
+    >
       <TableCell>
         <XCircle className="h-4 w-4 text-destructive" />
       </TableCell>
@@ -63,16 +85,18 @@ function OccurrenceRow({ occurrence, basePath }: { occurrence: Occurrence; baseP
         <Link 
           href={`${basePath}/dags/${encodeURIComponent(occurrence.dagId || "unknown")}`}
           className="hover:underline"
+          onClick={(e) => e.stopPropagation()}
         >
           {occurrence.dagId || "unknown"}
         </Link>
       </TableCell>
       <TableCell className="font-mono text-sm">{occurrence.taskId || "-"}</TableCell>
       <TableCell className="font-mono text-sm truncate max-w-[150px]">
-        {occurrence.dagRunId && occurrence.dagId ? (
+        {runUrl ? (
           <Link 
-            href={`${basePath}/dags/${encodeURIComponent(occurrence.dagId)}/runs/${encodeURIComponent(occurrence.dagRunId)}`}
+            href={runUrl}
             className="hover:underline text-primary"
+            onClick={(e) => e.stopPropagation()}
           >
             {occurrence.runId || "-"}
           </Link>
@@ -88,6 +112,13 @@ function OccurrenceRow({ occurrence, basePath }: { occurrence: Occurrence; baseP
       <TableCell>{occurrence.tryNumber || "-"}</TableCell>
       <TableCell>
         {format(new Date(occurrence.timestamp), "MMM d, HH:mm:ss")}
+      </TableCell>
+      <TableCell>
+        {runUrl ? (
+          <Link href={runUrl} className="flex items-center justify-center">
+            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+          </Link>
+        ) : null}
       </TableCell>
     </TableRow>
   )

@@ -31,7 +31,7 @@ export async function seedExternalApiSyncDAG(
       fingerprint: timeoutFingerprint,
       exceptionType: timeoutErrorType,
       message: "HTTPSConnectionPool(host='api.external-service.com', port=443): Read timed out. (read timeout=30)",
-      status: "open",
+      status: "resolved",
       occurrenceCount: 3,
       firstSeenAt: hoursAgo(48),
       lastSeenAt: hoursAgo(2),

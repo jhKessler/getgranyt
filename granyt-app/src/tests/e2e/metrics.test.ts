@@ -44,7 +44,6 @@ describe("E2E: Metrics", () => {
       organizationId: org.id,
       environment: "production",
       payload: {
-        capture_id: "e2e-capture-1",
         captured_at: timestamp,
         dag_id: dagId,
         task_id: "e2e_metrics_task",

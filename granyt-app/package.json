@@ -1,6 +1,7 @@
 {
   "name": "granyt-app",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "prisma": {
     "schema": "./prisma",
@@ -43,6 +44,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.14",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@t3-oss/env-nextjs": "^0.13.10",
     "@tanstack/react-query": "^5.80.6",
     "@trpc/client": "^11.1.2",
     "@trpc/react-query": "^11.1.2",

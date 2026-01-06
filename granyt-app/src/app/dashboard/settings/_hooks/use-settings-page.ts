@@ -165,10 +165,31 @@ export function useSettingsPage() {
       channelType: channelType as "SMTP" | "RESEND" | "WEBHOOK",
     });
   };
+
+  // ============================================================================
+  // AIRFLOW SETTINGS
+  // ============================================================================
+
+  const { data: airflowSettings, isLoading: isLoadingAirflow } = 
+    trpc.settings.getAirflowSettings.useQuery({});
+
+  const updateAirflowSettings = trpc.settings.updateAirflowSettings.useMutation({
+    onSuccess: () => {
+      toast.success("Airflow settings saved");
+      utils.settings.getAirflowSettings.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`Failed to save Airflow settings: ${error.message}`);
+    },
+  });
+
+  const handleSaveAirflowUrl = (airflowUrl: string) => {
+    updateAirflowSettings.mutate({ airflowUrl: airflowUrl || "" });
+  };
   
   return {
     // Loading states
-    isLoading: isLoadingNotifications || isLoadingChannels,
+    isLoading: isLoadingNotifications || isLoadingChannels || isLoadingAirflow,
     
     // Data
     notificationSettings,
@@ -189,5 +210,10 @@ export function useSettingsPage() {
     isSavingChannelConfig: saveChannelConfig.isPending,
     isTestingChannelConnection: testChannelConnection.isPending,
     isSendingTestNotification: sendTestNotification.isPending,
+
+    // Airflow Settings
+    airflowSettings,
+    handleSaveAirflowUrl,
+    isSavingAirflowSettings: updateAirflowSettings.isPending,
   };
 }

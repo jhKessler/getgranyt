@@ -27,7 +27,7 @@
 ## ✨ Features
 
 - **📊 DAG Monitoring** - Real-time visibility into your data pipelines with run history, duration trends, and success rates
-- **🚨 Smart Alerts** - Configurable alerts for failures, changes in source data, and pipeline anomalies with email/webhook notifications
+- **🚨 Smart Alerts** - Configurable alerts for failures, changes in source data, and pipeline anomalies with email, Slack, and webhook notifications
 - **🐛 Error Tracking** - Centralized error aggregation with fingerprinting and stack trace analysis
 - **🌙 Dark Mode** - Beautiful UI with light and dark theme support
 - **🐳 Docker Ready** - One-command deployment with Docker Compose
@@ -178,14 +178,12 @@ curl -H "X-API-Key: granyt_prod_xxxxx" \
 
 ```json
 {
-  "capture_id": "unique-id",
   "captured_at": "2024-01-15T10:30:00Z",
   "dag_id": "my_dag",
-  "dag_run_id": "scheduled__2024-01-15",
+  "run_id": "scheduled__2024-01-15",
   "task_id": "extract",
-  "operator": "PythonOperator",
   "metrics": {
-    "rows_processed": 1500,
+    "row_count": 1500,
     "duration_seconds": 45.2
   }
 }

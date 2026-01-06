@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { env } from "@/env";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,8 +15,12 @@ type GranytMode = "APP" | "DOCS" | "DEV";
 
 const EXTERNAL_DOCS_BASE_URL = "https://granyt.dev";
 
-function getGranytMode(): GranytMode {
-  const mode = process.env.NEXT_PUBLIC_GRANYT_MODE?.toUpperCase();
+export function getGranytMode(): GranytMode {
+  // In test environment with skipped validation, read directly from process.env
+  // Otherwise use the validated env object
+  const mode = (process.env.SKIP_ENV_VALIDATION 
+    ? process.env.NEXT_PUBLIC_GRANYT_MODE 
+    : env.NEXT_PUBLIC_GRANYT_MODE)?.toUpperCase();
   if (mode === "DOCS" || mode === "DEV") {
     return mode;
   }

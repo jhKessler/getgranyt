@@ -109,7 +109,7 @@ export function DagRunsChart({ data, timeframe, isLoading = false, onBarClick }:
           <CardTitle className="text-base sm:text-lg">{getChartTitle(timeframe, "runs")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[200px] sm:h-[300px] w-full" />
+          <Skeleton className="h-[160px] sm:h-[300px] w-full" />
         </CardContent>
       </Card>
     )
@@ -175,7 +175,7 @@ export function DagRunsChart({ data, timeframe, isLoading = false, onBarClick }:
         <CardDescription className="text-xs sm:text-sm">{getChartDescription(timeframe, grouping)}</CardDescription>
       </CardHeader>
       <CardContent className="px-2 sm:px-6">
-        <div className="h-[200px] sm:h-[300px]">
+        <div className="h-[160px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />

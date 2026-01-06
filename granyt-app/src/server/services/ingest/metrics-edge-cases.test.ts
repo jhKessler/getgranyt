@@ -73,7 +73,6 @@ describe('Edge Cases: Data Metrics', () => {
 
   it('should handle zero row count', async () => {
     const metrics: MetricsPayload = {
-      capture_id: 'capture-empty',
       captured_at: '2025-01-01T12:00:00.000Z',
       dag_id: 'test_dag',
       task_id: 'task_1',
@@ -107,7 +106,6 @@ describe('Edge Cases: Data Metrics', () => {
 
   it('should handle very large row counts', async () => {
     const metrics: MetricsPayload = {
-      capture_id: 'capture-large',
       captured_at: '2025-01-01T12:00:00.000Z',
       dag_id: 'big_data_dag',
       task_id: 'task_1',
@@ -142,7 +140,6 @@ describe('Edge Cases: Data Metrics', () => {
 
   it('should handle polars dataframe type', async () => {
     const metrics: MetricsPayload = {
-      capture_id: 'capture-polars',
       captured_at: '2025-01-01T12:00:00.000Z',
       dag_id: 'test_dag',
       task_id: 'task_1',
@@ -176,7 +173,6 @@ describe('Edge Cases: Data Metrics', () => {
 
   it('should handle schema with null counts', async () => {
     const metrics: MetricsPayload = {
-      capture_id: 'capture-nulls',
       captured_at: '2025-01-01T12:00:00.000Z',
       dag_id: 'test_dag',
       task_id: 'task_1',
@@ -214,7 +210,6 @@ describe('Edge Cases: Data Metrics', () => {
   describe('Column Name Edge Cases', () => {
     it('should handle column names with special characters in schema', async () => {
       const metrics: MetricsPayload = {
-        capture_id: 'capture-special',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',
@@ -249,7 +244,6 @@ describe('Edge Cases: Data Metrics', () => {
 
     it('should handle unicode column names in schema', async () => {
       const metrics: MetricsPayload = {
-        capture_id: 'capture-unicode',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',
@@ -290,7 +284,6 @@ describe('Edge Cases: Data Metrics', () => {
     it('should handle very long column names in schema', async () => {
       const longColumnName = 'column_' + 'a'.repeat(500);
       const metrics: MetricsPayload = {
-        capture_id: 'capture-long',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',
@@ -317,7 +310,6 @@ describe('Edge Cases: Data Metrics', () => {
 
     it('should handle empty column name in schema', async () => {
       const metrics: MetricsPayload = {
-        capture_id: 'capture-empty-name',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',
@@ -346,7 +338,6 @@ describe('Edge Cases: Data Metrics', () => {
   describe('Data Type Edge Cases', () => {
     it('should handle complex dtypes in schema', async () => {
       const metrics: MetricsPayload = {
-        capture_id: 'capture-dtypes',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',
@@ -378,7 +369,6 @@ describe('Edge Cases: Data Metrics', () => {
 
     it('should handle polars-specific dtypes in schema', async () => {
       const metrics: MetricsPayload = {
-        capture_id: 'capture-polars-dtypes',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',
@@ -407,72 +397,11 @@ describe('Edge Cases: Data Metrics', () => {
     });
   });
 
-  describe('Capture ID Edge Cases', () => {
-    it('should handle capture_id with special characters', async () => {
-      const metrics: MetricsPayload = {
-        capture_id: 'capture_dag.task_2025-01-01T12:00:00.000Z',
-        captured_at: '2025-01-01T12:00:00.000Z',
-        dag_id: 'test_dag',
-        task_id: 'task_1',
-        run_id: 'manual__2025-01-01',
-        metrics: {
-          row_count: 100,
-          column_count: 1,
-          memory_bytes: 1024,
-          dataframe_type: 'pandas',
-        },
-        schema: {
-          column_dtypes: {},
-        },
-      };
-
-      await ingestMetrics({
-        organizationId: 'org-123',
-        payload: metrics,
-      });
-
-      expect(prisma.metric.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            captureId: 'capture_dag.task_2025-01-01T12:00:00.000Z',
-          }),
-        })
-      );
-    });
-
-    it('should handle UUID capture_id', async () => {
-      const metrics: MetricsPayload = {
-        capture_id: '550e8400-e29b-41d4-a716-446655440000',
-        captured_at: '2025-01-01T12:00:00.000Z',
-        dag_id: 'test_dag',
-        task_id: 'task_1',
-        run_id: 'manual__2025-01-01',
-        metrics: {
-          row_count: 100,
-          column_count: 1,
-          memory_bytes: 1024,
-          dataframe_type: 'pandas',
-        },
-        schema: {
-          column_dtypes: {},
-        },
-      };
-
-      await ingestMetrics({
-        organizationId: 'org-123',
-        payload: metrics,
-      });
-
-      expect(prisma.metric.create).toHaveBeenCalled();
-    });
-  });
-
   describe('Database Error Handling', () => {
     it('should propagate DAG upsert errors', async () => {
       vi.mocked(prisma.dag.upsert).mockRejectedValue(new Error('DAG upsert failed'));
 
       const metrics: MetricsPayload = {
-        capture_id: 'capture-error',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',
@@ -499,7 +428,6 @@ describe('Edge Cases: Data Metrics', () => {
       );
 
       const metrics: MetricsPayload = {
-        capture_id: 'capture-duplicate',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',
@@ -524,7 +452,6 @@ describe('Edge Cases: Data Metrics', () => {
   describe('Spark DataFrame Edge Cases', () => {
     it('should handle spark dataframe type', async () => {
       const metrics: MetricsPayload = {
-        capture_id: 'capture-spark',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'big_data_dag',
         task_id: 'task_1',
@@ -560,7 +487,6 @@ describe('Edge Cases: Data Metrics', () => {
   describe('Environment Handling', () => {
     it('should pass through environment to DAG creation', async () => {
       const metrics: MetricsPayload = {
-        capture_id: 'capture-env',
         captured_at: '2025-01-01T12:00:00.000Z',
         dag_id: 'test_dag',
         task_id: 'task_1',

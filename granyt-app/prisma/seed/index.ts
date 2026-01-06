@@ -13,6 +13,8 @@ import {
   seedPaymentProcessingDAG,
   seedExternalApiSyncDAG,
   seedDataWarehouseLoadDAG,
+  seedAirflowFullSuiteDAGs,
+  seedHappyPathDAGs,
 } from "./dags";
 import { computeDAGMetrics } from "./dag-metrics";
 import { seedAlerts } from "./alerts";
@@ -44,6 +46,8 @@ async function main() {
   await seedPaymentProcessingDAG(prisma, organization.id);
   await seedExternalApiSyncDAG(prisma, organization.id);
   await seedDataWarehouseLoadDAG(prisma, organization.id);
+  await seedAirflowFullSuiteDAGs(prisma, organization.id);
+  await seedHappyPathDAGs(prisma, organization.id);
 
   // Step 5: Compute DAG metrics
   await computeDAGMetrics(prisma, organization.id);

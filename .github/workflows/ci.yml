@@ -14,7 +14,7 @@ on:
       - staging
     paths:
       - 'granyt-app/**'
-      - '.github/workflows/**'
+      - '.github/workflows/ci.yml'
   push:
     branches:
       - main
@@ -23,7 +23,7 @@ on:
       - 'v*.*.*'
     paths:
       - 'granyt-app/**'
-      - '.github/workflows/**'
+      - '.github/workflows/ci.yml'
   
   # Allow manual trigger
   workflow_dispatch:

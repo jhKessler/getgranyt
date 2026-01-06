@@ -2,18 +2,11 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { format } from "date-fns"
 import Link from "next/link"
-import { StacktraceView, type StackFrame } from "./stacktrace-view"
+import { type StackFrame } from "./stacktrace-view"
 import { EnvironmentBadge } from "@/components/shared"
+import { formatDistanceToNow } from "date-fns"
+import { GitBranch } from "lucide-react"
 
 interface Occurrence {
   id: string
@@ -39,18 +32,31 @@ interface AffectedDagsCardProps {
 }
 
 export function AffectedDagsCard({ occurrencesByDag, basePath = "/dashboard" }: AffectedDagsCardProps) {
+  if (occurrencesByDag.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Affected DAGs</CardTitle>
+          <CardDescription>
+            No DAGs affected in the selected filter
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Affected DAGs</CardTitle>
         <CardDescription>
-          This error has occurred in the following DAGs
+          This error has occurred in {occurrencesByDag.length} DAG{occurrencesByDag.length !== 1 ? "s" : ""}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-2">
           {occurrencesByDag.map((dagGroup) => (
-            <DagOccurrenceGroup key={dagGroup.dagId} dagGroup={dagGroup} basePath={basePath} />
+            <DagListItem key={dagGroup.dagId} dagGroup={dagGroup} basePath={basePath} />
           ))}
         </div>
       </CardContent>
@@ -58,7 +64,7 @@ export function AffectedDagsCard({ occurrencesByDag, basePath = "/dashboard" }: 
   )
 }
 
-function DagOccurrenceGroup({ dagGroup, basePath }: { dagGroup: DagGroup; basePath: string }) {
+function DagListItem({ dagGroup, basePath }: { dagGroup: DagGroup; basePath: string }) {
   // Get unique environments for this DAG
   const environments = [...new Set(
     dagGroup.occurrences
@@ -66,89 +72,48 @@ function DagOccurrenceGroup({ dagGroup, basePath }: { dagGroup: DagGroup; basePa
       .filter((env): env is string => env !== null)
   )]
 
+  // Get the most recent occurrence timestamp
+  const lastOccurrence = dagGroup.occurrences.reduce((latest, occ) => {
+    const occTime = new Date(occ.timestamp).getTime()
+    const latestTime = new Date(latest.timestamp).getTime()
+    return occTime > latestTime ? occ : latest
+  }, dagGroup.occurrences[0])
+
   return (
-    <div className="border rounded-lg p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <Link 
-            href={`${basePath}/dags/${encodeURIComponent(dagGroup.dagId)}`}
-            className="font-semibold hover:underline"
-          >
-            {dagGroup.dagId}
-          </Link>
-          <div className="flex items-center gap-1">
-            {environments.map(env => (
-              <EnvironmentBadge key={env} environment={env} variant="error" />
+    <Link 
+      href={`${basePath}/dags/${encodeURIComponent(dagGroup.dagId)}`}
+      className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors"
+    >
+      <div className="flex items-center gap-3">
+        <GitBranch className="h-4 w-4 text-muted-foreground" />
+        <div>
+          <p className="font-medium text-sm">{dagGroup.dagId}</p>
+          <div className="flex items-center gap-2 mt-1">
+            {environments.slice(0, 3).map(env => (
+              <EnvironmentBadge 
+                key={env} 
+                environment={env} 
+                variant="muted" 
+                className="text-[10px] px-1 py-0 h-4"
+              />
             ))}
+            {environments.length > 3 && (
+              <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                +{environments.length - 3}
+              </Badge>
+            )}
           </div>
         </div>
-        <Badge variant="secondary">
+      </div>
+      <div className="text-right">
+        <Badge variant="secondary" className="text-xs">
           {dagGroup.occurrenceCount} occurrence{dagGroup.occurrenceCount !== 1 ? "s" : ""}
         </Badge>
+        <p className="text-xs text-muted-foreground mt-1">
+          Last {formatDistanceToNow(new Date(lastOccurrence.timestamp), { addSuffix: true })}
+        </p>
       </div>
-      
-      {dagGroup.occurrences.length > 0 && (
-        <div className="mt-3">
-          <p className="text-xs text-muted-foreground mb-2">Recent occurrences</p>
-          <OccurrencesTable occurrences={dagGroup.occurrences.slice(0, 5)} basePath={basePath} />
-          
-          {dagGroup.occurrences[0]?.stacktrace && (
-            <details className="mt-4">
-              <summary className="text-sm font-medium cursor-pointer hover:text-primary">
-                View Stacktrace
-              </summary>
-              <div className="mt-2 border rounded-lg">
-                <StacktraceView stacktrace={dagGroup.occurrences[0].stacktrace} />
-              </div>
-            </details>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function OccurrencesTable({ occurrences, basePath }: { occurrences: Occurrence[]; basePath: string }) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Task</TableHead>
-          <TableHead>Run ID</TableHead>
-          <TableHead>Environment</TableHead>
-          <TableHead>Try</TableHead>
-          <TableHead>Timestamp</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {occurrences.map((occ: Occurrence) => (
-          <TableRow key={occ.id}>
-            <TableCell className="font-mono text-sm">{occ.taskId || "-"}</TableCell>
-            <TableCell className="font-mono text-sm truncate max-w-[200px]">
-              {occ.dagRunId && occ.dagId ? (
-                <Link 
-                  href={`${basePath}/dags/${encodeURIComponent(occ.dagId)}/runs/${encodeURIComponent(occ.dagRunId)}`}
-                  className="hover:underline text-primary"
-                >
-                  {occ.runId || "-"}
-                </Link>
-              ) : (
-                occ.runId || "-"
-              )}
-            </TableCell>
-            <TableCell>
-              {occ.environment ? (
-                <EnvironmentBadge environment={occ.environment} variant="muted" />
-              ) : "-"}
-            </TableCell>
-            <TableCell>{occ.tryNumber || "-"}</TableCell>
-            <TableCell>
-              {format(new Date(occ.timestamp), "MMM d, HH:mm:ss")}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    </Link>
   )
 }
 

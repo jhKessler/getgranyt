@@ -11,7 +11,7 @@ const isServer = typeof window === 'undefined';
  */
 const createLoggerInstance = () => {
   const options: pino.LoggerOptions = {
-    level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
+    level: process.env.LOG_LEVEL ?? (isDev ? 'debug' : 'info'),
     browser: {
       asObject: true,
     },

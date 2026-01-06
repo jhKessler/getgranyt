@@ -34,7 +34,7 @@ export { getOverviewMetrics } from "./overview-metrics";
 export { getHourlyRunStats } from "./hourly-stats";
 
 // Errors
-export { getRecentErrors, getErrorDetails, updateErrorStatus, getErrorsByEnvironmentType } from "./errors";
+export { getRecentErrors, getErrorDetails, updateErrorStatus, getErrorsByEnvironmentType, getRunErrorOccurrences } from "./errors";
 
 // DAGs
 export { getDagsOverview, getDagDetails, getDagEnvironmentStatuses } from "./dags";
@@ -57,3 +57,7 @@ export type { RunDetails, TaskRunInfo, CapturePointInfo } from "./run-details";
 // Timeframe stats (for dashboard charts)
 export { getTimeframeRunStats, getGroupByForTimeframe } from "./timeframe-stats";
 export type { TimeframeStat, GroupBy } from "./timeframe-stats";
+
+// Setup status (for onboarding checklist)
+export { getSetupStatus } from "./setup-status";
+export type { SetupStatus } from "./setup-status";

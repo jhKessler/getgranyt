@@ -1,5 +1,6 @@
 import { Shield, Zap, BarChart3, Mail, Settings } from "lucide-react"
-import { INSTALL_COMMAND } from "@/lib/constants"
+import Link from "next/link"
+import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   PageHeader,
@@ -52,8 +53,8 @@ const DOCKER_COMPOSE_YAML = `services:
 volumes:
   postgres-data:`
 
-const DOT_ENV_EXAMPLE = `POSTGRES_PASSWORD=your-secure-password
-BETTER_AUTH_SECRET=your-32-char-secret-key
+const DOT_ENV_EXAMPLE = `POSTGRES_PASSWORD=your-secure-password # Generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET=your-32-char-secret-key # Generate with: openssl rand -base64 32
 BETTER_AUTH_URL=http://localhost:3000`
 
 export default function QuickstartPage() {
@@ -79,15 +80,40 @@ export default function QuickstartPage() {
 
           <Tabs defaultValue="shell" className="w-full">
             <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-              <TabsTrigger value="shell">Shell Command</TabsTrigger>
+              <TabsTrigger value="shell">CLI</TabsTrigger>
               <TabsTrigger value="docker">Docker Deployment</TabsTrigger>
             </TabsList>
             <TabsContent value="shell" className="mt-4 space-y-4">
-              <CodeBlock 
-                code={INSTALL_COMMAND}
-                language="bash"
-                title="Terminal"
-              />
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  The Granyt installer will walk you through the entire setup process.
+                </p>
+                <CodeBlock 
+                  code={INSTALL_COMMAND}
+                  language="bash"
+                  title="Terminal"
+                />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">This script will:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Check for Docker (optionally install it)</li>
+                    <li>
+                      Download{" "}
+                      <Link 
+                        href={`${GITHUB_URL}/blob/main/granyt-app/docker-compose.standalone.yml`}
+                        target="_blank"
+                        className="text-primary hover:underline"
+                      >
+                        <InlineCode>docker-compose.standalone.yml</InlineCode>
+                      </Link>{" "}
+                      from GitHub
+                    </li>
+                    <li>Generate secure secrets for your installation</li>
+                    <li>Create a <InlineCode>.env</InlineCode> file with your configuration</li>
+                    <li>Start Granyt containers</li>
+                  </ul>
+                </div>
+              </div>
             </TabsContent>
             <TabsContent value="docker" className="mt-4 space-y-4">
               <div className="space-y-3">
@@ -100,18 +126,32 @@ export default function QuickstartPage() {
                     language="yaml"
                     title="docker-compose.yml"
                   />
+                  <p className="text-sm text-muted-foreground">
+                    Next, create a <InlineCode>.env</InlineCode> file in the same directory to store your secrets:
+                  </p>
                   <CodeBlock 
                     code={DOT_ENV_EXAMPLE}
                     language="bash"
                     title=".env"
                   />
+                  <p className="text-sm text-muted-foreground">
+                    Finally, start the Granyt server:
+                  </p>
+                  <CodeBlock 
+                    code="docker compose up -d"
+                    language="bash"
+                    title="Terminal"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    The Granyt server will now be available on your system at port <InlineCode>3000</InlineCode>.
+                  </p>
                 </div>
               </div>
             </TabsContent>
           </Tabs>
 
           <Callout variant="info">
-            Once the server is running, open your dashboard under <strong>/register</strong> and follow the instructions to generate an <strong>API Key</strong>.
+            Once the server is running, it will be available at <strong>http://localhost:3000</strong>. Open your dashboard under <strong>/register</strong> and follow the instructions to generate an <strong>API Key</strong>.
           </Callout>
         </div>
       </section>
@@ -158,6 +198,9 @@ export default function QuickstartPage() {
             },
           ]}
         />
+        <Callout variant="info">
+          <strong>Supported Airflow Versions:</strong> 2.5 – 2.10. Airflow 3.0 support is coming soon.
+        </Callout>
       </section>
 
       <section className="space-y-6">
@@ -177,7 +220,7 @@ export default function QuickstartPage() {
                 Automatic Tracking
               </h4>
               <p className="text-sm text-muted-foreground">
-                Granyt automatically hooks into supported Airflow operators (like Snowflake, BigQuery, and Postgres) to capture row counts, query IDs, and execution metadata without any extra code.
+                Granyt automatically hooks into supported Airflow operators (Snowflake, BigQuery, S3, GCS, dbt, and generic SQL) to capture row counts, query IDs, and execution metadata without any extra code.
               </p>
             </div>
             <div className="space-y-3">
@@ -186,29 +229,35 @@ export default function QuickstartPage() {
                 Manual Capture
               </h4>
               <p className="text-sm text-muted-foreground">
-                Use the <InlineCode>capture_data_metrics</InlineCode> function to track custom KPIs, data quality stats, and lineage directly from your DataFrames (Pandas, Polars, Spark).
+                Use the <InlineCode>compute_df_metrics</InlineCode> helper to extract metrics from your DataFrames (Pandas, Polars, Spark) and return them via Airflow XCom.
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-semibold">How capture_data_metrics works</h4>
+            <h4 className="font-semibold">How Manual Metrics Work</h4>
             <p className="text-sm text-muted-foreground">
-              The <InlineCode>capture_data_metrics</InlineCode> function inspects your DataFrame and sends a snapshot of its metadata to Granyt. It automatically detects the Airflow context (DAG ID, Task ID, Run ID) so you don&apos;t have to pass them manually.
+              Granyt automatically captures any dictionary returned under the <InlineCode>granyt</InlineCode> key in your task&apos;s return value. Use <InlineCode>compute_df_metrics</InlineCode> to easily generate DataFrame schema and metrics, passing the result to <InlineCode>granyt[&quot;df_schema&quot;]</InlineCode>.
             </p>
             <CodeBlock 
               language="python"
-              code={`from granyt_sdk import capture_data_metrics
+              code={`from granyt_sdk import compute_df_metrics
 
-# Inside an Airflow task
-capture_data_metrics(df, suffix="processed")`}
+@task
+def my_task():
+    df = pd.read_csv(...)
+    return {
+        "granyt": {
+            "df_schema": compute_df_metrics(df)
+        }
+    }`}
             />
           </div>
 
           <div className="space-y-4">
             <h4 className="font-semibold">Example: Data Validation</h4>
             <p className="text-sm text-muted-foreground">
-              Capture metrics before and after a transformation to ensure data integrity. Use the <InlineCode>suffix</InlineCode> argument to distinguish multiple capture points in one task.
+              Capture metrics from your final DataFrame to ensure data integrity.
             </p>
             
             <Tabs defaultValue="pandas" className="w-full">
@@ -221,96 +270,88 @@ capture_data_metrics(df, suffix="processed")`}
                 <CodeBlock 
                   language="python"
                   code={`from airflow.decorators import task
-from granyt_sdk import capture_data_metrics
+from granyt_sdk import compute_df_metrics
 import pandas as pd
 
 @task
 def transform_data():
-    # Load raw data
-    df_raw = pd.read_sql("SELECT * FROM raw_events", conn)
+    # Load and transform data
+    df = pd.read_sql("SELECT * FROM raw_events", conn)
+    df_clean = df.dropna()
     
-    # Capture metrics with a suffix. 
-    # The base capture ID is automatically inferred from the Airflow context!
-    capture_data_metrics(df_raw, suffix="raw")
-    
-    # Perform transformation
-    df_clean = df_raw.dropna()
-    
-    # Capture final metrics
-    capture_data_metrics(df_clean, suffix="clean")`}
+    # Return metrics via XCom
+    return {
+        "granyt": {
+            "df_schema": compute_df_metrics(df_clean)
+        }
+    }`}
                 />
               </TabsContent>
               <TabsContent value="polars" className="mt-4">
                 <CodeBlock 
                   language="python"
                   code={`from airflow.decorators import task
-from granyt_sdk import capture_data_metrics
+from granyt_sdk import compute_df_metrics
 import polars as pl
 
 @task
 def transform_data():
-    # Load raw data
-    df_raw = pl.read_database("SELECT * FROM raw_events", conn)
+    # Load and transform data
+    df = pl.read_database("SELECT * FROM raw_events", conn)
+    df_clean = df.drop_nulls()
     
-    # Capture metrics with a suffix
-    capture_data_metrics(df_raw, suffix="raw")
-    
-    # Perform transformation
-    df_clean = df_raw.drop_nulls()
-    
-    # Capture final metrics
-    capture_data_metrics(df_clean, suffix="clean")`}
+    # Return metrics via XCom
+    return {
+        "granyt": {
+            "df_schema": compute_df_metrics(df_clean)
+        }
+    }`}
                 />
               </TabsContent>
               <TabsContent value="spark" className="mt-4 space-y-4">
                 <CodeBlock 
                   language="python"
                   code={`from airflow.decorators import task
-from granyt_sdk import capture_data_metrics
+from granyt_sdk import compute_df_metrics
 
 @task
 def transform_spark_data():
-    # Load data into a Spark DataFrame
+    # Load and transform data
     df = spark.read.table("raw_events")
-    
-    # Capture metrics using Spark's Observation API.
-    # Setting compute_stats=True triggers a single pass over the data
-    # to collect null counts and other stats efficiently.
-    capture_data_metrics(df, suffix="raw", compute_stats=True)
-    
-    # Continue with your transformation
     df_clean = df.filter(df.value.isNotNull())
-    return df_clean`}
+    
+    # Return metrics via XCom.
+    # The SDK collects null counts and other stats efficiently.
+    return {
+        "granyt": {
+            "df_schema": compute_df_metrics(df_clean)
+        }
+    }`}
                 />
-                <Callout variant="warning">
-                  <strong>Note on PySpark Execution:</strong> Calling <InlineCode>capture_data_metrics</InlineCode> with Spark is a <strong>non-lazy operation</strong>. It triggers an immediate Spark action (<InlineCode>count()</InlineCode>) and automatically <strong>caches the DataFrame</strong> at that point. This ensures everything in your tree is only calculated once and subsequent transformations use the cached data, but it does create an execution barrier.
-                </Callout>
               </TabsContent>
             </Tabs>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-semibold">Example: ML Model Monitoring</h4>
+            <h4 className="font-semibold">Example: Custom Metrics</h4>
             <p className="text-sm text-muted-foreground">
-              You can pass <InlineCode>df=None</InlineCode> if you only want to capture custom metrics without a DataFrame.
+              You can also return custom metrics directly in the <InlineCode>granyt</InlineCode> dictionary.
             </p>
             <CodeBlock 
               language="python"
               code={`from airflow.decorators import task
-from granyt_sdk import capture_data_metrics
 
 @task
 def train_model():
     # ... training logic ...
     f1_score = 0.92
     
-    # Capture custom metrics only. 
-    # No need to specify a capture ID - it's inferred from your Airflow task!
-    capture_data_metrics(
-        df=None, 
-        suffix="model_perf",
-        custom_metrics={"f1_score": f1_score}
-    )`}
+    return {
+        "granyt": {
+            "f1_score": f1_score,
+            "model_type": "random_forest"
+        }
+    }`}
             />
           </div>
           
@@ -325,7 +366,7 @@ def train_model():
           href="/docs/notifications"
           icon={Mail}
           title="Setup Notifications"
-          description="Get alerted on Slack or Email when your pipelines fail or data quality drops."
+          description="Get alerted by Email or Webhook when your pipelines fail or data quality drops."
         />
         <LinkCard
           href="/docs/metrics"

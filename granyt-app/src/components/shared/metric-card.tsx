@@ -53,16 +53,16 @@ export function MetricCard({
           )}
         </div>
         <Icon className={cn(
-          "h-4 w-4 shrink-0",
+          "h-4 w-4 shrink-0 hidden sm:block",
           isDestructive ? "text-destructive" : "text-muted-foreground"
         )} />
       </CardHeader>
       <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
         {isLoading ? (
-          <Skeleton className="h-6 sm:h-8 w-16 sm:w-20" />
+          <Skeleton className="h-5 sm:h-8 w-14 sm:w-20" />
         ) : (
           <div className={cn(
-            "text-lg sm:text-2xl font-bold truncate",
+            "text-base sm:text-2xl font-bold truncate",
             isDestructive && "text-destructive",
             href && "group-hover:underline decoration-2 underline-offset-4"
           )}>{value}</div>

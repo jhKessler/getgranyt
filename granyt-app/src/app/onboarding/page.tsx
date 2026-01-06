@@ -4,6 +4,8 @@ import { useDocumentTitle } from "@/lib/use-document-title"
 import {
   ProgressSteps,
   OrganizationStep,
+  EmailSetupStep,
+  NotificationPreferencesStep,
   ApiKeyStep,
 } from "./_components"
 import { useOnboarding } from "./_hooks"
@@ -14,10 +16,24 @@ export default function OnboardingPage() {
     step,
     organizationName,
     setOrganizationName,
+    airflowUrl,
+    setAirflowUrl,
     apiKey,
     copied,
     isLoading,
+    isNotificationLoading,
+    isEmailConfigured,
+    // Notification settings
+    notificationSettings,
+    errorSelectValue,
+    handleNotificationSettingChange,
+    handleErrorSelectChange,
+    handleSaveNotifications,
+    handleSkipNotifications,
+    // Other handlers
     handleCreateOrg,
+    handleEmailStepContinue,
+    handleEmailStepSkip,
     handleCopyApiKey,
     handleFinish,
   } = useOnboarding()
@@ -31,12 +47,34 @@ export default function OnboardingPage() {
           <OrganizationStep
             organizationName={organizationName}
             onOrganizationNameChange={setOrganizationName}
+            airflowUrl={airflowUrl}
+            onAirflowUrlChange={setAirflowUrl}
             onSubmit={handleCreateOrg}
             isLoading={isLoading}
           />
         )}
 
         {step === 2 && (
+          <EmailSetupStep
+            isEmailConfigured={isEmailConfigured}
+            onSkip={handleEmailStepSkip}
+            onContinue={handleEmailStepContinue}
+          />
+        )}
+
+        {step === 3 && (
+          <NotificationPreferencesStep
+            settings={notificationSettings}
+            onSettingChange={handleNotificationSettingChange}
+            onErrorSelectChange={handleErrorSelectChange}
+            errorSelectValue={errorSelectValue}
+            onSave={handleSaveNotifications}
+            onSkip={handleSkipNotifications}
+            isLoading={isNotificationLoading}
+          />
+        )}
+
+        {step === 4 && (
           <ApiKeyStep
             apiKey={apiKey}
             onCopyApiKey={handleCopyApiKey}

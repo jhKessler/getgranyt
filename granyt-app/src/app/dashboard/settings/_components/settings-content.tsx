@@ -6,6 +6,7 @@ import {
   NotificationPreferencesCard,
   EmailSetupCard,
   NotificationSettingsCard,
+  AirflowSettingsCard,
 } from ".";
 
 export function SettingsContent({
@@ -24,10 +25,22 @@ export function SettingsContent({
   isSavingChannelConfig,
   isTestingChannelConnection,
   isSendingTestNotification,
+  // Airflow settings
+  airflowSettings,
+  handleSaveAirflowUrl,
+  isSavingAirflowSettings,
 }: ReturnType<typeof useSettingsPage>) {
   if (isLoading) {
     return <PageSkeleton rows={3} />;
   }
+
+  // Check if any email channel (SMTP or RESEND) is configured and enabled
+  const hasEmailConfigured = channelStatuses?.some(
+    (channel) =>
+      (channel.type === "SMTP" || channel.type === "RESEND") &&
+      channel.isConfigured &&
+      channel.isEnabled
+  ) ?? false;
 
   return (
     <div className="space-y-6">
@@ -37,6 +50,12 @@ export function SettingsContent({
       />
 
       <div className="grid gap-6">
+        <AirflowSettingsCard
+          airflowUrl={airflowSettings?.airflowUrl}
+          onSave={handleSaveAirflowUrl}
+          isSaving={isSavingAirflowSettings}
+        />
+
         <EmailSetupCard
           channelStatuses={channelStatuses}
           onToggleChannel={handleToggleChannel}
@@ -68,6 +87,7 @@ export function SettingsContent({
         <NotificationPreferencesCard
           settings={notificationSettings}
           onUpdate={handleUpdateNotifications}
+          hasEmailConfigured={hasEmailConfigured}
         />
       </div>
     </div>
