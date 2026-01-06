@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import Link from "next/link"
 import { X, Check, Copy, ChevronDown, Key, Bell, Bug, Download } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, getDocsLink } from "@/lib/utils"
 import { trpc } from "@/lib/trpc"
 import { env } from "@/env"
 import { Button } from "@/components/ui/button"

@@ -4,6 +4,10 @@ import { env } from "@/env"
 
 const POSTHOG_KEY = env.NEXT_PUBLIC_POSTHOG_KEY
 const POSTHOG_HOST = env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com"
+const GRANYT_MODE = env.NEXT_PUBLIC_GRANYT_MODE?.toUpperCase()
+
+// PostHog server-side is only enabled in DOCS mode
+const IS_POSTHOG_ENABLED = GRANYT_MODE === "DOCS" && !!POSTHOG_KEY
 
 // Cookie name PostHog uses to store the distinct_id
 const getPostHogCookieName = () => `ph_${POSTHOG_KEY}_posthog`
@@ -22,9 +26,10 @@ export interface BootstrapData {
  * Fetches PostHog bootstrap data server-side.
  * This includes the distinct_id and all feature flags for the user.
  * Use this to prevent FOUC (Flash of Unstyled Content) in A/B tests.
+ * Only enabled in DOCS mode.
  */
 export async function getPostHogBootstrapData(): Promise<BootstrapData | null> {
-  if (!POSTHOG_KEY) {
+  if (!IS_POSTHOG_ENABLED) {
     return null
   }
 

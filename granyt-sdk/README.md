@@ -1,21 +1,40 @@
 ﻿# Granyt SDK for Apache Airflow
 
-Granyt SDK is a Python package that integrates with Apache Airflow to automatically capture lineage data and rich error information, sending it to your Granyt backend for monitoring and observability.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.9+" />
+  <img src="https://img.shields.io/badge/Airflow-2.5--2.10-017CEE?style=for-the-badge&logo=apache-airflow" alt="Airflow Support" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License" />
+</p>
 
-## Features
+<p align="center">
+  <strong>Python SDK for Granyt - the open-source Airflow observability platform</strong><br>
+  Automatically capture lineage, errors, and metrics from your Airflow DAGs
+</p>
 
-- **Automatic Lineage Tracking**: Captures DAG/task run status using OpenLineage without any manual instrumentation
-- **Rich Error Capture**: Sentry-like error capturing with full stack traces, context variables, and system information
-- **Zero Configuration**: Just install and set environment variables - no code changes required
-- **Production Ready**: Built for reliability with retry logic, async processing, and graceful degradation
+> **Note:** This is the Python SDK component of Granyt. For the complete project overview, see the [main README](../README.md).
 
-## Installation
+---
+
+## ✨ Features
+
+- **Automatic Lineage Tracking** - Captures DAG/task run status using OpenLineage without any manual instrumentation
+- **Rich Error Capture** - Sentry-like error capturing with full stack traces, context variables, and system information
+- **Zero Configuration** - Just install and set environment variables - no code changes required
+- **Operator Adapters** - Built-in support for popular operators (Snowflake, BigQuery, dbt, S3, and more)
+- **DataFrame Metrics** - Automatic schema and metrics extraction from Pandas/Polars DataFrames
+- **Production Ready** - Built for reliability with retry logic, async processing, and graceful degradation
+
+---
+
+## 📦 Installation
 
 ```bash
 pip install granyt-sdk
 ```
 
-## Compatibility
+---
+
+## ✅ Compatibility
 
 | Airflow Version | Status | Notes |
 |-----------------|--------|-------|
@@ -26,7 +45,9 @@ pip install granyt-sdk
 
 **Python:** Requires Python 3.9 or later.
 
-## Configuration
+---
+
+## ⚙️ Configuration
 
 Set the following environment variables:
 
@@ -66,7 +87,9 @@ export GRANYT_BATCH_SIZE="10"
 export GRANYT_FLUSH_INTERVAL="5.0"
 ```
 
-## How It Works
+---
+
+## 🔧 How It Works
 
 ### Automatic Lineage Tracking
 
@@ -91,6 +114,8 @@ The SDK includes built-in adapters for popular Airflow operators that automatica
 
 For more details on how we extract metrics from specific operators, see the [Operator Adapters documentation](docs/operator_adapters.md).
 
+---
+
 ### Rich Error Capture
 
 When a task fails, the SDK automatically captures:
@@ -102,7 +127,9 @@ When a task fails, the SDK automatically captures:
 - Environment context (sanitized - no secrets)
 - Previous log entries
 
-## Usage
+---
+
+## 🚀 Usage
 
 Once installed and configured, the SDK works automatically. No code changes are required in your DAGs.
 
@@ -215,7 +242,9 @@ class SparkAdapter(DataFrameAdapter):
 register_adapter(SparkAdapter)
 ```
 
-## API Reference
+---
+
+## 📖 API Reference
 
 ### Environment Variables
 
@@ -253,7 +282,9 @@ The SDK sends the following event types to the backend:
 4. **Heartbeat Events** (`POST /api/v1/heartbeat`)
    - Periodic health checks from the SDK
 
-## Development
+---
+
+## 🛠️ Development
 
 ### Setup Development Environment
 
@@ -276,6 +307,14 @@ black src tests
 isort src tests
 ```
 
-## License
+---
 
-Apache License 2.0 - see [LICENSE](LICENSE) for details.
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  <a href="../README.md">← Back to main README</a>
+</p>

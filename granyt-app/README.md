@@ -6,61 +6,80 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License" />
 </p>
 
-<h1 align="center">🔍 Granyt</h1>
+<h1 align="center">Granyt App</h1>
 
 <p align="center">
-  <strong>Open-source data pipeline observability platform</strong><br>
-  Monitor, debug, and optimize your Airflow DAGs with real-time insights
+  <strong>Web dashboard for Granyt - the open-source Airflow observability platform</strong><br>
+  A modern Next.js application for monitoring, debugging, and configuring your data pipelines
 </p>
 
 <p align="center">
   <a href="#-features">Features</a> •
+  <a href="#-tech-stack">Tech Stack</a> •
   <a href="#-quick-start">Quick Start</a> •
-  <a href="#-installation">Installation</a> •
-  <a href="#-configuration">Configuration</a> •
   <a href="#-api-reference">API</a> •
   <a href="#-contributing">Contributing</a>
 </p>
+
+> **Note:** This is the web dashboard component of Granyt. For the complete project overview and installation guide, see the [main README](../README.md).
 
 ---
 
 ## ✨ Features
 
 - **📊 DAG Monitoring** - Real-time visibility into your data pipelines with run history, duration trends, and success rates
-- **🚨 Smart Alerts** - Configurable alerts for failures, changes in source data, and pipeline anomalies with email, Slack, and webhook notifications
+- **🚨 Smart Alerts** - Configurable alerts for failures, SLA breaches, and pipeline anomalies with email, Slack, and webhook notifications
 - **🐛 Error Tracking** - Centralized error aggregation with fingerprinting and stack trace analysis
+- **🔑 API Key Management** - Generate and manage API keys for SDK authentication
 - **🌙 Dark Mode** - Beautiful UI with light and dark theme support
 - **🐳 Docker Ready** - One-command deployment with Docker Compose
 
 ## 🖼️ Screenshots
 
+<!-- TODO: Add actual screenshots -->
 <details>
 <summary>Click to expand</summary>
 
 ### DAG Overview
-![DAG Overview](docs/screenshots/dags.png)
+![DAG Overview](docs/screenshots/dags-placeholder.png)
 
 ### Error Tracking
-![Error Tracking](docs/screenshots/errors.png)
+![Error Tracking](docs/screenshots/errors-placeholder.png)
 
 ### Alerts Configuration
-![Alerts](docs/screenshots/alerts.png)
+![Alerts](docs/screenshots/alerts-placeholder.png)
 
 </details>
+
+---
+
+## 🏗️ Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| **Framework** | Next.js 15 (App Router, Turbopack) |
+| **Language** | TypeScript 5 |
+| **Database** | PostgreSQL 17 + Prisma ORM |
+| **Styling** | Tailwind CSS 4 + shadcn/ui |
+| **API** | tRPC (type-safe APIs) |
+| **Auth** | better-auth |
+| **Charts** | Recharts |
+| **Validation** | Zod |
+| **State** | Zustand, TanStack Query |
+| **Analytics** | PostHog |
+
+---
 
 ## 🚀 Quick Start
 
 ### Using Docker (Recommended)
 
 ```bash
-# Clone the repository
-git clone https://github.com/jhKessler/getgranyt.git
-cd getgranyt/granyt-app
-
-# Copy environment file and configure
+# From the granyt-app directory
 cp .env.standalone.example .env
 
-# Edit .env with your settings (required: POSTGRES_PASSWORD, BETTER_AUTH_SECRET)
+# Edit .env with your settings
+# Required: POSTGRES_PASSWORD, BETTER_AUTH_SECRET
 # Generate a secret: openssl rand -base64 32
 
 # Start with Docker Compose
@@ -88,6 +107,45 @@ npm run db:seed  # Creates demo data (save the generated credentials!)
 # Start development server
 npm run dev
 ```
+
+### Development Commands
+
+```bash
+npm run dev          # Start dev server with Turbopack
+npm run build        # Production build
+npm run test         # Run tests (Vitest)
+npm run lint         # Run ESLint
+npm run db:studio    # Open Prisma Studio
+npm run db:migrate   # Run migrations
+npm run db:seed      # Seed demo data
+```
+
+---
+
+## 📁 Project Structure
+
+```
+granyt-app/
+├── prisma/              # Database schema (split into multiple .prisma files)
+│   └── seed/            # Seed data scripts
+├── migrations/          # Prisma migrations
+├── src/
+│   ├── app/             # Next.js App Router
+│   │   ├── api/         # REST API endpoints (/api/v1/*)
+│   │   ├── dashboard/   # Main dashboard pages
+│   │   │   └── _components/  # Page-specific components
+│   │   └── (marketing)/ # Landing pages
+│   ├── components/      # React components
+│   │   ├── ui/          # shadcn/ui components
+│   │   └── shared/      # Shared components
+│   ├── lib/             # Utilities, hooks, and config
+│   └── server/          # Backend logic
+│       ├── routers/     # tRPC routers
+│       └── services/    # Business logic (one folder per domain)
+└── docker-compose.*.yml # Docker configurations
+```
+
+---
 
 ## 📦 Installation
 
@@ -266,10 +324,9 @@ This project is licensed under the MIT License - see the [LICENSE](../LICENSE) f
 - [shadcn/ui](https://ui.shadcn.com/) for the beautiful component library
 - [better-auth](https://github.com/better-auth/better-auth) for authentication
 - [Recharts](https://recharts.org/) for charting
-- The open-source community
 
 ---
 
 <p align="center">
-  Made with ❤️ by the Granyt team
+  <a href="../README.md">← Back to main README</a>
 </p>

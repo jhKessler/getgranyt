@@ -6,20 +6,19 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Github, Sparkles, BookOpen, Copy, Check } from "lucide-react"
 import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
-import { useFeatureFlagVariantKey, usePostHog } from "posthog-js/react"
+import { useFeatureFlagVariantKey } from "posthog-js/react"
 import { getDocsLink } from "@/lib/utils"
 
 // Feature flag key for the headline A/B test
 const HEADLINE_EXPERIMENT_FLAG = "landing-headline-test"
 
-function InstallCommand({ onCopy }: { onCopy: () => void }) {
+function InstallCommand() {
   const command = INSTALL_COMMAND
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
     navigator.clipboard.writeText(command)
     setCopied(true)
-    onCopy()
     setTimeout(() => setCopied(false), 2000)
   }
 
@@ -81,7 +80,6 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ serverVariant }: HeroSectionProps) {
-  const posthog = usePostHog()
   // Use server variant if available, otherwise fall back to client-side evaluation
   const clientVariant = useFeatureFlagVariantKey(HEADLINE_EXPERIMENT_FLAG)
   const variant = serverVariant ?? clientVariant
@@ -90,27 +88,7 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
   // - "test" → show test headline
   // - "control" → show control headline  
   // - undefined/null → flags loading, default to control (but don't track as control)
-  const showTestHeadline = "control" //variant === "test"
-  const flagsLoaded = variant !== undefined && variant !== null
-
-  // Track CTA clicks - only include variant if flags are loaded
-  const trackCurlCopy = () => {
-    posthog?.capture("landing_curl_copied", {
-      experiment_variant: flagsLoaded ? variant : "unknown",
-    })
-  }
-
-  const trackDocsClick = () => {
-    posthog?.capture("landing_docs_clicked", {
-      experiment_variant: flagsLoaded ? variant : "unknown",
-    })
-  }
-
-  const trackGithubClick = () => {
-    posthog?.capture("landing_github_clicked", {
-      experiment_variant: flagsLoaded ? variant : "unknown",
-    })
-  }
+  const showTestHeadline = variant === "test"
 
   return (
     <section className="relative overflow-hidden">
@@ -128,7 +106,6 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
             href={GITHUB_URL}
             target="_blank"
             className="group"
-            onClick={trackGithubClick}
           >
             <Badge variant="secondary" className="gap-2 px-4 py-2 text-sm hover:bg-secondary/80 transition-colors cursor-pointer">
               <Sparkles className="h-4 w-4" />
@@ -143,15 +120,12 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
           </div>
 
           {/* Primary CTA - Install command */}
-          <InstallCommand onCopy={trackCurlCopy} />
+          <InstallCommand />
 
           {/* Secondary CTAs */}
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild size="lg" className="gap-2 text-base">
-              <Link
-                href={getDocsLink("/")}
-                onClick={trackDocsClick}
-              >
+              <Link href={getDocsLink("/")}>
                 <BookOpen className="h-4 w-4" />
                 Docs
               </Link>
@@ -160,7 +134,6 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
               <Link
                 href={GITHUB_URL}
                 target="_blank"
-                onClick={trackGithubClick}
               >
                 <Github className="h-4 w-4" />
                 Star on GitHub
