@@ -44,12 +44,14 @@ services:
   # PostgreSQL Database
   # =========================
   postgres:
+    image: postgres:17-alpine
     container_name: granyt-postgres-prod
 
   # =========================
   # Database Migrations
   # =========================
   migrations:
+    image: ghcr.io/jhkessler/granyt-app:${GRANYT_VERSION:-latest}-migrations
     container_name: granyt-migrations-prod
 
   # =========================
@@ -57,4 +59,5 @@ services:
   # =========================
   # No ports exposed - access via reverse proxy on granyt-network
   app:
+    image: ghcr.io/jhkessler/granyt-app:${GRANYT_VERSION:-latest}
     container_name: granyt-app-prod
