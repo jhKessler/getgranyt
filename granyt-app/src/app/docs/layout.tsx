@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { cn, getDocsLink } from "@/lib/utils"
 import { GITHUB_URL } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -52,23 +52,23 @@ const mainSections: NavSection[] = [
   {
     title: "Getting Started",
     items: [
-      { title: "Quickstart", href: "/docs", icon: Home },
+      { title: "Quickstart", href: getDocsLink("/"), icon: Home },
     ],
   },
   {
     title: "SDK Reference",
     items: [
-      { title: "Manual Metrics", href: "/docs/metrics", icon: BarChart3 },
-      { title: "Environment Variables", href: "/docs/sdk-reference/environment-variables", icon: Settings },
+      { title: "Manual Metrics", href: getDocsLink("/metrics"), icon: BarChart3 },
+      { title: "Environment Variables", href: getDocsLink("/sdk-reference/environment-variables"), icon: Settings },
     ],
   },
   {
     title: "Dashboard",
     items: [
       { title: "Live Demo", href: "/demo", icon: LayoutDashboard },
-      { title: "Error Tracking", href: "/docs/error-tracking", icon: AlertTriangle },
-      { title: "Notifications", href: "/docs/notifications", icon: Mail },
-      { title: "Webhooks", href: "/docs/webhooks", icon: Webhook },
+      { title: "Error Tracking", href: getDocsLink("/error-tracking"), icon: AlertTriangle },
+      { title: "Notifications", href: getDocsLink("/notifications"), icon: Mail },
+      { title: "Webhooks", href: getDocsLink("/webhooks"), icon: Webhook },
     ],
   },
 ]
@@ -77,37 +77,37 @@ const operatorSections: NavSection[] = [
   {
     title: "Automatic Tracking",
     items: [
-      { title: "Overview", href: "/docs/operators", icon: Zap },
+      { title: "Overview", href: getDocsLink("/operators"), icon: Zap },
     ],
   },
   {
     title: "SQL & Warehouse",
     items: [
-      { title: "Overview", href: "/docs/operators/sql", icon: Database },
-      { title: "Snowflake", href: "/docs/operators/snowflake", icon: Database },
-      { title: "BigQuery", href: "/docs/operators/bigquery", icon: Database },
-      { title: "Redshift", href: "/docs/operators/redshift", icon: Database },
-      { title: "PostgreSQL", href: "/docs/operators/postgres", icon: Database },
-      { title: "Generic SQL", href: "/docs/operators/generic-sql", icon: Database },
+      { title: "Overview", href: getDocsLink("/operators/sql"), icon: Database },
+      { title: "Snowflake", href: getDocsLink("/operators/snowflake"), icon: Database },
+      { title: "BigQuery", href: getDocsLink("/operators/bigquery"), icon: Database },
+      { title: "Redshift", href: getDocsLink("/operators/redshift"), icon: Database },
+      { title: "PostgreSQL", href: getDocsLink("/operators/postgres"), icon: Database },
+      { title: "Generic SQL", href: getDocsLink("/operators/generic-sql"), icon: Database },
     ],
   },
   {
     title: "Cloud Storage",
     items: [
-      { title: "Overview", href: "/docs/operators/storage", icon: HardDrive },
-      { title: "AWS S3", href: "/docs/operators/s3", icon: HardDrive },
-      { title: "Google GCS", href: "/docs/operators/gcs", icon: HardDrive },
-      { title: "Azure Blob", href: "/docs/operators/azure-blob", icon: HardDrive },
+      { title: "Overview", href: getDocsLink("/operators/storage"), icon: HardDrive },
+      { title: "AWS S3", href: getDocsLink("/operators/s3"), icon: HardDrive },
+      { title: "Google GCS", href: getDocsLink("/operators/gcs"), icon: HardDrive },
+      { title: "Azure Blob", href: getDocsLink("/operators/azure-blob"), icon: HardDrive },
     ],
   },
   {
     title: "Transformation",
     items: [
-      { title: "Overview", href: "/docs/operators/transformation", icon: Zap },
-      { title: "dbt Cloud", href: "/docs/operators/dbt-cloud", icon: Zap },
-      { title: "dbt Core", href: "/docs/operators/dbt-core", icon: Zap },
-      { title: "Apache Spark", href: "/docs/operators/spark", icon: Zap },
-      { title: "Bash & Scripts", href: "/docs/operators/bash", icon: Zap },
+      { title: "Overview", href: getDocsLink("/operators/transformation"), icon: Zap },
+      { title: "dbt Cloud", href: getDocsLink("/operators/dbt-cloud"), icon: Zap },
+      { title: "dbt Core", href: getDocsLink("/operators/dbt-core"), icon: Zap },
+      { title: "Apache Spark", href: getDocsLink("/operators/spark"), icon: Zap },
+      { title: "Bash & Scripts", href: getDocsLink("/operators/bash"), icon: Zap },
     ],
   },
 ]

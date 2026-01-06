@@ -272,7 +272,7 @@ export function SetupFlowBar() {
                   </Link>
                   <span className="text-muted-foreground">•</span>
                   <Link
-                    href={env.NEXT_PUBLIC_DOCS_URL}
+                    href={getDocsLink("/")}
                     onClick={() => setIsModalOpen(false)}
                     className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                   >
@@ -335,7 +335,7 @@ export function SetupFlowBar() {
                   Test error tracking by running a DAG that intentionally fails.
                 </p>
                 <Link
-                  href={`${env.NEXT_PUBLIC_DOCS_URL}/error-tracking/test-dag`}
+                  href={getDocsLink("/error-tracking/test-dag")}
                   onClick={() => setIsModalOpen(false)}
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                 >

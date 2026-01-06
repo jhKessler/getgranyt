@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Highlight, themes } from "prism-react-renderer"
 import { Database, Cloud, Zap, Code2, ExternalLink } from "lucide-react"
 import Link from "next/link"
+import { getDocsLink } from "@/lib/utils"
 
 function CodeBlock({ code, title, language = "python" }: { code: string; title: string; language?: string }) {
   return (
@@ -46,29 +47,29 @@ export function OperatorMetricsSection() {
       title: "SQL & Warehouses",
       icon: <Database className="h-5 w-5 text-blue-500" />,
       items: [
-        { name: "Snowflake", href: "/docs/operators/snowflake" },
-        { name: "BigQuery", href: "/docs/operators/bigquery" },
-        { name: "Redshift", href: "/docs/operators/redshift" },
-        { name: "Postgres", href: "/docs/operators/postgres" }
+        { name: "Snowflake", href: getDocsLink("/operators/snowflake") },
+        { name: "BigQuery", href: getDocsLink("/operators/bigquery") },
+        { name: "Redshift", href: getDocsLink("/operators/redshift") },
+        { name: "Postgres", href: getDocsLink("/operators/postgres") }
       ]
     },
     {
       title: "Cloud Storage",
       icon: <Cloud className="h-5 w-5 text-sky-500" />,
       items: [
-        { name: "AWS S3", href: "/docs/operators/s3" },
-        { name: "Google Cloud Storage", href: "/docs/operators/gcs" },
-        { name: "Azure Blob", href: "/docs/operators/azure-blob" }
+        { name: "AWS S3", href: getDocsLink("/operators/s3") },
+        { name: "Google Cloud Storage", href: getDocsLink("/operators/gcs") },
+        { name: "Azure Blob", href: getDocsLink("/operators/azure-blob") }
       ]
     },
     {
       title: "Transformation",
       icon: <Zap className="h-5 w-5 text-yellow-500" />,
       items: [
-        { name: "dbt Cloud", href: "/docs/operators/dbt-cloud" },
-        { name: "dbt Core", href: "/docs/operators/dbt-core" },
-        { name: "Spark", href: "/docs/operators/spark" },
-        { name: "Bash", href: "/docs/operators/bash" }
+        { name: "dbt Cloud", href: getDocsLink("/operators/dbt-cloud") },
+        { name: "dbt Core", href: getDocsLink("/operators/dbt-core") },
+        { name: "Spark", href: getDocsLink("/operators/spark") },
+        { name: "Bash", href: getDocsLink("/operators/bash") }
       ]
     }
   ]
@@ -86,7 +87,7 @@ export function OperatorMetricsSection() {
               Granyt works with the Airflow lifecycle to automatically capture metrics from Snowflake, BigQuery, S3, dbt, and more. For PythonOperators, simply return your metrics and Granyt handles the rest.
             </p>
             <p className="text-muted-foreground mb-8">
-              Need support for a custom operator? You can easily build and register your own adapters to extract any metadata you need. <Link href="/docs/operators" className="text-primary hover:underline inline-flex items-center gap-1">Learn more in our docs <ExternalLink className="h-3 w-3" /></Link>
+              Need support for a custom operator? You can easily build and register your own adapters to extract any metadata you need. <Link href={getDocsLink("/operators")} className="text-primary hover:underline inline-flex items-center gap-1">Learn more in our docs <ExternalLink className="h-3 w-3" /></Link>
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

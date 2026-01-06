@@ -1,6 +1,7 @@
 import { Shield, Zap, BarChart3, Mail, Settings } from "lucide-react"
 import Link from "next/link"
 import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
+import { getDocsLink } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   PageHeader,
@@ -363,19 +364,19 @@ def train_model():
 
       <section className="grid gap-6 md:grid-cols-3 pt-6">
         <LinkCard
-          href="/docs/notifications"
+          href={getDocsLink("/notifications")}
           icon={Mail}
           title="Setup Notifications"
           description="Get alerted by Email or Webhook when your pipelines fail or data quality drops."
         />
         <LinkCard
-          href="/docs/metrics"
+          href={getDocsLink("/metrics")}
           icon={BarChart3}
           title="Full Metrics Docs"
           description="Deep dive into all the metrics and configuration options available in the SDK."
         />
         <LinkCard
-          href="/docs/sdk-reference/environment-variables"
+          href={getDocsLink("/sdk-reference/environment-variables")}
           icon={Settings}
           title="SDK Configuration"
           description="Explore all environment variables available to fine-tune the Granyt SDK."

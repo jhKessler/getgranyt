@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Github, BookOpen, MessageSquare } from "lucide-react"
 import { GITHUB_URL } from "@/lib/constants"
+import { getDocsLink } from "@/lib/utils"
 
 export function CTASection() {
   return (
@@ -31,7 +32,7 @@ export function CTASection() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Button asChild size="lg" className="gap-2 text-base">
                   <Link 
-                    href="/docs"
+                    href={getDocsLink("/")}
                   >
                     <BookOpen className="h-4 w-4" />
                     Docs
@@ -67,7 +68,7 @@ export function CTASection() {
           </Link>
 
           <Link 
-            href="/docs" 
+            href={getDocsLink("/")} 
             className="group"
           >
             <Card className="h-full border-border/50 hover:border-primary/30 transition-colors">

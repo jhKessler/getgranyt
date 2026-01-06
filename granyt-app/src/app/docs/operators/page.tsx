@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { getDocsLink } from "@/lib/utils"
 import { 
   Zap,
   Layers,
@@ -41,7 +42,7 @@ export default function OperatorsPage() {
         </p>
         
         <div className="grid gap-4 md:grid-cols-3">
-          <Link href="/docs/operators/sql">
+          <Link href={getDocsLink("/operators/sql")}>
             <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
               <CardHeader>
                 <Database className="h-8 w-8 text-primary mb-2" />
@@ -52,7 +53,7 @@ export default function OperatorsPage() {
               </CardContent>
             </Card>
           </Link>
-          <Link href="/docs/operators/storage">
+          <Link href={getDocsLink("/operators/storage")}>
             <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
               <CardHeader>
                 <HardDrive className="h-8 w-8 text-primary mb-2" />
@@ -63,7 +64,7 @@ export default function OperatorsPage() {
               </CardContent>
             </Card>
           </Link>
-          <Link href="/docs/operators/transformation">
+          <Link href={getDocsLink("/operators/transformation")}>
             <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
               <CardHeader>
                 <Zap className="h-8 w-8 text-primary mb-2" />

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Github, Sparkles, BookOpen, Copy, Check } from "lucide-react"
 import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
 import { useFeatureFlagVariantKey, usePostHog } from "posthog-js/react"
+import { getDocsLink } from "@/lib/utils"
 
 // Feature flag key for the headline A/B test
 const HEADLINE_EXPERIMENT_FLAG = "landing-headline-test"
@@ -148,7 +149,7 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild size="lg" className="gap-2 text-base">
               <Link
-                href="/docs"
+                href={getDocsLink("/")}
                 onClick={trackDocsClick}
               >
                 <BookOpen className="h-4 w-4" />

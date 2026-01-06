@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Mail, ArrowRight, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react"
+import { getDocsLink } from "@/lib/utils"
 
 interface EmailSetupStepProps {
   isEmailConfigured: boolean
@@ -128,7 +129,7 @@ export function EmailSetupStep({
             </div>
           </div>
           <a
-            href="/docs/notifications"
+            href={getDocsLink("/notifications")}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-2"

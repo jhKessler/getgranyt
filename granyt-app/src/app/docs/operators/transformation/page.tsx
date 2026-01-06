@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Zap, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { getDocsLink } from "@/lib/utils"
 import {
   PageHeader,
   Callout,
@@ -15,22 +16,22 @@ const tools = [
   {
     name: "dbt Cloud",
     description: "Track job runs, model counts, and execution status for dbt Cloud.",
-    href: "/docs/operators/dbt-cloud",
+    href: getDocsLink("/operators/dbt-cloud"),
   },
   {
     name: "dbt Core",
     description: "Monitor CLI commands, manifest parsing, and model execution for dbt Core.",
-    href: "/docs/operators/dbt-core",
+    href: getDocsLink("/operators/dbt-core"),
   },
   {
     name: "Apache Spark",
     description: "Capture application IDs, execution time, and data volume for Spark jobs.",
-    href: "/docs/operators/spark",
+    href: getDocsLink("/operators/spark"),
   },
   {
     name: "Bash & Scripts",
     description: "Track exit codes, environment variables, and XCom metrics for scripts.",
-    href: "/docs/operators/bash",
+    href: getDocsLink("/operators/bash"),
   },
 ]
 

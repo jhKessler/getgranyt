@@ -1,6 +1,7 @@
- import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { getDocsLink } from "@/lib/utils"
 import { 
   BarChart3,
   Code2,
@@ -37,7 +38,7 @@ export default function MetricsPage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-bold">Overview</h2>
         <p className="text-muted-foreground">
-          While Granyt provides <Link href="/docs/operators" className="text-primary hover:underline">Automatic Operator Tracking</Link> for many Airflow operators, you can also manually capture metrics from your DataFrames using the Granyt SDK.
+          While Granyt provides <Link href={getDocsLink("/operators")} className="text-primary hover:underline">Automatic Operator Tracking</Link> for many Airflow operators, you can also manually capture metrics from your DataFrames using the Granyt SDK.
         </p>
       </section>
 
