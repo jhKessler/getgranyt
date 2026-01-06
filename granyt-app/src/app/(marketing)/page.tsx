@@ -29,7 +29,6 @@ export default function LandingPage() {
       <ToolConsolidationSection />
       <InstallSection />
       <DemoPreviewSection />
-      <DataValidationSection />
       <CTASection />
     </>
   )

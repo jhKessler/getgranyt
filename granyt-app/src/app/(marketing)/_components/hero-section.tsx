@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Github, Sparkles, BookOpen, Copy, Check } from "lucide-react"
@@ -117,6 +118,19 @@ export function HeroSection() {
               <div className="h-2 w-2 rounded-full bg-green-500" />
               <span>5-minute install</span>
             </div>
+          </div>
+
+          {/* Built for Airflow */}
+          <div className="flex items-center gap-3 pt-4">
+            <span className="text-xs text-muted-foreground/60">Built for</span>
+            <Image
+              src="/airflow_transparent.png"
+              alt="Apache Airflow"
+              width={28}
+              height={28}
+              className="opacity-60 hover:opacity-100 transition-opacity"
+            />
+            <span className="text-sm text-muted-foreground/80">Apache Airflow</span>
           </div>
         </div>
       </div>
