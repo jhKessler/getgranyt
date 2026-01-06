@@ -9,13 +9,13 @@ import pytest
 
 from granyt_sdk.features.metrics.core import (
     _ADAPTERS,
-    ColumnMetrics,
-    DataFrameAdapter,
-    DataFrameMetrics,
     DF_SCHEMA_KEY,
     GRANYT_KEY,
     METRICS_KEYS,
     SCHEMA_KEYS,
+    ColumnMetrics,
+    DataFrameAdapter,
+    DataFrameMetrics,
     _get_adapter,
     compute_df_metrics,
     register_adapter,
@@ -272,9 +272,7 @@ class TestValidateDfSchema:
 
     def test_valid_schema_with_required_fields(self):
         """Test validation passes with required fields."""
-        schema = {
-            "column_dtypes": {"col1": "int64", "col2": "object"}
-        }
+        schema = {"column_dtypes": {"col1": "int64", "col2": "object"}}
         assert validate_df_schema(schema) is True
 
     def test_valid_schema_with_all_fields(self):
