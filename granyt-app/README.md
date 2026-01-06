@@ -188,6 +188,8 @@ See the [Deployment Guide](DEPLOYMENT.md) for detailed production setup instruct
 
    The Granyt SDK is a Python listener that must be installed where your Airflow workers and scheduler run. It automatically captures DAG and task execution events and sends them to your Granyt dashboard.
 
+   Install the SDK in your Airflow environment's Python (e.g., add to your `requirements.txt` or install directly in your Airflow container/virtualenv):
+
 ```bash
 pip install granyt
 ```

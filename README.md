@@ -67,6 +67,8 @@ Open [http://localhost:3000](http://localhost:3000) and create your account.
 
 The Granyt SDK is a Python listener that must be installed where your Airflow workers and scheduler run. It automatically captures DAG and task execution events and sends them to your Granyt dashboard.
 
+Install the SDK in your Airflow environment's Python (e.g., add to your `requirements.txt` or install directly in your Airflow container/virtualenv):
+
 ```bash
 pip install granyt-sdk
 ```
@@ -76,7 +78,7 @@ pip install granyt-sdk
 Set environment variables in your Airflow environment:
 
 ```bash
-export GRANYT_ENDPOINT="http://localhost:3000"
+export GRANYT_ENDPOINT="https://granyt.yourdomain.com"
 export GRANYT_API_KEY="your-api-key"  # Get this from the Granyt dashboard
 ```
 
