@@ -1,6 +1,13 @@
 import logging
 from typing import Any, Optional
 
+from granyt_sdk.features.metrics import (
+    DF_SCHEMA_KEY,
+    GRANYT_KEY,
+    METRICS_KEYS,
+    SCHEMA_KEYS,
+    validate_df_schema,
+)
 from granyt_sdk.integrations.airflow.operator_adapters.base import (
     OperatorAdapter,
     OperatorMetrics,
@@ -21,7 +28,7 @@ class PythonAdapter(OperatorAdapter):
     - etc.
 
     Note: Python operators are generic, so metrics extraction
-    is limited to what's returned via XCom.
+    is limited to what's returned via XCom using the 'granyt' key.
     """
 
     OPERATOR_PATTERNS = [
@@ -49,9 +56,9 @@ class PythonAdapter(OperatorAdapter):
         # Try to get return value from XCom
         xcom_result = self._extract_xcom_value(task_instance)
 
-        # If no granyt_metrics in XCom, return None to avoid sending metrics
-        # as per user request to only make a request if granyt_metrics is specified.
-        if not isinstance(xcom_result, dict) or "granyt_metrics" not in xcom_result:
+        # If no granyt key in XCom, return None to avoid sending metrics
+        # as per user request to only make a request if granyt is specified.
+        if not isinstance(xcom_result, dict) or GRANYT_KEY not in xcom_result:
             return None
 
         metrics = OperatorMetrics(
@@ -88,48 +95,66 @@ class PythonAdapter(OperatorAdapter):
         metrics: OperatorMetrics,
         result: Any,
     ) -> None:
-        """Parse Python callable result for metrics."""
-        # Check if result contains Granyt metrics
-        if not isinstance(result, dict) or "granyt_metrics" not in result:
+        """Parse Python callable result for metrics.
+
+        Handles the 'granyt' key structure:
+        - granyt.df_schema: DataFrame schema/metrics from compute_df_metrics()
+        - granyt.<custom_key>: Any custom user-defined metrics
+
+        The df_schema is split into:
+        - Schema fields (column_dtypes, null_counts, empty_string_counts) -> backend's 'schema' field
+        - Metric fields (row_count, column_count, dataframe_type, memory_bytes) -> backend's 'metrics' field
+        """
+        # Check if result contains Granyt key
+        if not isinstance(result, dict) or GRANYT_KEY not in result:
             return
 
-        granyt_metrics = result["granyt_metrics"]
-        if not isinstance(granyt_metrics, dict):
+        granyt_data = result[GRANYT_KEY]
+        if not isinstance(granyt_data, dict):
             return
 
-        # Handle nested 'metrics' key (from compute_df_metrics)
-        source_data = granyt_metrics
-        if "metrics" in granyt_metrics and isinstance(granyt_metrics["metrics"], dict):
-            # Merge nested metrics into a flat view for extraction
-            source_data = {**granyt_metrics, **granyt_metrics["metrics"]}
-
-        # Extract standard metrics
-        if "row_count" in source_data:
-            metrics.row_count = source_data["row_count"]
-        elif "rows_affected" in source_data:
-            metrics.row_count = source_data["rows_affected"]
-        elif "rows_read" in source_data:
-            metrics.row_count = source_data["rows_read"]
-        elif "rows_written" in source_data:
-            metrics.row_count = source_data["rows_written"]
-
-        if "bytes_processed" in source_data:
-            metrics.bytes_processed = source_data["bytes_processed"]
-        elif "memory_bytes" in source_data:
-            metrics.bytes_processed = source_data["memory_bytes"]
-
-        # Extract custom metrics
         metrics.custom_metrics = metrics.custom_metrics or {}
 
-        # If there's a 'custom' key, use it
-        if "custom" in granyt_metrics and isinstance(granyt_metrics["custom"], dict):
-            metrics.custom_metrics.update(granyt_metrics["custom"])
+        # Handle df_schema if present - this comes from compute_df_metrics()
+        if DF_SCHEMA_KEY in granyt_data:
+            df_schema = granyt_data[DF_SCHEMA_KEY]
 
-        # If there's a 'schema' key (from compute_df_metrics), capture it
-        if "schema" in granyt_metrics:
-            metrics.custom_metrics["schema"] = granyt_metrics["schema"]
+            # Validate the schema structure
+            if validate_df_schema(df_schema):
+                # Extract schema fields for backend's 'schema' field
+                schema_data = {}
+                if "column_dtypes" in df_schema:
+                    schema_data["column_dtypes"] = df_schema["column_dtypes"]
+                if "null_counts" in df_schema:
+                    schema_data["null_counts"] = df_schema["null_counts"]
+                if "empty_string_counts" in df_schema:
+                    schema_data["empty_string_counts"] = df_schema["empty_string_counts"]
 
-        # Capture other metadata from compute_df_metrics
-        for key in ["dataframe_type", "column_count"]:
-            if key in source_data:
-                metrics.custom_metrics[key] = source_data[key]
+                if schema_data:
+                    metrics.custom_metrics["schema"] = schema_data
+
+                # Extract metric fields
+                if "row_count" in df_schema:
+                    metrics.row_count = df_schema["row_count"]
+                if "memory_bytes" in df_schema:
+                    metrics.bytes_processed = df_schema["memory_bytes"]
+
+                # Capture other metadata from df_schema
+                for key in ["dataframe_type", "column_count"]:
+                    if key in df_schema:
+                        metrics.custom_metrics[key] = df_schema[key]
+
+        # Process all other keys in granyt (custom metrics)
+        reserved_keys = {DF_SCHEMA_KEY}
+        for key, value in granyt_data.items():
+            if key not in reserved_keys:
+                # Handle standard metric names
+                if key in ("row_count", "rows_affected", "rows_read", "rows_written"):
+                    if metrics.row_count is None:
+                        metrics.row_count = value
+                elif key in ("bytes_processed", "memory_bytes"):
+                    if metrics.bytes_processed is None:
+                        metrics.bytes_processed = value
+                else:
+                    # All other keys become custom metrics
+                    metrics.custom_metrics[key] = value

@@ -120,10 +120,10 @@ export function OperatorMetricsSection() {
 def process_data():
     # ... your logic ...
     
-    # Return your metrics in the special 'granyt_metrics' key
+    # Return your metrics in the special 'granyt' key
     # Granyt automatically picks this up from XCom!
     return {
-        "granyt_metrics": {
+        "granyt": {
             "row_count": 1500,
             "data_quality_passed": True,
             "source_file": "users.csv"

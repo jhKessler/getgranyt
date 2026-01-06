@@ -198,6 +198,9 @@ export default function QuickstartPage() {
             },
           ]}
         />
+        <Callout variant="info">
+          <strong>Supported Airflow Versions:</strong> 2.5 – 2.10. Airflow 3.0 support is coming soon.
+        </Callout>
       </section>
 
       <section className="space-y-6">
@@ -234,7 +237,7 @@ export default function QuickstartPage() {
           <div className="space-y-4">
             <h4 className="font-semibold">How Manual Metrics Work</h4>
             <p className="text-sm text-muted-foreground">
-              Granyt automatically captures any dictionary returned under the <InlineCode>granyt_metrics</InlineCode> key in your task&apos;s return value. Use <InlineCode>compute_df_metrics</InlineCode> to easily generate this dictionary from a DataFrame.
+              Granyt automatically captures any dictionary returned under the <InlineCode>granyt</InlineCode> key in your task&apos;s return value. Use <InlineCode>compute_df_metrics</InlineCode> to easily generate DataFrame schema and metrics, passing the result to <InlineCode>granyt[&quot;df_schema&quot;]</InlineCode>.
             </p>
             <CodeBlock 
               language="python"
@@ -244,7 +247,9 @@ export default function QuickstartPage() {
 def my_task():
     df = pd.read_csv(...)
     return {
-        "granyt_metrics": compute_df_metrics(df)
+        "granyt": {
+            "df_schema": compute_df_metrics(df)
+        }
     }`}
             />
           </div>
@@ -276,7 +281,9 @@ def transform_data():
     
     # Return metrics via XCom
     return {
-        "granyt_metrics": compute_df_metrics(df_clean)
+        "granyt": {
+            "df_schema": compute_df_metrics(df_clean)
+        }
     }`}
                 />
               </TabsContent>
@@ -295,7 +302,9 @@ def transform_data():
     
     # Return metrics via XCom
     return {
-        "granyt_metrics": compute_df_metrics(df_clean)
+        "granyt": {
+            "df_schema": compute_df_metrics(df_clean)
+        }
     }`}
                 />
               </TabsContent>
@@ -314,7 +323,9 @@ def transform_spark_data():
     # Return metrics via XCom.
     # The SDK collects null counts and other stats efficiently.
     return {
-        "granyt_metrics": compute_df_metrics(df_clean)
+        "granyt": {
+            "df_schema": compute_df_metrics(df_clean)
+        }
     }`}
                 />
               </TabsContent>
@@ -324,7 +335,7 @@ def transform_spark_data():
           <div className="space-y-4">
             <h4 className="font-semibold">Example: Custom Metrics</h4>
             <p className="text-sm text-muted-foreground">
-              You can also return custom metrics directly in the <InlineCode>granyt_metrics</InlineCode> dictionary.
+              You can also return custom metrics directly in the <InlineCode>granyt</InlineCode> dictionary.
             </p>
             <CodeBlock 
               language="python"
@@ -336,11 +347,9 @@ def train_model():
     f1_score = 0.92
     
     return {
-        "granyt_metrics": {
-            "custom": {
-                "f1_score": f1_score,
-                "model_type": "random_forest"
-            }
+        "granyt": {
+            "f1_score": f1_score,
+            "model_type": "random_forest"
         }
     }`}
             />

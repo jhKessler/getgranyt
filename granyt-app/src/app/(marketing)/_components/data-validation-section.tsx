@@ -79,14 +79,11 @@ def transform_data():
     # Perform transformation
     df_clean = df_raw.dropna()
     
-    # Compute metrics with custom business KPIs
-    metrics = compute_df_metrics(df_clean)
-    
-    # Return data and metrics via granyt_metrics
+    # Return data and metrics via granyt key
     return {
         "data": df_clean.to_dict(),
-        "granyt_metrics": {
-            **metrics,
+        "granyt": {
+            "df_schema": compute_df_metrics(df_clean),
             "high_value_orders": len(df_clean[df_clean["amount"] > 1000])
         }
     }`}
@@ -108,14 +105,11 @@ def transform_data():
     # Perform transformation
     df_clean = df_raw.drop_nulls()
     
-    # Compute metrics with custom business KPIs
-    metrics = compute_df_metrics(df_clean)
-    
-    # Return data and metrics via granyt_metrics
+    # Return data and metrics via granyt key
     return {
         "data": df_clean.to_dicts(),
-        "granyt_metrics": {
-            **metrics,
+        "granyt": {
+            "df_schema": compute_df_metrics(df_clean),
             "high_value_orders": df_clean.filter(pl.col("amount") > 1000).height
         }
     }`}
@@ -138,13 +132,10 @@ def transform_data():
     # Perform transformation
     df_clean = df_raw.dropna()
     
-    # Compute metrics with custom business KPIs
-    metrics = compute_df_metrics(df_clean)
-    
-    # Return metrics via granyt_metrics
+    # Return metrics via granyt key
     return {
-        "granyt_metrics": {
-            **metrics,
+        "granyt": {
+            "df_schema": compute_df_metrics(df_clean),
             "high_value_orders": df_clean.filter(df_clean["amount"] > 1000).count()
         }
     }`}

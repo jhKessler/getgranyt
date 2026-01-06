@@ -15,6 +15,17 @@ Granyt SDK is a Python package that integrates with Apache Airflow to automatica
 pip install granyt-sdk
 ```
 
+## Compatibility
+
+| Airflow Version | Status | Notes |
+|-----------------|--------|-------|
+| 2.5.x – 2.6.x | ✅ Fully Supported | Automatic tracking via plugins is stable |
+| 2.7.x – 2.9.x | ✅ Fully Supported | Works great out of the box |
+| 2.10.x | ✅ Fully Supported | SDK handles the new error parameter in failure listeners |
+| 3.0.x+ | 🚧 Coming Soon | Airflow 3 support is in development |
+
+**Python:** Requires Python 3.9 or later.
+
 ## Configuration
 
 Set the following environment variables:
@@ -126,7 +137,7 @@ print(f"Configuration: {client.get_config()}")
 
 ### Reporting Metrics from Python Tasks
 
-The most flexible way to report metrics from an Airflow `@task` or `PythonOperator` is to include a `granyt_metrics` key in your return value. The SDK automatically captures everything inside this dictionary.
+The most flexible way to report metrics from an Airflow `@task` or `PythonOperator` is to include a `granyt` key in your return value. The SDK automatically captures everything inside this dictionary.
 
 #### Simple Manual Metrics
 You can pass any key-value pairs you want to track in your dashboard:
@@ -136,7 +147,7 @@ You can pass any key-value pairs you want to track in your dashboard:
 def process_data():
     # ... your logic ...
     return {
-        "granyt_metrics": {
+        "granyt": {
             "row_count": 1500,
             "data_quality_passed": True,
             "source_file": "users.csv"
@@ -145,7 +156,7 @@ def process_data():
 ```
 
 #### Automatic Metric Calculation
-For deep data insights, use `compute_df_metrics`. It automatically calculates row counts, null counts, and column types from your Pandas or Polars DataFrames. You can easily merge these with your own custom metrics:
+For deep data insights, use `compute_df_metrics`. It automatically calculates row counts, null counts, and column types from your Pandas or Polars DataFrames. Pass the result to `granyt["df_schema"]` to get schema change detection and rich metrics:
 
 ```python
 from granyt_sdk import compute_df_metrics
@@ -154,12 +165,10 @@ from granyt_sdk import compute_df_metrics
 def transform_data():
     df = pd.read_parquet("data.parquet")
     
-    # Automatically calculates valuable metrics like null counts and memory usage
-    metrics = compute_df_metrics(df)
-    
     return {
-        "granyt_metrics": {
-            **metrics,
+        "granyt": {
+            # df_schema automatically splits into schema and metrics
+            "df_schema": compute_df_metrics(df),
             "data_quality_passed": True
         }
     }
