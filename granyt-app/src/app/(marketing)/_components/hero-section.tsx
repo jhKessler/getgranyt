@@ -68,7 +68,7 @@ function HeadlineTest() {
       </h1>
       <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
         Open source observability for Apache Airflow. <br className="hidden sm:block" /> 
-        Track errors, data quality, and get alerted before bad data breaks your upstream pipelines.
+        Track errors, data quality, and get alerted before bad data breaks your downstream pipelines.
       </p>
     </>
   )

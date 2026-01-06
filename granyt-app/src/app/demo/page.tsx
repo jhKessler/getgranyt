@@ -92,13 +92,13 @@ export default function DemoDashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <NotificationsCard 
-          alerts={mockAlerts}
+          alerts={mockAlerts.slice(0, 1)}
           summary={mockAlertsSummary[timeframe]}
           isLoading={false}
           basePath="/demo"
         />
         <RecentErrorsCard 
-          errors={mockRecentErrors} 
+          errors={mockRecentErrors.slice(0, 1)} 
           isLoading={false}
           basePath="/demo"
         />

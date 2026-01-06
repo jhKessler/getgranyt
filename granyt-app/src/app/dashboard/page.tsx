@@ -17,6 +17,7 @@ import {
   LocalEnvironmentSwitcher,
   TimeframeSwitcher,
   getTimeframeDescription,
+  SetupFlowBar,
 } from "./_components"
 
 export default function DashboardPage() {
@@ -143,6 +144,9 @@ export default function DashboardPage() {
         />
         <RecentErrorsCard errors={recentErrors || []} isLoading={errorsLoading} />
       </div>
+
+      {/* Floating setup flow bar */}
+      <SetupFlowBar />
     </div>
   )
 }

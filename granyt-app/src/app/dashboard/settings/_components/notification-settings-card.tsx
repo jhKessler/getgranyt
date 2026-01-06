@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Bell, Mail } from "lucide-react";
 import {
   NOTIFICATION_CATEGORIES,
   isSwitchSetting,
@@ -15,16 +16,19 @@ import {
 interface NotificationPreferencesCardProps {
   settings: Record<string, boolean> | undefined;
   onUpdate: (updates: Array<{ type: string; enabled: boolean }>) => void;
+  hasEmailConfigured: boolean;
 }
 
 function SwitchSettingRow({
   setting,
   settings,
   onUpdate,
+  disabled,
 }: {
   setting: NotificationSettingConfig;
   settings: Record<string, boolean> | undefined;
   onUpdate: (updates: Array<{ type: string; enabled: boolean }>) => void;
+  disabled?: boolean;
 }) {
   if (!isSwitchSetting(setting)) return null;
 
@@ -37,12 +41,13 @@ function SwitchSettingRow({
     : true;
   const isDisabledByParent = !!setting.parentType && !parentEnabled;
   const isIndented = !!setting.parentType;
+  const isDisabled = disabled || isDisabledByParent;
 
   return (
     <div
       className={`flex items-center justify-between rounded-lg p-4 transition-colors ${
         isIndented ? "ml-6 border-l-2 border-muted" : ""
-      } ${isDisabledByParent ? "opacity-50" : "hover:bg-muted/50"}`}
+      } ${isDisabled ? "opacity-50" : "hover:bg-muted/50"}`}
     >
       <div className="flex items-center gap-3">
         <Icon className={`h-4 w-4 ${setting.isParent ? "text-primary" : "text-muted-foreground"}`} />
@@ -57,7 +62,7 @@ function SwitchSettingRow({
         id={setting.type}
         checked={isEnabled}
         onCheckedChange={(checked) => onUpdate([{ type: setting.type, enabled: checked }])}
-        disabled={isDisabledByParent}
+        disabled={isDisabled}
       />
     </div>
   );
@@ -67,10 +72,12 @@ function SelectSettingRow({
   setting,
   settings,
   onUpdate,
+  disabled,
 }: {
   setting: NotificationSettingConfig;
   settings: Record<string, boolean> | undefined;
   onUpdate: (updates: Array<{ type: string; enabled: boolean }>) => void;
+  disabled?: boolean;
 }) {
   if (!isSelectSetting(setting)) return null;
 
@@ -83,7 +90,7 @@ function SelectSettingRow({
   };
 
   return (
-    <div className="flex items-center justify-between rounded-lg p-4 transition-colors hover:bg-muted/50">
+    <div className={`flex items-center justify-between rounded-lg p-4 transition-colors ${disabled ? "opacity-50" : "hover:bg-muted/50"}`}>
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-primary" />
         <div>
@@ -91,7 +98,7 @@ function SelectSettingRow({
           <p className="text-sm text-muted-foreground">{setting.description}</p>
         </div>
       </div>
-      <Select value={currentValue} onValueChange={handleValueChange}>
+      <Select value={currentValue} onValueChange={handleValueChange} disabled={disabled}>
         <SelectTrigger className="w-[180px]">
           <SelectValue />
         </SelectTrigger>
@@ -107,7 +114,7 @@ function SelectSettingRow({
   );
 }
 
-export function NotificationPreferencesCard({ settings, onUpdate }: NotificationPreferencesCardProps) {
+export function NotificationPreferencesCard({ settings, onUpdate, hasEmailConfigured }: NotificationPreferencesCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -122,6 +129,15 @@ export function NotificationPreferencesCard({ settings, onUpdate }: Notification
         </div>
       </CardHeader>
       <CardContent className="space-y-1">
+        {!hasEmailConfigured && (
+          <Alert className="mb-4">
+            <Mail className="h-4 w-4" />
+            <AlertTitle>Email not configured</AlertTitle>
+            <AlertDescription>
+              Configure an email provider (SMTP or Resend) in the Email Setup section above to enable notification alerts.
+            </AlertDescription>
+          </Alert>
+        )}
         {NOTIFICATION_CATEGORIES.flatMap((category) =>
           category.settings.map((setting) =>
             isSwitchSetting(setting) ? (
@@ -130,6 +146,7 @@ export function NotificationPreferencesCard({ settings, onUpdate }: Notification
                 setting={setting}
                 settings={settings}
                 onUpdate={onUpdate}
+                disabled={!hasEmailConfigured}
               />
             ) : (
               <SelectSettingRow
@@ -137,6 +154,7 @@ export function NotificationPreferencesCard({ settings, onUpdate }: Notification
                 setting={setting}
                 settings={settings}
                 onUpdate={onUpdate}
+                disabled={!hasEmailConfigured}
               />
             )
           )

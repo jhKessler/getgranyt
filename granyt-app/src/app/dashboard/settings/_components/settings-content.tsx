@@ -34,6 +34,14 @@ export function SettingsContent({
     return <PageSkeleton rows={3} />;
   }
 
+  // Check if any email channel (SMTP or RESEND) is configured and enabled
+  const hasEmailConfigured = channelStatuses?.some(
+    (channel) =>
+      (channel.type === "SMTP" || channel.type === "RESEND") &&
+      channel.isConfigured &&
+      channel.isEnabled
+  ) ?? false;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -79,6 +87,7 @@ export function SettingsContent({
         <NotificationPreferencesCard
           settings={notificationSettings}
           onUpdate={handleUpdateNotifications}
+          hasEmailConfigured={hasEmailConfigured}
         />
       </div>
     </div>

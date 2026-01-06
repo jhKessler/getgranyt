@@ -57,3 +57,7 @@ export type { RunDetails, TaskRunInfo, CapturePointInfo } from "./run-details";
 // Timeframe stats (for dashboard charts)
 export { getTimeframeRunStats, getGroupByForTimeframe } from "./timeframe-stats";
 export type { TimeframeStat, GroupBy } from "./timeframe-stats";
+
+// Setup status (for onboarding checklist)
+export { getSetupStatus } from "./setup-status";
+export type { SetupStatus } from "./setup-status";
