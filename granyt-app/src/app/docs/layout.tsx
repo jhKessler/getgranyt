@@ -7,6 +7,7 @@ import { GITHUB_URL } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Logo } from "@/components/shared/logo"
 import {
   Collapsible,
   CollapsibleContent,
@@ -17,7 +18,6 @@ import {
   SheetContent,
 } from "@/components/ui/sheet"
 import { 
-  Shield, 
   Book, 
   ChevronDown, 
   Home,
@@ -224,8 +224,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Shield className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">Granyt</span>
+          <Logo size="md" />
           <span className="text-xs text-muted-foreground ml-1">Docs</span>
         </motion.div>
       </Link>
@@ -330,7 +329,7 @@ export default function DocsLayout({
             <span className="text-sm text-muted-foreground hidden sm:block">Documentation</span>
             {/* Mobile logo */}
             <Link href="/" className="flex items-center gap-2 lg:hidden">
-              <Shield className="h-5 w-5 text-primary" />
+              <Logo size="sm" showText={false} />
               <span className="font-semibold">Docs</span>
             </Link>
           </div>

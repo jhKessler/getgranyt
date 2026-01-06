@@ -4,9 +4,9 @@ Tests for PythonAdapter - handles Python operators and @task decorated functions
 Tests verify:
 1. Pattern matching for Python operators
 2. Extraction of metrics from XCom return values with 'granyt' key
-3. DataFrame schema (df_schema) validation and extraction
+3. DataFrame metrics (df_metrics) validation and extraction
 4. Custom metrics handling
-5. Error handling for invalid df_schema structures
+5. Error handling for invalid df_metrics structures
 """
 
 from unittest.mock import MagicMock
@@ -89,67 +89,67 @@ class TestPythonAdapterNoGranytKey:
         assert result is None
 
 
-class TestPythonAdapterDfSchemaValidation:
-    """Tests for df_schema validation - should raise ValueError for invalid schemas."""
+class TestPythonAdapterDfMetricsValidation:
+    """Tests for df_metrics validation - should raise ValueError for invalid schemas."""
 
-    def test_raises_error_when_df_schema_not_dict(self, mock_task_instance, mock_python_task):
-        """Should raise ValueError when df_schema is not a dict."""
-        mock_task_instance.xcom_pull.return_value = {"granyt": {"df_schema": "not a dict"}}
+    def test_raises_error_when_df_metrics_not_dict(self, mock_task_instance, mock_python_task):
+        """Should raise ValueError when df_metrics is not a dict."""
+        mock_task_instance.xcom_pull.return_value = {"granyt": {"df_metrics": "not a dict"}}
         adapter = PythonAdapter()
 
         with pytest.raises(ValueError) as exc_info:
             adapter.extract_metrics(mock_task_instance, mock_python_task)
 
-        assert "Invalid df_schema structure" in str(exc_info.value)
+        assert "Invalid df_metrics structure" in str(exc_info.value)
         assert "column_dtypes" in str(exc_info.value)
 
-    def test_raises_error_when_df_schema_missing_column_dtypes(
+    def test_raises_error_when_df_metrics_missing_column_dtypes(
         self, mock_task_instance, mock_python_task
     ):
-        """Should raise ValueError when df_schema is missing column_dtypes."""
-        mock_task_instance.xcom_pull.return_value = {"granyt": {"df_schema": {"row_count": 100}}}
+        """Should raise ValueError when df_metrics is missing column_dtypes."""
+        mock_task_instance.xcom_pull.return_value = {"granyt": {"df_metrics": {"row_count": 100}}}
         adapter = PythonAdapter()
 
         with pytest.raises(ValueError) as exc_info:
             adapter.extract_metrics(mock_task_instance, mock_python_task)
 
-        assert "Invalid df_schema structure" in str(exc_info.value)
+        assert "Invalid df_metrics structure" in str(exc_info.value)
 
     def test_raises_error_when_column_dtypes_not_dict(self, mock_task_instance, mock_python_task):
         """Should raise ValueError when column_dtypes is not a dict."""
         mock_task_instance.xcom_pull.return_value = {
-            "granyt": {"df_schema": {"column_dtypes": ["a", "b"]}}
+            "granyt": {"df_metrics": {"column_dtypes": ["a", "b"]}}
         }
         adapter = PythonAdapter()
 
         with pytest.raises(ValueError) as exc_info:
             adapter.extract_metrics(mock_task_instance, mock_python_task)
 
-        assert "Invalid df_schema structure" in str(exc_info.value)
+        assert "Invalid df_metrics structure" in str(exc_info.value)
 
     def test_raises_error_when_column_dtypes_has_non_string_values(
         self, mock_task_instance, mock_python_task
     ):
         """Should raise ValueError when column_dtypes values are not strings."""
         mock_task_instance.xcom_pull.return_value = {
-            "granyt": {"df_schema": {"column_dtypes": {"col1": 123}}}
+            "granyt": {"df_metrics": {"column_dtypes": {"col1": 123}}}
         }
         adapter = PythonAdapter()
 
         with pytest.raises(ValueError) as exc_info:
             adapter.extract_metrics(mock_task_instance, mock_python_task)
 
-        assert "Invalid df_schema structure" in str(exc_info.value)
+        assert "Invalid df_metrics structure" in str(exc_info.value)
 
 
-class TestPythonAdapterDfSchemaExtraction:
-    """Tests for valid df_schema extraction."""
+class TestPythonAdapterDfMetricsExtraction:
+    """Tests for valid df_metrics extraction."""
 
     def test_extracts_schema_fields(self, mock_task_instance, mock_python_task):
         """Should extract schema fields into custom_metrics['schema']."""
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
-                "df_schema": {
+                "df_metrics": {
                     "column_dtypes": {"id": "int64", "name": "object"},
                     "null_counts": {"id": 0, "name": 5},
                     "empty_string_counts": {"id": 0, "name": 2},
@@ -167,11 +167,11 @@ class TestPythonAdapterDfSchemaExtraction:
         assert schema["null_counts"] == {"id": 0, "name": 5}
         assert schema["empty_string_counts"] == {"id": 0, "name": 2}
 
-    def test_extracts_row_count_from_df_schema(self, mock_task_instance, mock_python_task):
-        """Should extract row_count from df_schema."""
+    def test_extracts_row_count_from_df_metrics(self, mock_task_instance, mock_python_task):
+        """Should extract row_count from df_metrics."""
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
-                "df_schema": {
+                "df_metrics": {
                     "column_dtypes": {"id": "int64"},
                     "row_count": 1000,
                 }
@@ -188,7 +188,7 @@ class TestPythonAdapterDfSchemaExtraction:
         """Should extract memory_bytes as bytes_processed."""
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
-                "df_schema": {
+                "df_metrics": {
                     "column_dtypes": {"id": "int64"},
                     "memory_bytes": 8192,
                 }
@@ -205,7 +205,7 @@ class TestPythonAdapterDfSchemaExtraction:
         """Should extract dataframe_type and column_count to custom_metrics."""
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
-                "df_schema": {
+                "df_metrics": {
                     "column_dtypes": {"id": "int64", "name": "object"},
                     "dataframe_type": "pandas",
                     "column_count": 2,
@@ -219,10 +219,17 @@ class TestPythonAdapterDfSchemaExtraction:
         assert result is not None
         assert result.custom_metrics["dataframe_type"] == "pandas"
         assert result.custom_metrics["column_count"] == 2
+        adapter = PythonAdapter()
+
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        assert result is not None
+        assert result.custom_metrics["dataframe_type"] == "pandas"
+        assert result.custom_metrics["column_count"] == 2
 
 
 class TestPythonAdapterCustomMetrics:
-    """Tests for custom metrics extraction alongside df_schema."""
+    """Tests for custom metrics extraction alongside df_metrics."""
 
     def test_extracts_custom_metrics(self, mock_task_instance, mock_python_task):
         """Should extract custom metrics from granyt key."""
@@ -240,13 +247,13 @@ class TestPythonAdapterCustomMetrics:
         assert result.custom_metrics["high_value_orders"] == 42
         assert result.custom_metrics["processing_status"] == "success"
 
-    def test_extracts_custom_metrics_alongside_df_schema(
+    def test_extracts_custom_metrics_alongside_df_metrics(
         self, mock_task_instance, mock_python_task
     ):
-        """Should extract both df_schema and custom metrics."""
+        """Should extract both df_metrics and custom metrics."""
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
-                "df_schema": {
+                "df_metrics": {
                     "column_dtypes": {"amount": "float64"},
                     "row_count": 100,
                 },
@@ -324,12 +331,12 @@ class TestPythonAdapterCallableInfo:
 class TestPythonAdapterIntegration:
     """Integration tests simulating real-world usage patterns."""
 
-    def test_full_df_schema_from_compute_df_metrics(self, mock_task_instance, mock_python_task):
+    def test_full_df_metrics_from_compute_df_metrics(self, mock_task_instance, mock_python_task):
         """Test with output matching compute_df_metrics() structure."""
         # This simulates what compute_df_metrics() returns
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
-                "df_schema": {
+                "df_metrics": {
                     "row_count": 4,
                     "column_count": 1,
                     "dataframe_type": "pandas",
@@ -368,7 +375,7 @@ class TestPythonAdapterIntegration:
         """
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
-                "df_schema": {
+                "df_metrics": {
                     "row_count": 4,
                     "column_count": 1,
                     "dataframe_type": "pandas",
@@ -419,7 +426,7 @@ class TestPythonAdapterIntegration:
         """
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
-                "df_schema": {
+                "df_metrics": {
                     "row_count": 4,
                     "column_count": 1,
                     "dataframe_type": "pandas",

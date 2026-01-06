@@ -16,8 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ModeToggle } from "@/components/mode-toggle"
-import { MobileSidebar, Breadcrumbs, type NavItem } from "@/components/shared"
-import { Shield, LayoutDashboard, LogOut, Plug, AlertTriangle, GitBranch, Play, Bell, Settings } from "lucide-react"
+import { MobileSidebar, Breadcrumbs, Logo, type NavItem } from "@/components/shared"
+import { LayoutDashboard, LogOut, Plug, AlertTriangle, GitBranch, Play, Bell, Settings, BookOpen } from "lucide-react"
 import { toast } from "sonner"
 import { EnvironmentProvider } from "@/lib/environment-context"
 import { BreadcrumbProvider } from "@/lib/breadcrumb-context"
@@ -31,7 +31,7 @@ const navigation: NavItem[] = [
   { name: "Errors", href: "/dashboard/errors", icon: AlertTriangle },
   { name: "API Keys", href: "/dashboard/apikeys", icon: Plug },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
-  { name: "Docs", href: getDocsLink("", "dashboard-nav"), icon: Shield },
+  { name: "Docs", href: getDocsLink("", "dashboard-nav"), icon: BookOpen },
 ]
 
 export default function DashboardLayout({
@@ -84,8 +84,7 @@ export default function DashboardLayout({
               transition={{ duration: 0.3 }}
             >
               <Link href={session ? "/dashboard" : "/"} className="flex h-16 items-center gap-2 px-6 border-b">
-                <Shield className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold">Granyt</span>
+                <Logo size="md" />
               </Link>
             </motion.div>
 
@@ -201,8 +200,7 @@ export default function DashboardLayout({
                 }
               />
               <Link href="/dashboard" className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary" />
-                <span className="font-bold">Granyt</span>
+                <Logo size="sm" />
               </Link>
             </div>
             {/* Desktop: empty space on left, toggle on right */}

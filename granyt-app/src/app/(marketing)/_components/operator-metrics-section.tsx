@@ -118,19 +118,19 @@ export function OperatorMetricsSection() {
               <CardContent className="p-0">
                 <CodeBlock 
                   code={`@task
-def process_data():
-    # ... your logic ...
+def transform_data():
+    # Load raw data
+    df_raw = pd.read_sql("SELECT * FROM raw_events", conn)
     
-    # Return your metrics in the special 'granyt' key
-    # Granyt automatically picks this up from XCom!
+    # Return data and metrics via granyt key
     return {
         "granyt": {
-            "row_count": 1500,
-            "data_quality_passed": True,
-            "source_file": "users.csv"
+            # captures df metadata
+            "df_metrics": granyt.compute_df_metrics(df_raw), 
+            "high_value_orders": (df_raw["amount"] > 1000).sum()
         }
     }`}
-                  title="dags/process_users.py"
+                  title="dags/transform_data.py"
                   language="python"
                 />
               </CardContent>

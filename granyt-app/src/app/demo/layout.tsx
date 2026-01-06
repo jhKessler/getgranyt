@@ -6,9 +6,8 @@ import { cn, getDocsLink } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ModeToggle } from "@/components/mode-toggle"
-import { MobileSidebar, type NavItem } from "@/components/shared"
+import { MobileSidebar, Logo, type NavItem } from "@/components/shared"
 import { 
-  Shield, 
   LayoutDashboard, 
   Plug, 
   AlertTriangle, 
@@ -59,8 +58,7 @@ export default function DemoLayout({
         <div className="flex h-full flex-col">
           {/* Logo */}
           <Link href="/" className="flex h-16 items-center gap-2 px-6 border-b">
-            <Shield className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">Granyt</span>
+            <Logo size="md" />
             <Badge variant="secondary" className="ml-auto text-xs">Demo</Badge>
           </Link>
 
@@ -137,8 +135,7 @@ export default function DemoLayout({
               }
             />
             <Link href="/" className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              <span className="font-bold">Granyt</span>
+              <Logo size="sm" />
               <Badge variant="secondary" className="text-xs">Demo</Badge>
             </Link>
           </div>

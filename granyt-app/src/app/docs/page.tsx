@@ -238,7 +238,7 @@ export default function QuickstartPage() {
           <div className="space-y-4">
             <h4 className="font-semibold">How Manual Metrics Work</h4>
             <p className="text-sm text-muted-foreground">
-              Granyt automatically captures any dictionary returned under the <InlineCode>granyt</InlineCode> key in your task&apos;s return value. Use <InlineCode>compute_df_metrics</InlineCode> to easily generate DataFrame schema and metrics, passing the result to <InlineCode>granyt[&quot;df_schema&quot;]</InlineCode>.
+              Granyt automatically captures any dictionary returned under the <InlineCode>granyt</InlineCode> key in your task&apos;s return value. Use <InlineCode>compute_df_metrics</InlineCode> to easily generate DataFrame schema and metrics, passing the result to <InlineCode>granyt[&quot;df_metrics&quot;]</InlineCode>.
             </p>
             <CodeBlock 
               language="python"
@@ -249,7 +249,7 @@ def my_task():
     df = pd.read_csv(...)
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df)
+            "df_metrics": compute_df_metrics(df)
         }
     }`}
             />
@@ -283,7 +283,7 @@ def transform_data():
     # Return metrics via XCom
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df_clean)
+            "df_metrics": compute_df_metrics(df_clean)
         }
     }`}
                 />
@@ -304,7 +304,7 @@ def transform_data():
     # Return metrics via XCom
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df_clean)
+            "df_metrics": compute_df_metrics(df_clean)
         }
     }`}
                 />
@@ -325,7 +325,7 @@ def transform_spark_data():
     # The SDK collects null counts and other stats efficiently.
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df_clean)
+            "df_metrics": compute_df_metrics(df_clean)
         }
     }`}
                 />

@@ -183,7 +183,7 @@ def process_data():
 ```
 
 #### Automatic Metric Calculation
-For deep data insights, use `compute_df_metrics`. It automatically calculates row counts, null counts, and column types from your Pandas or Polars DataFrames. Pass the result to `granyt["df_schema"]` to get schema change detection and rich metrics:
+For deep data insights, use `compute_df_metrics`. It automatically calculates row counts, null counts, and column types from your Pandas or Polars DataFrames. Pass the result to `granyt["df_metrics"]` to get schema change detection and rich metrics:
 
 ```python
 from granyt_sdk import compute_df_metrics
@@ -194,8 +194,8 @@ def transform_data():
     
     return {
         "granyt": {
-            # df_schema automatically splits into schema and metrics
-            "df_schema": compute_df_metrics(df),
+            # df_metrics automatically splits into schema and metrics
+            "df_metrics": compute_df_metrics(df),
             "data_quality_passed": True
         }
     }

@@ -53,7 +53,7 @@ export default function MetricsPage() {
           lets you capture statistics from your DataFrames at any point in your DAG. 
           Use it to track row counts, schema information, data quality metrics, and custom KPIs.
           Metrics are passed to Granyt via the <InlineCode>granyt</InlineCode> key in your task&apos;s return value,
-          with DataFrame schema passed to the <InlineCode>df_schema</InlineCode> sub-key.
+          with DataFrame schema passed to the <InlineCode>df_metrics</InlineCode> sub-key.
         </p>
         <Card className="bg-muted/30">
           <CardContent className="pt-6">
@@ -72,10 +72,10 @@ def process_users():
     })
 
     # Compute metrics from the DataFrame, e.g. row count, column dtypes, etc.
-    # Pass to df_schema for automatic schema tracking
+    # Pass to df_metrics for automatic schema tracking
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df),
+            "df_metrics": compute_df_metrics(df),
             "custom_metric": 42
         }
     }`}
@@ -126,7 +126,7 @@ def process_users():
             />
             <p className="text-sm text-muted-foreground mb-4 mt-6">
               Computes metrics from a DataFrame for use with the <InlineCode>granyt</InlineCode> key.
-              Returns a dictionary that should be assigned to <InlineCode>granyt[&quot;df_schema&quot;]</InlineCode>.
+              Returns a dictionary that should be assigned to <InlineCode>granyt[&quot;df_metrics&quot;]</InlineCode>.
             </p>
           </CardContent>
         </Card>
@@ -156,7 +156,7 @@ def process_users():
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              The function returns a dictionary containing all computed metrics, ready to be assigned to your <InlineCode>granyt[&quot;df_schema&quot;]</InlineCode> return value:
+              The function returns a dictionary containing all computed metrics, ready to be assigned to your <InlineCode>granyt[&quot;df_metrics&quot;]</InlineCode> return value:
             </p>
             <DataTable
               headers={["Field", "Type", "Description"]}
@@ -320,7 +320,7 @@ def extract_users():
     return {
         "data": df.to_dict(),
         "granyt": {
-            "df_schema": compute_df_metrics(df)
+            "df_metrics": compute_df_metrics(df)
         }
     }
 
@@ -337,7 +337,7 @@ def transform_users(payload):
     return {
         "data": df.to_dict(),
         "granyt": {
-            "df_schema": compute_df_metrics(df),
+            "df_metrics": compute_df_metrics(df),
             "valid_emails": int((df['email'].str.contains('@')).sum()),
             "active_users": int((df['status'] == 'active').sum())
         }
@@ -354,7 +354,7 @@ def load_users(payload):
     return {
         "rows_loaded": rows_loaded,
         "granyt": {
-            "df_schema": compute_df_metrics(df),
+            "df_metrics": compute_df_metrics(df),
             "total_users_loaded": rows_loaded
         }
     }
@@ -375,7 +375,7 @@ user_pipeline()`}
       <InfoSection title="Best Practices">
         <CheckList items={[
           <>Use descriptive metric names that reflect the data&apos;s purpose (e.g., row_count, null_rate)</>,
-          <>Always return metrics via the <InlineCode>granyt</InlineCode> key with DataFrame schema in <InlineCode>df_schema</InlineCode></>,
+          <>Always return metrics via the <InlineCode>granyt</InlineCode> key with DataFrame schema in <InlineCode>df_metrics</InlineCode></>,
         ]} />
       </InfoSection>
     </div>
