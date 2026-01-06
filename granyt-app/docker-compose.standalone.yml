@@ -35,18 +35,21 @@ services:
   # PostgreSQL Database
   # =========================
   postgres:
+    image: postgres:17-alpine
     container_name: granyt-postgres
 
   # =========================
   # Database Migrations
   # =========================
   migrations:
+    image: ghcr.io/jhkessler/granyt-app:${GRANYT_VERSION:-latest}-migrations
     container_name: granyt-migrations
 
   # =========================
   # Next.js Application
   # =========================
   app:
+    image: ghcr.io/jhkessler/granyt-app:${GRANYT_VERSION:-latest}
     container_name: granyt-app
     ports:
       - "${APP_PORT:-3000}:3000"
