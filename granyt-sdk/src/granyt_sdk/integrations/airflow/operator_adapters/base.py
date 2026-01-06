@@ -172,9 +172,7 @@ class OperatorMetrics:
         if self.custom_metrics:
             custom_metrics_copy = dict(self.custom_metrics)
             # Check if 'schema' in custom_metrics is a dict (DataFrame schema info)
-            if "schema" in custom_metrics_copy and isinstance(
-                custom_metrics_copy["schema"], dict
-            ):
+            if "schema" in custom_metrics_copy and isinstance(custom_metrics_copy["schema"], dict):
                 schema_data = custom_metrics_copy.pop("schema")
 
             # Merge remaining custom_metrics into the metrics object
