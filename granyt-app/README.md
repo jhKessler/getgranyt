@@ -9,8 +9,8 @@
 <h1 align="center">Granyt App</h1>
 
 <p align="center">
-  <strong>Web dashboard for Granyt - the lightweight, open-source Airflow observability platform</strong><br>
-  A modern Next.js application for monitoring, debugging, and configuring your data pipelines
+  <strong>Web dashboard for Granyt - the modern, open-source Airflow observability platform</strong><br>
+  A Next.js application for monitoring, debugging, and configuring your data pipelines
 </p>
 
 <p align="center">

@@ -8,8 +8,7 @@
 <h1 align="center">🔍 Granyt</h1>
 
 <p align="center">
-  <strong>Lightweight, open-source data pipeline observability platform for Apache Airflow</strong><br>
-  Monitor, debug, and optimize your DAGs with real-time insights
+  <strong>A modern, open source all-in-one monitoring platform for Apache Airflow that lets you catch errors and data issues before they reach production.</strong>
 </p>
 
 <p align="center">

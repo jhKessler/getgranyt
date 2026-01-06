@@ -6,11 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Github, Sparkles, BookOpen, Copy, Check } from "lucide-react"
 import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
-import { useFeatureFlagVariantKey } from "posthog-js/react"
 import { getDocsLink } from "@/lib/utils"
-
-// Feature flag key for the headline A/B test
-const HEADLINE_EXPERIMENT_FLAG = "landing-headline-test"
 
 function InstallCommand() {
   const command = INSTALL_COMMAND
@@ -41,54 +37,23 @@ function InstallCommand() {
   )
 }
 
-function HeadlineControl() {
+function HeroHeadline() {
   return (
     <>
       <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-        Pipeline Monitoring{" "}
+        Pipeline monitoring{" "}
         <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           you&apos;ll actually use
         </span>
       </h1>
       <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-        Rock-solid Airflow monitoring built for data engineers. <br className="hidden sm:block" /> Not for sales demos.
+        Granyt is a modern, open source all-in-one monitoring platform for Apache Airflow that lets you catch errors and data issues before they reach production.
       </p>
     </>
   )
 }
 
-function HeadlineTest() {
-  return (
-    <>
-      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-        Catch data problems{" "}
-        <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          before they reach production
-        </span>
-      </h1>
-      <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-        Open source observability for Apache Airflow. <br className="hidden sm:block" /> 
-        Track errors, data quality, and get alerted before bad data breaks your downstream pipelines.
-      </p>
-    </>
-  )
-}
-
-interface HeroSectionProps {
-  /** Server-side evaluated variant to prevent FOUC. Falls back to client-side if not provided. */
-  serverVariant?: string
-}
-
-export function HeroSection({ serverVariant }: HeroSectionProps) {
-  // Use server variant if available, otherwise fall back to client-side evaluation
-  const clientVariant = useFeatureFlagVariantKey(HEADLINE_EXPERIMENT_FLAG)
-  const variant = serverVariant ?? clientVariant
-
-  // Determine which headline to show
-  // - "test" → show test headline
-  // - "control" → show control headline  
-  // - undefined/null → flags loading, default to control (but don't track as control)
-  const showTestHeadline = variant === "test"
+export function HeroSection() {
 
   return (
     <section className="relative overflow-hidden">
@@ -114,9 +79,9 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
             </Badge>
           </Link>
 
-          {/* Main heading - A/B tested */}
+          {/* Main heading */}
           <div className="space-y-4 max-w-4xl px-2">
-            {showTestHeadline ? <HeadlineTest /> : <HeadlineControl />}
+            <HeroHeadline />
           </div>
 
           {/* Primary CTA - Install command */}
