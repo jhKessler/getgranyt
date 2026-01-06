@@ -12,8 +12,7 @@ import {
   ChevronRight, 
   BarChart3,
   Cog,
-  Table2,
-  AlertCircle
+  Table2
 } from "lucide-react"
 
 /**
@@ -218,7 +217,6 @@ function SchemaTable({ captures }: { captures: CapturePointInfo[] }) {
   const columns = Object.entries(schema.column_dtypes)
   const hasNullCounts = schema.null_counts && Object.keys(schema.null_counts).length > 0
   const hasEmptyCounts = schema.empty_string_counts && Object.keys(schema.empty_string_counts).length > 0
-  const hasIssues = hasNullCounts || hasEmptyCounts
   
   return (
     <div className="mt-4 pt-4 border-t">
@@ -228,12 +226,6 @@ function SchemaTable({ captures }: { captures: CapturePointInfo[] }) {
         <Badge variant="secondary" className="text-xs">
           {columns.length} column{columns.length !== 1 ? "s" : ""}
         </Badge>
-        {hasIssues && (
-          <Badge variant="outline" className="text-xs text-amber-600 border-amber-600/50">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Data quality issues
-          </Badge>
-        )}
       </h4>
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
@@ -249,31 +241,21 @@ function SchemaTable({ captures }: { captures: CapturePointInfo[] }) {
             {columns.map(([colName, dtype]) => {
               const nullCount = schema.null_counts?.[colName] ?? 0
               const emptyCount = schema.empty_string_counts?.[colName] ?? 0
-              const hasColIssues = nullCount > 0 || emptyCount > 0
               
               return (
                 <tr 
                   key={colName} 
-                  className={cn(
-                    "border-t",
-                    hasColIssues && "bg-amber-500/5"
-                  )}
+                  className="border-t"
                 >
                   <td className="p-2 font-mono text-xs">{colName}</td>
                   <td className="p-2 text-muted-foreground">{dtype}</td>
                   {hasNullCounts && (
-                    <td className={cn(
-                      "p-2 text-right font-mono text-xs",
-                      nullCount > 0 && "text-amber-600 font-medium"
-                    )}>
+                    <td className="p-2 text-right font-mono text-xs">
                       {nullCount > 0 ? nullCount.toLocaleString() : "—"}
                     </td>
                   )}
                   {hasEmptyCounts && (
-                    <td className={cn(
-                      "p-2 text-right font-mono text-xs",
-                      emptyCount > 0 && "text-amber-600 font-medium"
-                    )}>
+                    <td className="p-2 text-right font-mono text-xs">
                       {emptyCount > 0 ? emptyCount.toLocaleString() : "—"}
                     </td>
                   )}
