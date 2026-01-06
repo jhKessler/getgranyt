@@ -84,9 +84,6 @@ export function HeroSection() {
             <HeroHeadline />
           </div>
 
-          {/* Primary CTA - Install command */}
-          <InstallCommand />
-
           {/* Secondary CTAs */}
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild size="lg" className="gap-2 text-base">

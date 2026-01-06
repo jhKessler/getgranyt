@@ -56,6 +56,12 @@ const mainSections: NavSection[] = [
     ],
   },
   {
+    title: "Server Reference",
+    items: [
+      { title: "Environment Variables", href: getDocsLink("/server-reference/environment-variables"), icon: Settings },
+    ],
+  },
+  {
     title: "SDK Reference",
     items: [
       { title: "Manual Metrics", href: getDocsLink("/metrics"), icon: BarChart3 },
@@ -195,6 +201,7 @@ function NavSection({ section, isOpen, onToggle, onLinkClick }: {
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     "Getting Started": true,
+    "Server Reference": true,
     "SDK Reference": true,
     "Dashboard": true,
     "Automatic Tracking": true,
