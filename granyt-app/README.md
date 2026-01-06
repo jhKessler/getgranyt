@@ -75,18 +75,23 @@
 ### Using Docker (Recommended)
 
 ```bash
-# From the granyt-app directory
-cp .env.standalone.example .env
+# Download the docker-compose file
+curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/docker-compose.standalone.yml
 
-# Edit .env with your settings
-# Required: POSTGRES_PASSWORD, BETTER_AUTH_SECRET
-# Generate a secret: openssl rand -base64 32
+# Create a .env file with required variables
+cat > .env << EOF
+POSTGRES_PASSWORD=$(openssl rand -base64 24)
+BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+BETTER_AUTH_URL=http://localhost:3000
+EOF
 
 # Start with Docker Compose
 docker compose -f docker-compose.standalone.yml up -d
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and create your first account!
+
+> For production deployment with SMTP, reverse proxy setup, and more options, see the [Deployment Guide](DEPLOYMENT.md).
 
 ### Local Development
 
@@ -180,6 +185,8 @@ See the [Deployment Guide](DEPLOYMENT.md) for detailed production setup instruct
 
 1. Create an API key in Settings → API Keys
 2. Install the Granyt SDK in your Airflow environment:
+
+   The Granyt SDK is a Python listener that must be installed where your Airflow workers and scheduler run. It automatically captures DAG and task execution events and sends them to your Granyt dashboard.
 
 ```bash
 pip install granyt
