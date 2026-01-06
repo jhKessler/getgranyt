@@ -12,6 +12,7 @@ export async function parsePayload<T>(
 ): Promise<ParseResult<T>> {
   try {
     const rawPayload = await request.json();
+    console.log("Raw payload:", rawPayload);
     const validation = zodValidate(schema, rawPayload);
 
     if (!validation.success) {
