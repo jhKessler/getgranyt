@@ -3,11 +3,16 @@ Data Metrics feature for Granyt SDK.
 """
 
 from granyt_sdk.features.metrics.core import (
+    DF_SCHEMA_KEY,
+    GRANYT_KEY,
+    METRICS_KEYS,
+    SCHEMA_KEYS,
     ColumnMetrics,
     DataFrameAdapter,
     DataFrameMetrics,
     compute_df_metrics,
     register_adapter,
+    validate_df_schema,
 )
 
 # Register default adapters
@@ -38,4 +43,9 @@ __all__ = [
     "DataFrameAdapter",
     "register_adapter",
     "compute_df_metrics",
+    "validate_df_schema",
+    "GRANYT_KEY",
+    "DF_SCHEMA_KEY",
+    "SCHEMA_KEYS",
+    "METRICS_KEYS",
 ]

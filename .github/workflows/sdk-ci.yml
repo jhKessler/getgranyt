@@ -9,13 +9,6 @@
 name: SDK CI/CD
 
 on:
-  pull_request:
-    branches:
-      - main
-      - staging
-    paths:
-      - 'granyt-sdk/**'
-      - '.github/workflows/sdk-ci.yml'
   push:
     branches:
       - main

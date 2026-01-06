@@ -9,7 +9,7 @@ When a task instance succeeds, the Granyt Airflow Listener triggers the `extract
 1.  **Identifies the Operator**: It looks at the class name of the operator being executed.
 2.  **Finds a Matching Adapter**: It searches the `ADAPTER_REGISTRY` for an adapter that can handle that operator class.
 3.  **Extracts Metrics**: The matching adapter's `extract_metrics` method is called to pull relevant data from the task instance and the operator object.
-4.  **Captures Return Values**: For `PythonOperators`, it specifically looks for a `granyt_metrics` key in the task's return value (XCom).
+4.  **Captures Return Values**: For `PythonOperators`, it specifically looks for a `granyt` key in the task's return value (XCom).
 5.  **Sends Data to Granyt**: The extracted metrics are then sent to the Granyt backend.
 
 ## The `OperatorMetrics` Class
@@ -120,7 +120,7 @@ Granyt SDK comes with built-in support for many popular operators:
 
 | Adapter | Supported Operators | Metrics Captured |
 |---------|---------------------|------------------|
-| **Python** | `PythonOperator`, `@task` | Any key inside the `granyt_metrics` return dictionary |
+| **Python** | `PythonOperator`, `@task` | Any key inside the `granyt` return dictionary |
 | **dbt Cloud** | `DbtCloudRunJobOperator`, `DbtCloudGetJobRunArtifactOperator`, `DbtCloudListJobsOperator` | `models_run`, `tests_passed`, `tests_failed`, `row_count`, `job_id`, `account_id`, `run_id` |
 | **dbt Core** | `DbtRunOperator`, `DbtTestOperator`, `DbtSeedOperator`, `DbtSnapshotOperator` | `models_run`, `tests_passed`, `tests_failed`, `row_count`, `path` |
 | **Spark** | `SparkSubmitOperator`, `DataprocSubmitJobOperator`, `EmrAddStepsOperator` | `stages_completed`, `tasks_completed`, `shuffle_bytes`, `row_count` |

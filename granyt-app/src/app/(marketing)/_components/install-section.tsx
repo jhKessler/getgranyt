@@ -106,6 +106,9 @@ export function InstallSection() {
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             No code changes required. Install the SDK and you&apos;re ready to go.
           </p>
+          <p className="text-sm text-muted-foreground mt-3">
+            Works with Airflow 2.5 – 2.10 • Airflow 3.0 support coming soon
+          </p>
         </div>
 
         <div className="grid gap-8 md:gap-16 lg:grid-cols-2 items-start">
