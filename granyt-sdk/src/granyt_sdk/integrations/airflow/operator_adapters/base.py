@@ -164,8 +164,15 @@ class OperatorMetrics:
             if value is not None:
                 metrics[field_name] = value
 
-        # Merge custom_metrics into the metrics object
+        # Extract schema object from custom_metrics if present
+        # (DataFrame schema info should go to top-level 'schema' field, not inside 'metrics')
+        schema_data = None
         if self.custom_metrics:
+            # Check if 'schema' in custom_metrics is a dict (DataFrame schema info)
+            if "schema" in self.custom_metrics and isinstance(self.custom_metrics["schema"], dict):
+                schema_data = self.custom_metrics.pop("schema")
+
+            # Merge remaining custom_metrics into the metrics object
             metrics.update(self.custom_metrics)
 
         # Return structure matching backend schema
@@ -175,6 +182,7 @@ class OperatorMetrics:
             "task_id": self.task_id,
             "run_id": self.run_id,
             "metrics": metrics,
+            "schema": schema_data,
         }
 
     def to_openlineage_facet(self) -> Dict[str, Any]:
