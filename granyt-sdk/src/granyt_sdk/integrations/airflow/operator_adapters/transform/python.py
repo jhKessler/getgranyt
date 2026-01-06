@@ -119,30 +119,37 @@ class PythonAdapter(OperatorAdapter):
         if DF_SCHEMA_KEY in granyt_data:
             df_schema = granyt_data[DF_SCHEMA_KEY]
 
-            # Validate the schema structure
-            if validate_df_schema(df_schema):
-                # Extract schema fields for backend's 'schema' field
-                schema_data = {}
-                if "column_dtypes" in df_schema:
-                    schema_data["column_dtypes"] = df_schema["column_dtypes"]
-                if "null_counts" in df_schema:
-                    schema_data["null_counts"] = df_schema["null_counts"]
-                if "empty_string_counts" in df_schema:
-                    schema_data["empty_string_counts"] = df_schema["empty_string_counts"]
+            # Validate the schema structure - raise error if invalid
+            if not validate_df_schema(df_schema):
+                raise ValueError(
+                    f"Invalid df_schema structure. "
+                    f"df_schema must be a dictionary with 'column_dtypes' (Dict[str, str]) as a required field. "
+                    f"Got: {type(df_schema).__name__}. "
+                    f"Use compute_df_metrics() to generate a valid schema."
+                )
 
-                if schema_data:
-                    metrics.custom_metrics["schema"] = schema_data
+            # Extract schema fields for backend's 'schema' field
+            schema_data = {}
+            if "column_dtypes" in df_schema:
+                schema_data["column_dtypes"] = df_schema["column_dtypes"]
+            if "null_counts" in df_schema:
+                schema_data["null_counts"] = df_schema["null_counts"]
+            if "empty_string_counts" in df_schema:
+                schema_data["empty_string_counts"] = df_schema["empty_string_counts"]
 
-                # Extract metric fields
-                if "row_count" in df_schema:
-                    metrics.row_count = df_schema["row_count"]
-                if "memory_bytes" in df_schema:
-                    metrics.bytes_processed = df_schema["memory_bytes"]
+            if schema_data:
+                metrics.custom_metrics["schema"] = schema_data
 
-                # Capture other metadata from df_schema
-                for key in ["dataframe_type", "column_count"]:
-                    if key in df_schema:
-                        metrics.custom_metrics[key] = df_schema[key]
+            # Extract metric fields
+            if "row_count" in df_schema:
+                metrics.row_count = df_schema["row_count"]
+            if "memory_bytes" in df_schema:
+                metrics.bytes_processed = df_schema["memory_bytes"]
+
+            # Capture other metadata from df_schema
+            for key in ["dataframe_type", "column_count"]:
+                if key in df_schema:
+                    metrics.custom_metrics[key] = df_schema[key]
 
         # Process all other keys in granyt (custom metrics)
         reserved_keys = {DF_SCHEMA_KEY}
