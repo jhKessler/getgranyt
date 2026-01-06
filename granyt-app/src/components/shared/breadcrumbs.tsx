@@ -29,7 +29,7 @@ function isUUID(str: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)
 }
 
-function formatDynamicSegment(segment: string, previousSegment?: string): string {
+function formatDynamicSegment(segment: string, _previousSegment?: string): string {
   // Decode URI component for display
   const decoded = decodeURIComponent(segment)
   

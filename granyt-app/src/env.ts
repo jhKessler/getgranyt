@@ -22,8 +22,8 @@ export const env = createEnv({
    */
   server: {
     // ==================== Core ====================
-    DATABASE_URL: z.string().url().describe("PostgreSQL connection string"),
-    BETTER_AUTH_SECRET: z.string().min(16).describe("Auth secret key (min 16 chars)"),
+    DATABASE_URL: z.string().url().describe("PostgreSQL connection string").optional(),
+    BETTER_AUTH_SECRET: z.string().min(16).describe("Auth secret key (min 16 chars)").optional(), // not needed during build time
     BETTER_AUTH_URL: z.string().url().default("http://localhost:3000").describe("Auth trusted origin URL"),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
     
@@ -67,6 +67,7 @@ export const env = createEnv({
     NEXT_PUBLIC_POSTHOG_KEY: z.string().optional().describe("PostHog analytics API key"),
     NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional().describe("PostHog host URL"),
     NEXT_PUBLIC_GITHUB_URL: z.string().url().optional().describe("GitHub repository URL"),
+    NEXT_PUBLIC_DOCS_URL: z.string().default("/docs").describe("Base URL for documentation links (e.g. '/docs' or 'https://docs.granyt.dev')"),
   },
 
   /**
@@ -115,6 +116,7 @@ export const env = createEnv({
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_GITHUB_URL: process.env.NEXT_PUBLIC_GITHUB_URL,
+    NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
   },
 
   /**

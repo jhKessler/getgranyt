@@ -10,7 +10,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Type, Union
-from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +64,6 @@ class OperatorMetrics:
     operator_type: str
     operator_class: str
     captured_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    capture_id: str = field(default_factory=lambda: str(uuid4()))
 
     # Data metrics
     row_count: Optional[int] = None
@@ -112,7 +110,7 @@ class OperatorMetrics:
         """Convert metrics to dictionary for serialization.
 
         The backend expects a 'metrics' field containing all metric values
-        as flexible key-value pairs. Base fields (capture_id, dag_id, etc.)
+        as flexible key-value pairs. Base fields (dag_id, task_id, etc.)
         stay at the top level.
         """
         # Build the metrics object with all metric values
@@ -172,7 +170,6 @@ class OperatorMetrics:
 
         # Return structure matching backend schema
         return {
-            "capture_id": self.capture_id,
             "captured_at": self.captured_at,
             "dag_id": self.dag_id,
             "task_id": self.task_id,
@@ -243,7 +240,7 @@ class OperatorAdapter(ABC):
         self,
         task_instance: Any,
         task: Optional[Any] = None,
-    ) -> OperatorMetrics:
+    ) -> Optional[OperatorMetrics]:
         """Extract metrics from a task execution.
 
         Args:
@@ -407,6 +404,9 @@ def extract_operator_metrics(
 
     try:
         metrics = adapter.extract_metrics(task_instance, task)
+
+        if metrics is None:
+            return None
 
         # Add lineage linkage
         if hasattr(task_instance, "dag_id"):

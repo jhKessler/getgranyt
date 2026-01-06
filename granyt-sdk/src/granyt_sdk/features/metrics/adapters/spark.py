@@ -29,11 +29,8 @@ class SparkAdapter(DataFrameAdapter):
         return "spark"
 
     @classmethod
-    def prepare(cls, df: Any, should_compute: bool) -> Any:
+    def prepare(cls, df: Any) -> Any:
         """Prepare the Spark DataFrame using the Observation API."""
-        if not should_compute:
-            return df
-
         try:
             from pyspark import StorageLevel
             from pyspark.sql import Observation

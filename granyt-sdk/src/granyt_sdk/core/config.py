@@ -46,13 +46,9 @@ class EndpointConfig:
         """Get the heartbeat endpoint URL."""
         return f"{self.endpoint.rstrip('/')}/api/v1/heartbeat"
 
-    def get_data_metrics_url(self) -> str:
-        """Get the data metrics endpoint URL."""
-        return f"{self.endpoint.rstrip('/')}/api/v1/metrics"
-
     def get_operator_metrics_url(self) -> str:
         """Get the operator metrics endpoint URL."""
-        return self.get_data_metrics_url()
+        return f"{self.endpoint.rstrip('/')}/api/v1/metrics"
 
 
 def _str_to_bool(value: str) -> bool:
@@ -194,14 +190,10 @@ class GranytConfig:
         endpoint = self.endpoint or ""
         return f"{endpoint.rstrip('/')}/api/v1/heartbeat"
 
-    def get_data_metrics_url(self) -> str:
-        """Get the data metrics endpoint URL."""
+    def get_operator_metrics_url(self) -> str:
+        """Get the operator metrics endpoint URL."""
         endpoint = self.endpoint or ""
         return f"{endpoint.rstrip('/')}/api/v1/metrics"
-
-    def get_operator_metrics_url(self) -> str:
-        """Get the operator metrics endpoint URL (now using data-metrics)."""
-        return self.get_data_metrics_url()
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary (excluding sensitive data)."""

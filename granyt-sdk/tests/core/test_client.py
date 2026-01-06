@@ -2,9 +2,10 @@
 Tests for granyt_sdk.core.client module.
 """
 
-import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
 from datetime import datetime, timezone
+from unittest.mock import MagicMock, PropertyMock, patch
+
+import pytest
 
 from granyt_sdk.core.client import GranytClient, get_client
 from granyt_sdk.core.config import GranytConfig
@@ -301,30 +302,6 @@ class TestCaptureMessage:
 
 class TestSendMetrics:
     """Tests for metrics sending methods."""
-
-    def test_send_data_metrics_disabled(self, clean_env):
-        """Test send_data_metrics returns False when disabled."""
-        client = GranytClient()
-        mock_metrics = MagicMock()
-
-        result = client.send_data_metrics(mock_metrics)
-
-        assert result is False
-
-    def test_send_data_metrics_success(self, valid_env):
-        """Test send_data_metrics forwards to transport."""
-        client = GranytClient()
-        mock_transport = MagicMock()
-        mock_transport.send_data_metrics.return_value = True
-        client._transport = mock_transport
-
-        mock_metrics = MagicMock()
-        mock_metrics.to_dict.return_value = {"row_count": 100}
-
-        result = client.send_data_metrics(mock_metrics)
-
-        assert result is True
-        mock_transport.send_data_metrics.assert_called_once()
 
     def test_send_operator_metrics_disabled(self, clean_env):
         """Test send_operator_metrics returns False when disabled."""

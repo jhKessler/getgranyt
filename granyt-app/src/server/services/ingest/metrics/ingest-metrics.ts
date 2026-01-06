@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
+import crypto from "crypto";
 import { resolveDagContext } from "../../dag-run";
 import { updateComputedMetricsOnMetricsIngest, updateDagRunMetricSnapshot } from "../../dag-metrics";
 import type { IngestMetricsParams, IngestMetricsResult } from "./types";
@@ -10,15 +11,23 @@ const logger = createLogger("MetricsIngest");
 /**
  * Ingests a metrics payload into the database.
  * All metrics are stored as a flexible JSON blob - any 1D key-value pairs are accepted.
+ * The capture_id is generated server-side to ensure uniqueness.
  */
 export async function ingestMetrics(
   params: IngestMetricsParams
 ): Promise<IngestMetricsResult> {
   const { organizationId, environment, payload } = params;
   const capturedAt = new Date(payload.captured_at);
+  
+  // Generate a stable captureId based on dag_id and task_id.
+  // This ensures historical metrics can be found for the same task across runs.
+  // In the future, we may allow the SDK to provide an explicit capture_id.
+  const captureId = crypto.createHash("sha256")
+    .update(`${payload.dag_id}:${payload.task_id}`)
+    .digest("hex");
 
   logger.debug(
-    { organizationId, dagId: payload.dag_id, taskId: payload.task_id, captureId: payload.capture_id },
+    { organizationId, dagId: payload.dag_id, taskId: payload.task_id, captureId },
     "Ingesting metrics"
   );
 
@@ -34,7 +43,7 @@ export async function ingestMetrics(
 
   await createMetric({
     organizationId,
-    captureId: payload.capture_id,
+    captureId,
     taskRunId,
     metrics: payload.metrics ?? {},
     schema: payload.schema ?? null,
@@ -73,7 +82,7 @@ export async function ingestMetrics(
     });
   }
 
-  return { captureId: payload.capture_id, taskRunId };
+  return { taskRunId };
 }
 
 async function createMetric(params: {

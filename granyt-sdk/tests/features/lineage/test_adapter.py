@@ -2,9 +2,10 @@
 Tests for granyt_sdk.features.lineage.adapter module.
 """
 
-import pytest
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
+
+import pytest
 
 from granyt_sdk.features.lineage.adapter import (
     OpenLineageAdapter,

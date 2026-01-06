@@ -3,7 +3,6 @@ import {
   PageHeader,
   SectionHeader,
   EnvVarTable,
-  Callout,
   InfoSection,
 } from "../../_components"
 
@@ -42,11 +41,6 @@ const coreConfigVars = [
 ]
 
 const performanceVars = [
-  {
-    variable: "GRANYT_COMPUTE_STATS",
-    default: "false",
-    description: "Enable expensive DataFrame statistics (null counts, memory usage) by default.",
-  },
   {
     variable: "GRANYT_BATCH_SIZE",
     default: "10",
@@ -117,10 +111,6 @@ export default function EnvironmentVariablesPage() {
           envVars={performanceVars}
           badgeVariant="outline"
         />
-        <Callout variant="info">
-          The <code className="text-xs">GRANYT_COMPUTE_STATS</code> setting can be overridden on a per-call basis 
-          using the <code className="text-xs">compute_stats</code> argument in <code className="text-xs">capture_data_metrics()</code>.
-        </Callout>
       </section>
 
       <section className="space-y-6">
@@ -149,18 +139,6 @@ export default function EnvironmentVariablesPage() {
             <h4 className="font-medium">Kubernetes</h4>
             <p className="text-sm text-muted-foreground">
               Use a <code className="text-xs">ConfigMap</code> or <code className="text-xs">Secret</code> and reference them in your pod spec.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h4 className="font-medium">System-wide</h4>
-            <p className="text-sm text-muted-foreground">
-              Export them in your <code className="text-xs">.bashrc</code> or <code className="text-xs">/etc/environment</code>.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h4 className="font-medium">Airflow Variables</h4>
-            <p className="text-sm text-muted-foreground">
-              Note: The SDK reads from <strong>OS environment variables</strong>, not Airflow Variables (UI).
             </p>
           </div>
         </div>

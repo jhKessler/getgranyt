@@ -19,7 +19,6 @@ describe("E2E: Alert Detection (New Schema Format)", () => {
   it("should trigger NULL_OCCURRENCE alert using the new schema column", async () => {
     const { org } = testData;
     const dagId = "e2e_null_alert_dag";
-    const captureId = "e2e-null-capture";
     
     // 1. Ingest 5 historical runs with NO nulls
     for (let i = 0; i < 5; i++) {
@@ -45,7 +44,6 @@ describe("E2E: Alert Detection (New Schema Format)", () => {
         organizationId: org.id,
         environment: "production",
         payload: {
-          capture_id: captureId,
           captured_at: timestamp,
           dag_id: dagId,
           task_id: "task_1",
@@ -97,7 +95,6 @@ describe("E2E: Alert Detection (New Schema Format)", () => {
       organizationId: org.id,
       environment: "production",
       payload: {
-        capture_id: captureId,
         captured_at: currentTimestamp,
         dag_id: dagId,
         task_id: "task_1",
@@ -158,7 +155,6 @@ describe("E2E: Alert Detection (New Schema Format)", () => {
   it("should trigger SCHEMA_CHANGE alert using the new schema column", async () => {
     const { org } = testData;
     const dagId = "e2e_schema_alert_dag";
-    const captureId = "e2e-schema-capture";
     
     // 1. Ingest a previous run
     const prevRunId = `prev_run_${Date.now()}`;
@@ -183,7 +179,6 @@ describe("E2E: Alert Detection (New Schema Format)", () => {
       organizationId: org.id,
       environment: "production",
       payload: {
-        capture_id: captureId,
         captured_at: prevTimestamp,
         dag_id: dagId,
         task_id: "task_1",
@@ -233,7 +228,6 @@ describe("E2E: Alert Detection (New Schema Format)", () => {
       organizationId: org.id,
       environment: "production",
       payload: {
-        capture_id: captureId,
         captured_at: currentTimestamp,
         dag_id: dagId,
         task_id: "task_1",

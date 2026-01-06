@@ -36,8 +36,8 @@ const ALWAYS_ALLOWED_PREFIXES = [
 ];
 
 function getGranytMode(): GranytMode {
-  // Check both env vars for compatibility - prefer NEXT_PUBLIC for client/server consistency
-  const mode = (env.NEXT_PUBLIC_GRANYT_MODE ?? env.GRANYT_MODE)?.toUpperCase();
+  // Only use NEXT_PUBLIC_ var in middleware - server-side vars are not available in Edge Runtime
+  const mode = env.NEXT_PUBLIC_GRANYT_MODE?.toUpperCase();
   if (mode === "DOCS" || mode === "DEV") {
     return mode;
   }

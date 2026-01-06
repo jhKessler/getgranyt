@@ -5,6 +5,7 @@ import {
   ProgressSteps,
   OrganizationStep,
   EmailSetupStep,
+  NotificationPreferencesStep,
   ApiKeyStep,
 } from "./_components"
 import { useOnboarding } from "./_hooks"
@@ -20,7 +21,16 @@ export default function OnboardingPage() {
     apiKey,
     copied,
     isLoading,
+    isNotificationLoading,
     isEmailConfigured,
+    // Notification settings
+    notificationSettings,
+    errorSelectValue,
+    handleNotificationSettingChange,
+    handleErrorSelectChange,
+    handleSaveNotifications,
+    handleSkipNotifications,
+    // Other handlers
     handleCreateOrg,
     handleEmailStepContinue,
     handleEmailStepSkip,
@@ -53,6 +63,18 @@ export default function OnboardingPage() {
         )}
 
         {step === 3 && (
+          <NotificationPreferencesStep
+            settings={notificationSettings}
+            onSettingChange={handleNotificationSettingChange}
+            onErrorSelectChange={handleErrorSelectChange}
+            errorSelectValue={errorSelectValue}
+            onSave={handleSaveNotifications}
+            onSkip={handleSkipNotifications}
+            isLoading={isNotificationLoading}
+          />
+        )}
+
+        {step === 4 && (
           <ApiKeyStep
             apiKey={apiKey}
             onCopyApiKey={handleCopyApiKey}

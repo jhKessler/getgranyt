@@ -2,8 +2,9 @@
 Tests for DataFrame adapters (pandas, polars).
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestPandasAdapter:

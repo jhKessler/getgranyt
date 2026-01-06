@@ -15,6 +15,7 @@ const metricsValuesSchema = z.record(
     z.string(), 
     z.boolean(), 
     z.null(),
+    z.array(z.string()),
   ])
 ).nullable().optional();
 
@@ -26,7 +27,6 @@ const schemaFieldSchema = z.object({
 }).nullable().optional();
 
 export const metricsPayloadSchema = z.object({
-  capture_id: z.string().min(1, "Capture ID is required"),
   captured_at: z.string().regex(iso8601Regex, { message: "Invalid datetime format" }),
   dag_id: z.string(),
   task_id: z.string(),

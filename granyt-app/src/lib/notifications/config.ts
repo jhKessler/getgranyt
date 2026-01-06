@@ -153,7 +153,7 @@ export const ERROR_NOTIFICATIONS: NotificationSettingConfig[] = [
     description: "Receive notifications for DAG errors",
     icon: AlertTriangle,
     inputType: "select",
-    defaultEnabled: false,
+    defaultEnabled: true, // NEW_ERRORS_ONLY is default enabled
     options: [
       { value: "disabled", label: "Disabled" },
       { value: "new_errors", label: "New Errors" },
@@ -234,8 +234,13 @@ export function getNotificationDefaults(): Record<NotificationTypeValue, boolean
 
   // Handle composite settings (like error notifications that control multiple types)
   // NEW_ERRORS_ONLY needs to be included even though it's not a direct setting
+  // Default to NEW_ERRORS_ONLY being enabled (new errors only mode)
   if (!("NEW_ERRORS_ONLY" in defaults)) {
-    defaults["NEW_ERRORS_ONLY"] = false;
+    defaults["NEW_ERRORS_ONLY"] = true;
+  }
+  // ALL_ERRORS should be false when NEW_ERRORS_ONLY is the default
+  if (!("ALL_ERRORS" in defaults) || defaults["ALL_ERRORS"]) {
+    defaults["ALL_ERRORS"] = false;
   }
 
   return defaults as Record<NotificationTypeValue, boolean>;

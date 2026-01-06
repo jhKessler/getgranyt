@@ -7,6 +7,5 @@ export interface IngestMetricsParams {
 }
 
 export interface IngestMetricsResult {
-  captureId: string;
   taskRunId: string;
 }

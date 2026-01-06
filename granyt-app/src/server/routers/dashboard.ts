@@ -21,6 +21,7 @@ import {
   getRunMetrics,
   getSchemaEvolution,
   getRunDetails,
+  getSetupStatus,
 } from "../services/dashboard";
 import {
   getDagRunMetricSnapshots,
@@ -333,5 +334,13 @@ export const dashboardRouter = router({
         srcDagId: input.dagId,
         environment: input.environment,
       });
+    }),
+
+  // Get setup status for the getting started checklist
+  getSetupStatus: protectedProcedure
+    .input(z.object({ organizationId: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+      return getSetupStatus(ctx.prisma, org.id);
     }),
 });

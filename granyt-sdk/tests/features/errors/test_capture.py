@@ -2,9 +2,10 @@
 Tests for granyt_sdk.features.errors.capture module.
 """
 
-import pytest
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
+
+import pytest
 
 from granyt_sdk.features.errors.capture import ErrorCapture, _extract_local_variables
 

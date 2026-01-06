@@ -36,10 +36,8 @@ from granyt_sdk.features.metrics.core import (
     ColumnMetrics,
     DataFrameAdapter,
     DataFrameMetrics,
-    capture_data_metrics,
-    create_data_metrics,
+    compute_df_metrics,
     register_adapter,
-    send_data_metrics,
 )
 from granyt_sdk.integrations.airflow.callbacks import (
     create_dag_callbacks,
@@ -74,9 +72,7 @@ __all__ = [
     "create_GRANYT_callbacks",
     "create_dag_callbacks",
     # Data Metrics
-    "create_data_metrics",
-    "send_data_metrics",
-    "capture_data_metrics",
+    "compute_df_metrics",
     "DataFrameMetrics",
     "ColumnMetrics",
     "DataFrameAdapter",

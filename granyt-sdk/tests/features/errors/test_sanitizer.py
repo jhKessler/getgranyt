@@ -3,11 +3,12 @@ Tests for granyt_sdk.features.errors.sanitizer module.
 """
 
 import pytest
+
 from granyt_sdk.features.errors.sanitizer import (
-    is_sensitive_key,
-    sanitize_value,
-    sanitize_context,
     SENSITIVE_ENV_PATTERNS,
+    is_sensitive_key,
+    sanitize_context,
+    sanitize_value,
 )
 
 

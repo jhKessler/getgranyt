@@ -3,13 +3,14 @@ Tests for granyt_sdk.core.transport module.
 """
 
 import json
-import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
 from queue import Queue
+from unittest.mock import MagicMock, PropertyMock, patch
+
+import pytest
 import requests
 
-from granyt_sdk.core.config import GranytConfig, EndpointConfig
-from granyt_sdk.core.transport import GranytTransport, EndpointSession
+from granyt_sdk.core.config import EndpointConfig, GranytConfig
+from granyt_sdk.core.transport import EndpointSession, GranytTransport
 
 
 @pytest.fixture
@@ -263,55 +264,6 @@ class TestSendErrorEvent:
 
             assert result is False
             transport.close()
-
-
-class TestSendDataMetrics:
-    """Tests for GranytTransport.send_data_metrics()."""
-
-    def test_send_data_metrics_success(self, valid_config):
-        """Test successful data metrics send."""
-        with patch("requests.Session") as mock_session_class:
-            mock_session = MagicMock()
-            mock_response = MagicMock()
-            mock_response.status_code = 200
-            mock_session.post.return_value = mock_response
-            mock_session_class.return_value = mock_session
-
-            transport = GranytTransport(valid_config)
-
-            metrics = {"capture_id": "test", "row_count": 100}
-            result = transport.send_data_metrics(metrics)
-
-            assert result is True
-            mock_session.post.assert_called_once()
-            call_args = mock_session.post.call_args
-            assert "metrics" in call_args[0][0]
-            transport.close()
-
-    def test_send_data_metrics_failure(self, valid_config):
-        """Test data metrics send failure."""
-        with patch("requests.Session") as mock_session_class:
-            mock_session = MagicMock()
-            mock_response = MagicMock()
-            mock_response.status_code = 400
-            mock_response.text = "Bad request"
-            mock_session.post.return_value = mock_response
-            mock_session_class.return_value = mock_session
-
-            transport = GranytTransport(valid_config)
-
-            result = transport.send_data_metrics({"test": "metrics"})
-
-            assert result is False
-            transport.close()
-
-    def test_send_data_metrics_disabled(self, invalid_config):
-        """Test data metrics send when disabled."""
-        transport = GranytTransport(invalid_config)
-
-        result = transport.send_data_metrics({"test": "metrics"})
-
-        assert result is False
 
 
 class TestSendOperatorMetrics:
