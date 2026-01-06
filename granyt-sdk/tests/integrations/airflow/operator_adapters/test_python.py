@@ -92,9 +92,13 @@ class TestPythonAdapterNoGranytKey:
 class TestPythonAdapterDfSchemaValidation:
     """Tests for df_schema validation - should raise ValueError for invalid schemas."""
 
-    def test_raises_error_when_df_schema_not_dict(self, mock_task_instance, mock_python_task):
+    def test_raises_error_when_df_schema_not_dict(
+        self, mock_task_instance, mock_python_task
+    ):
         """Should raise ValueError when df_schema is not a dict."""
-        mock_task_instance.xcom_pull.return_value = {"granyt": {"df_schema": "not a dict"}}
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {"df_schema": "not a dict"}
+        }
         adapter = PythonAdapter()
 
         with pytest.raises(ValueError) as exc_info:
@@ -107,7 +111,9 @@ class TestPythonAdapterDfSchemaValidation:
         self, mock_task_instance, mock_python_task
     ):
         """Should raise ValueError when df_schema is missing column_dtypes."""
-        mock_task_instance.xcom_pull.return_value = {"granyt": {"df_schema": {"row_count": 100}}}
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {"df_schema": {"row_count": 100}}
+        }
         adapter = PythonAdapter()
 
         with pytest.raises(ValueError) as exc_info:
@@ -115,7 +121,9 @@ class TestPythonAdapterDfSchemaValidation:
 
         assert "Invalid df_schema structure" in str(exc_info.value)
 
-    def test_raises_error_when_column_dtypes_not_dict(self, mock_task_instance, mock_python_task):
+    def test_raises_error_when_column_dtypes_not_dict(
+        self, mock_task_instance, mock_python_task
+    ):
         """Should raise ValueError when column_dtypes is not a dict."""
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {"df_schema": {"column_dtypes": ["a", "b"]}}
@@ -167,7 +175,9 @@ class TestPythonAdapterDfSchemaExtraction:
         assert schema["null_counts"] == {"id": 0, "name": 5}
         assert schema["empty_string_counts"] == {"id": 0, "name": 2}
 
-    def test_extracts_row_count_from_df_schema(self, mock_task_instance, mock_python_task):
+    def test_extracts_row_count_from_df_schema(
+        self, mock_task_instance, mock_python_task
+    ):
         """Should extract row_count from df_schema."""
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
@@ -184,7 +194,9 @@ class TestPythonAdapterDfSchemaExtraction:
         assert result is not None
         assert result.row_count == 1000
 
-    def test_extracts_memory_bytes_as_bytes_processed(self, mock_task_instance, mock_python_task):
+    def test_extracts_memory_bytes_as_bytes_processed(
+        self, mock_task_instance, mock_python_task
+    ):
         """Should extract memory_bytes as bytes_processed."""
         mock_task_instance.xcom_pull.return_value = {
             "granyt": {
@@ -262,9 +274,13 @@ class TestPythonAdapterCustomMetrics:
         assert "schema" in result.custom_metrics
         assert result.custom_metrics["high_value_orders"] == 25
 
-    def test_row_count_in_custom_metrics_sets_row_count(self, mock_task_instance, mock_python_task):
+    def test_row_count_in_custom_metrics_sets_row_count(
+        self, mock_task_instance, mock_python_task
+    ):
         """Should map row_count custom metric to metrics.row_count."""
-        mock_task_instance.xcom_pull.return_value = {"granyt": {"row_count": 500}}
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {"row_count": 500}
+        }
         adapter = PythonAdapter()
 
         result = adapter.extract_metrics(mock_task_instance, mock_python_task)
@@ -274,7 +290,9 @@ class TestPythonAdapterCustomMetrics:
 
     def test_rows_affected_sets_row_count(self, mock_task_instance, mock_python_task):
         """Should map rows_affected to row_count."""
-        mock_task_instance.xcom_pull.return_value = {"granyt": {"rows_affected": 250}}
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {"rows_affected": 250}
+        }
         adapter = PythonAdapter()
 
         result = adapter.extract_metrics(mock_task_instance, mock_python_task)
@@ -282,9 +300,13 @@ class TestPythonAdapterCustomMetrics:
         assert result is not None
         assert result.row_count == 250
 
-    def test_bytes_processed_sets_bytes_processed(self, mock_task_instance, mock_python_task):
+    def test_bytes_processed_sets_bytes_processed(
+        self, mock_task_instance, mock_python_task
+    ):
         """Should map bytes_processed custom metric."""
-        mock_task_instance.xcom_pull.return_value = {"granyt": {"bytes_processed": 1024}}
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {"bytes_processed": 1024}
+        }
         adapter = PythonAdapter()
 
         result = adapter.extract_metrics(mock_task_instance, mock_python_task)
@@ -324,7 +346,9 @@ class TestPythonAdapterCallableInfo:
 class TestPythonAdapterIntegration:
     """Integration tests simulating real-world usage patterns."""
 
-    def test_full_df_schema_from_compute_df_metrics(self, mock_task_instance, mock_python_task):
+    def test_full_df_schema_from_compute_df_metrics(
+        self, mock_task_instance, mock_python_task
+    ):
         """Test with output matching compute_df_metrics() structure."""
         # This simulates what compute_df_metrics() returns
         mock_task_instance.xcom_pull.return_value = {
@@ -358,6 +382,103 @@ class TestPythonAdapterIntegration:
         assert result.custom_metrics["column_count"] == 1
         # Custom metric
         assert result.custom_metrics["high_value_orders"] == 2
+
+    def test_to_dict_outputs_schema_at_top_level(
+        self, mock_task_instance, mock_python_task
+    ):
+        """Test that to_dict() properly extracts schema to top level for backend.
+
+        This is the critical test - the backend expects:
+        - 'schema' at the top level with column_dtypes, null_counts, empty_string_counts
+        - 'metrics' containing row_count, column_count, dataframe_type, memory_bytes, etc.
+        """
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "df_schema": {
+                    "row_count": 4,
+                    "column_count": 1,
+                    "dataframe_type": "pandas",
+                    "column_dtypes": {"amount": "int64"},
+                    "null_counts": {"amount": 0},
+                    "empty_string_counts": {"amount": 0},
+                    "memory_bytes": 164,
+                },
+                "high_value_orders": 2,
+            }
+        }
+        adapter = PythonAdapter()
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        # Add lineage linkage like the real code does
+        result.dag_id = mock_task_instance.dag_id
+        result.task_id = mock_task_instance.task_id
+        result.run_id = mock_task_instance.run_id
+
+        # Call to_dict() - this is what gets sent to the backend
+        backend_payload = result.to_dict()
+
+        # Schema should be at top level, not inside metrics
+        assert backend_payload["schema"] is not None, "schema should not be None"
+        assert backend_payload["schema"]["column_dtypes"] == {"amount": "int64"}
+        assert backend_payload["schema"]["null_counts"] == {"amount": 0}
+        assert backend_payload["schema"]["empty_string_counts"] == {"amount": 0}
+
+        # Metrics should contain the metric fields
+        metrics = backend_payload["metrics"]
+        assert metrics["row_count"] == 4
+        assert metrics["memory_bytes"] == 164
+        assert metrics["column_count"] == 1
+        assert metrics["dataframe_type"] == "pandas"
+        assert metrics["high_value_orders"] == 2
+
+        # Schema fields should NOT be in metrics
+        assert "column_dtypes" not in metrics
+        assert "null_counts" not in metrics
+        assert "empty_string_counts" not in metrics
+
+    def test_to_dict_can_be_called_multiple_times(
+        self, mock_task_instance, mock_python_task
+    ):
+        """Test that to_dict() can be called multiple times without losing schema.
+
+        This tests the bug fix where .pop() was mutating custom_metrics,
+        causing schema to be None on subsequent calls (e.g., when both
+        send_task_complete and send_operator_metrics call to_dict()).
+        """
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "df_schema": {
+                    "row_count": 4,
+                    "column_count": 1,
+                    "dataframe_type": "pandas",
+                    "column_dtypes": {"amount": "int64"},
+                    "null_counts": {"amount": 0},
+                    "empty_string_counts": {"amount": 0},
+                    "memory_bytes": 164,
+                },
+                "high_value_orders": 2,
+            }
+        }
+        adapter = PythonAdapter()
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        # First call to to_dict() (simulates send_task_complete)
+        first_payload = result.to_dict()
+        assert first_payload["schema"] is not None
+        assert first_payload["schema"]["column_dtypes"] == {"amount": "int64"}
+
+        # Second call to to_dict() (simulates send_operator_metrics)
+        second_payload = result.to_dict()
+        assert second_payload["schema"] is not None, (
+            "schema should not be None on second call - "
+            "to_dict() should not mutate custom_metrics"
+        )
+        assert second_payload["schema"]["column_dtypes"] == {"amount": "int64"}
+
+        # Third call for good measure
+        third_payload = result.to_dict()
+        assert third_payload["schema"] is not None
+        assert third_payload["schema"]["column_dtypes"] == {"amount": "int64"}
 
 
 # Fixtures specific to Python adapter tests
