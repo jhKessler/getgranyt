@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <strong>Python SDK for Granyt - the open-source Airflow observability platform</strong><br>
+  <strong>Lightweight Python SDK for Granyt - the open-source Airflow observability platform</strong><br>
   Automatically capture lineage, errors, and metrics from your Airflow DAGs
 </p>
 
