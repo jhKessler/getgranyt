@@ -359,6 +359,99 @@ class TestPythonAdapterIntegration:
         # Custom metric
         assert result.custom_metrics["high_value_orders"] == 2
 
+    def test_to_dict_outputs_schema_at_top_level(self, mock_task_instance, mock_python_task):
+        """Test that to_dict() properly extracts schema to top level for backend.
+
+        This is the critical test - the backend expects:
+        - 'schema' at the top level with column_dtypes, null_counts, empty_string_counts
+        - 'metrics' containing row_count, column_count, dataframe_type, memory_bytes, etc.
+        """
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "df_schema": {
+                    "row_count": 4,
+                    "column_count": 1,
+                    "dataframe_type": "pandas",
+                    "column_dtypes": {"amount": "int64"},
+                    "null_counts": {"amount": 0},
+                    "empty_string_counts": {"amount": 0},
+                    "memory_bytes": 164,
+                },
+                "high_value_orders": 2,
+            }
+        }
+        adapter = PythonAdapter()
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        # Add lineage linkage like the real code does
+        result.dag_id = mock_task_instance.dag_id
+        result.task_id = mock_task_instance.task_id
+        result.run_id = mock_task_instance.run_id
+
+        # Call to_dict() - this is what gets sent to the backend
+        backend_payload = result.to_dict()
+
+        # Schema should be at top level, not inside metrics
+        assert backend_payload["schema"] is not None, "schema should not be None"
+        assert backend_payload["schema"]["column_dtypes"] == {"amount": "int64"}
+        assert backend_payload["schema"]["null_counts"] == {"amount": 0}
+        assert backend_payload["schema"]["empty_string_counts"] == {"amount": 0}
+
+        # Metrics should contain the metric fields
+        metrics = backend_payload["metrics"]
+        assert metrics["row_count"] == 4
+        assert metrics["memory_bytes"] == 164
+        assert metrics["column_count"] == 1
+        assert metrics["dataframe_type"] == "pandas"
+        assert metrics["high_value_orders"] == 2
+
+        # Schema fields should NOT be in metrics
+        assert "column_dtypes" not in metrics
+        assert "null_counts" not in metrics
+        assert "empty_string_counts" not in metrics
+
+    def test_to_dict_can_be_called_multiple_times(self, mock_task_instance, mock_python_task):
+        """Test that to_dict() can be called multiple times without losing schema.
+
+        This tests the bug fix where .pop() was mutating custom_metrics,
+        causing schema to be None on subsequent calls (e.g., when both
+        send_task_complete and send_operator_metrics call to_dict()).
+        """
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "df_schema": {
+                    "row_count": 4,
+                    "column_count": 1,
+                    "dataframe_type": "pandas",
+                    "column_dtypes": {"amount": "int64"},
+                    "null_counts": {"amount": 0},
+                    "empty_string_counts": {"amount": 0},
+                    "memory_bytes": 164,
+                },
+                "high_value_orders": 2,
+            }
+        }
+        adapter = PythonAdapter()
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        # First call to to_dict() (simulates send_task_complete)
+        first_payload = result.to_dict()
+        assert first_payload["schema"] is not None
+        assert first_payload["schema"]["column_dtypes"] == {"amount": "int64"}
+
+        # Second call to to_dict() (simulates send_operator_metrics)
+        second_payload = result.to_dict()
+        assert second_payload["schema"] is not None, (
+            "schema should not be None on second call - "
+            "to_dict() should not mutate custom_metrics"
+        )
+        assert second_payload["schema"]["column_dtypes"] == {"amount": "int64"}
+
+        # Third call for good measure
+        third_payload = result.to_dict()
+        assert third_payload["schema"] is not None
+        assert third_payload["schema"]["column_dtypes"] == {"amount": "int64"}
+
 
 # Fixtures specific to Python adapter tests
 @pytest.fixture

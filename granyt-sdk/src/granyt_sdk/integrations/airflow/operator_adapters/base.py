@@ -166,14 +166,17 @@ class OperatorMetrics:
 
         # Extract schema object from custom_metrics if present
         # (DataFrame schema info should go to top-level 'schema' field, not inside 'metrics')
+        # IMPORTANT: Work on a copy to avoid mutating self.custom_metrics
+        # (to_dict may be called multiple times, e.g., in send_task_complete and send_operator_metrics)
         schema_data = None
         if self.custom_metrics:
+            custom_metrics_copy = dict(self.custom_metrics)
             # Check if 'schema' in custom_metrics is a dict (DataFrame schema info)
-            if "schema" in self.custom_metrics and isinstance(self.custom_metrics["schema"], dict):
-                schema_data = self.custom_metrics.pop("schema")
+            if "schema" in custom_metrics_copy and isinstance(custom_metrics_copy["schema"], dict):
+                schema_data = custom_metrics_copy.pop("schema")
 
             # Merge remaining custom_metrics into the metrics object
-            metrics.update(self.custom_metrics)
+            metrics.update(custom_metrics_copy)
 
         # Return structure matching backend schema
         return {
