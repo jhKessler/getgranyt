@@ -6,7 +6,7 @@
 # infrastructure (database) needed to run the app locally.
 #
 # Usage:
-# 1. Start database: docker compose up -d
+# 1. Start database: docker compose -f docker-compose.development.yml up -d
 # 2. Run app: npm run dev
 # =====================================================
 
