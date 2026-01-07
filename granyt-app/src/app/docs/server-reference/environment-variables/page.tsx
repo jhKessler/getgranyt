@@ -130,16 +130,7 @@ const webhookEnvVars = [
   },
 ]
 
-const analyticsEnvVars = [
-  {
-    variable: "NEXT_PUBLIC_POSTHOG_KEY",
-    description: "PostHog analytics API key (optional).",
-  },
-  {
-    variable: "NEXT_PUBLIC_POSTHOG_HOST",
-    description: "PostHog host URL (optional).",
-  },
-]
+
 
 const EXAMPLE_ENV = `# Core (Required)
 DATABASE_URL=postgresql://granyt:password@localhost:5432/granyt?schema=public
@@ -240,17 +231,6 @@ export default function ServerEnvironmentVariablesPage() {
         </p>
         <EnvVarTable
           envVars={webhookEnvVars}
-          badgeVariant="outline"
-        />
-      </section>
-
-      <section className="space-y-6">
-        <SectionHeader icon={Lock} title="Analytics (Optional)" />
-        <p className="text-muted-foreground">
-          Optional PostHog integration for usage analytics.
-        </p>
-        <EnvVarTable
-          envVars={analyticsEnvVars}
           badgeVariant="outline"
         />
       </section>

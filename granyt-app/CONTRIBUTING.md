@@ -129,6 +129,10 @@ src/
 
 Feel free to open an issue with the `question` label if you need help!
 
+You can also reach out directly:
+- **GitHub:** [@jhkessler](https://github.com/jhkessler)
+- **Email:** johnny@granyt.dev
+
 ---
 
 Thank you for contributing! 🎉

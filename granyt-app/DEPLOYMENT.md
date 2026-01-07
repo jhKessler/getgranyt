@@ -132,8 +132,6 @@ For advanced users deploying to Kubernetes, ECS, or using an external database (
 | `GRANYT_WEBHOOK_URL` | Global webhook endpoint URL | - |
 | `GRANYT_WEBHOOK_SECRET` | Secret for signing webhook requests | - |
 | **Client Prefixed** | | |
-| `NEXT_PUBLIC_POSTHOG_KEY`| PostHog API key | - |
-| `NEXT_PUBLIC_POSTHOG_HOST`| PostHog host URL | - |
 | `NEXT_PUBLIC_GRANYT_MODE` | App mode (APP, DOCS, DEV) | `APP` |
 | `NEXT_PUBLIC_DOCS_URL` | Base URL for documentation | `/docs` |
 

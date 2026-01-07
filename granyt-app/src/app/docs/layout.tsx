@@ -234,6 +234,19 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
             <ExternalLink className="h-3 w-3 ml-auto" />
           </Link>
         </motion.div>
+        <motion.div
+          whileHover={{ x: 2 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        >
+          <Link
+            href="mailto:johnny@granyt.dev"
+            onClick={onLinkClick}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-2"
+          >
+            <Mail className="h-4 w-4" />
+            Contact
+          </Link>
+        </motion.div>
 
       </motion.div>
     </div>

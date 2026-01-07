@@ -35,7 +35,7 @@ export function HeroSection() {
       </div>
 
 
-      <div className="container mx-auto max-w-6xl px-4 py-24 md:py-32">
+      <div className="container mx-auto max-w-6xl px-4 py-12 md:py-32">
         <div className="flex flex-col items-center text-center space-y-8">
           {/* Badge */}
           <Link

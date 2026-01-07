@@ -306,6 +306,7 @@ def my_task():
     df = pd.read_csv(...)
     return {
         "granyt": {
+            "high_value_orders": (df_raw["amount"] > 1000).sum(),
             "df_metrics": compute_df_metrics(df)
         }
     }`}

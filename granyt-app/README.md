@@ -1,4 +1,8 @@
 ﻿<p align="center">
+  <img src="public/logo.png" width="40" alt="Granyt Logo" />
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js 15" />
   <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS" />
@@ -33,22 +37,9 @@
 - **🌙 Dark Mode** - Beautiful UI with light and dark theme support
 - **🐳 Docker Ready** - One-command deployment with Docker Compose
 
-## 🖼️ Screenshots
 
-<!-- TODO: Add actual screenshots -->
-<details>
-<summary>Click to expand</summary>
-
-### DAG Overview
 ![DAG Overview](../images/demo.png)
 
-### Error Tracking
-![Error Tracking](docs/screenshots/errors-placeholder.png)
-
-### Alerts Configuration
-![Alerts](docs/screenshots/alerts-placeholder.png)
-
-</details>
 
 ---
 
@@ -224,7 +215,13 @@ npm run db:studio    # Open Prisma Studio
 npm run db:migrate   # Run migrations
 ```
 
-## 📄 License
+## � Contact
+
+- **GitHub:** [@jhkessler](https://github.com/jhkessler)
+- **Email:** johnny@granyt.dev
+- **Issues:** [GitHub Issues](https://github.com/jhkessler/getgranyt/issues)
+
+## �📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
 
