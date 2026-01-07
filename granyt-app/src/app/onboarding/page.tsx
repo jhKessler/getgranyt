@@ -1,6 +1,7 @@
 "use client"
 
 import { useDocumentTitle } from "@/lib/use-document-title"
+import { Loader2 } from "lucide-react"
 import {
   ProgressSteps,
   OrganizationStep,
@@ -14,6 +15,7 @@ export default function OnboardingPage() {
   useDocumentTitle("Onboarding")
   const {
     step,
+    goToStep,
     organizationName,
     setOrganizationName,
     airflowUrl,
@@ -22,7 +24,10 @@ export default function OnboardingPage() {
     copied,
     isLoading,
     isNotificationLoading,
+    isSavingEmailConfig,
+    isSendingTestEmail,
     isEmailConfigured,
+    userEmail,
     // Notification settings
     notificationSettings,
     errorSelectValue,
@@ -30,13 +35,27 @@ export default function OnboardingPage() {
     handleErrorSelectChange,
     handleSaveNotifications,
     handleSkipNotifications,
+    // Email config handlers
+    handleSaveSmtpConfig,
+    handleSaveResendConfig,
+    handleSendTestEmail,
     // Other handlers
     handleCreateOrg,
     handleEmailStepContinue,
     handleEmailStepSkip,
     handleCopyApiKey,
     handleFinish,
+    isCheckingOnboardingStatus,
   } = useOnboarding()
+
+  // Show loading state while checking if onboarding is already completed
+  if (isCheckingOnboardingStatus) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
@@ -59,6 +78,13 @@ export default function OnboardingPage() {
             isEmailConfigured={isEmailConfigured}
             onSkip={handleEmailStepSkip}
             onContinue={handleEmailStepContinue}
+            onBack={() => goToStep(1)}
+            onSaveSmtp={handleSaveSmtpConfig}
+            onSaveResend={handleSaveResendConfig}
+            onSendTestEmail={handleSendTestEmail}
+            isSavingConfig={isSavingEmailConfig}
+            isSendingTest={isSendingTestEmail}
+            userEmail={userEmail}
           />
         )}
 
@@ -70,7 +96,9 @@ export default function OnboardingPage() {
             errorSelectValue={errorSelectValue}
             onSave={handleSaveNotifications}
             onSkip={handleSkipNotifications}
+            onBack={() => goToStep(2)}
             isLoading={isNotificationLoading}
+            isEmailConfigured={isEmailConfigured}
           />
         )}
 

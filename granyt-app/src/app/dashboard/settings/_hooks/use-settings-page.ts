@@ -186,6 +186,13 @@ export function useSettingsPage() {
   const handleSaveAirflowUrl = (airflowUrl: string) => {
     updateAirflowSettings.mutate({ airflowUrl: airflowUrl || "" });
   };
+
+  // ============================================================================
+  // SETUP STATUS (for Getting Started checklist)
+  // ============================================================================
+
+  const { data: setupStatus, isLoading: isLoadingSetupStatus } = 
+    trpc.dashboard.getSetupStatus.useQuery({});
   
   return {
     // Loading states
@@ -215,5 +222,9 @@ export function useSettingsPage() {
     airflowSettings,
     handleSaveAirflowUrl,
     isSavingAirflowSettings: updateAirflowSettings.isPending,
+
+    // Setup Status
+    setupStatus,
+    isLoadingSetupStatus,
   };
 }
