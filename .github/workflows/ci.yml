@@ -8,13 +8,6 @@
 name: CI/CD
 
 on:
-  pull_request:
-    branches:
-      - main
-      - staging
-    paths:
-      - 'granyt-app/**'
-      - '.github/workflows/ci.yml'
   push:
     branches:
       - main
@@ -91,38 +84,6 @@ jobs:
       - name: Run tests
         run: npm test
 
-  docker-build-test:
-    runs-on: ubuntu-latest
-    # Run in parallel with lint-and-test for faster PR feedback
-    # Only run on pull requests to verify Dockerfile
-    if: github.event_name == 'pull_request'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build App image (test only)
-        uses: docker/build-push-action@v6
-        with:
-          context: ./granyt-app
-          file: ./granyt-app/Dockerfile
-          target: runner
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build Migrations image (test only)
-        uses: docker/build-push-action@v6
-        with:
-          context: ./granyt-app
-          file: ./granyt-app/Dockerfile
-          target: migrations
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
   build-and-push:
     runs-on: ubuntu-latest

@@ -38,7 +38,7 @@ show_help() {
     printf "  GRANYT_URL     Pre-set the dashboard URL (skips prompt)\n\n"
     printf "What this script does:\n"
     printf "  1. Checks for Docker (optionally installs it)\n"
-    printf "  2. Downloads docker-compose.standalone.yml from GitHub\n"
+    printf "  2. Downloads docker-compose.yml from GitHub\n"
     printf "  3. Prompts for your dashboard URL\n"
     printf "  4. Generates secure secrets for Postgres and auth\n"
     printf "  5. Creates a .env configuration file\n"
@@ -214,7 +214,7 @@ fi
 
 printf "${BOLD}  This script will:${NC}\n"
 printf "    ${DIM}•${NC} Check for Docker (optionally install it)\n"
-printf "    ${DIM}•${NC} Download docker-compose.standalone.yml from GitHub\n"
+printf "    ${DIM}•${NC} Download docker-compose.yml from GitHub\n"
 printf "    ${DIM}•${NC} Generate secure secrets for your installation\n"
 printf "    ${DIM}•${NC} Create a .env file with your configuration\n"
 printf "    ${DIM}•${NC} Start Granyt containers\n"
@@ -309,8 +309,8 @@ fi
 # =========================
 print_step 2 "Grabbing the docker-compose file..."
 
-COMPOSE_FILE="docker-compose.standalone.yml"
-URL="${GITHUB_RAW_URL}/main/granyt-app/docker-compose.standalone.yml"
+COMPOSE_FILE="docker-compose.yml"
+URL="${GITHUB_RAW_URL}/main/granyt-app/docker-compose.yml"
 
 # Create a temporary file securely
 TEMP_COMPOSE=$(mktemp) || { print_error "Failed to create temp file"; exit 1; }

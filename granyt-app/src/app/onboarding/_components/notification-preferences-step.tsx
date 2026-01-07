@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Bell, ArrowRight, SkipForward } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Bell, ArrowRight, ArrowLeft, SkipForward, Mail, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   ALERT_NOTIFICATIONS,
@@ -35,7 +36,9 @@ interface NotificationPreferencesStepProps {
   errorSelectValue: string
   onSave: () => void
   onSkip: () => void
+  onBack?: () => void
   isLoading: boolean
+  isEmailConfigured: boolean
 }
 
 export function NotificationPreferencesStep({
@@ -45,7 +48,9 @@ export function NotificationPreferencesStep({
   errorSelectValue,
   onSave,
   onSkip,
+  onBack,
   isLoading,
+  isEmailConfigured,
 }: NotificationPreferencesStepProps) {
   const parentSetting = ALERT_NOTIFICATIONS.find((s) => isSwitchSetting(s) && s.isParent)
   const childSettings = ALERT_NOTIFICATIONS.filter(
@@ -54,13 +59,21 @@ export function NotificationPreferencesStep({
   const errorSetting = ERROR_NOTIFICATIONS[0]
 
   const isParentEnabled = parentSetting ? settings[parentSetting.type] : false
+  const isDisabled = !isEmailConfigured
 
   return (
     <Card>
       <CardHeader className="text-center">
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Bell className="h-8 w-8 text-primary" />
+          <div className={cn(
+            "w-16 h-16 rounded-full flex items-center justify-center",
+            isDisabled ? "bg-muted" : "bg-primary/10"
+          )}>
+            {isDisabled ? (
+              <Lock className="h-8 w-8 text-muted-foreground" />
+            ) : (
+              <Bell className="h-8 w-8 text-primary" />
+            )}
           </div>
         </div>
         <CardTitle className="text-2xl">Notification Preferences</CardTitle>
@@ -69,8 +82,22 @@ export function NotificationPreferencesStep({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Email not configured warning */}
+        {isDisabled && (
+          <Alert className="border-amber-500/50 bg-amber-500/10">
+            <Mail className="h-4 w-4 text-amber-500" />
+            <AlertTitle className="text-amber-700 dark:text-amber-400">Email not configured</AlertTitle>
+            <AlertDescription className="space-y-2">
+              <p className="text-muted-foreground">
+                Notifications require a configured email provider (SMTP or Resend). 
+                Go back to the previous step to configure email, or you can set it up later via environment variables.
+              </p>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Alerts Section */}
-        <div className="space-y-4">
+        <div className={cn("space-y-4", isDisabled && "opacity-50 pointer-events-none")}>
           <h3 className="text-sm font-medium text-muted-foreground">Alerts</h3>
 
           {/* Parent Toggle */}
@@ -135,7 +162,7 @@ export function NotificationPreferencesStep({
 
         {/* Errors Section */}
         {errorSetting && isSelectSetting(errorSetting) && (
-          <div className="space-y-4">
+          <div className={cn("space-y-4", isDisabled && "opacity-50 pointer-events-none")}>
             <h3 className="text-sm font-medium text-muted-foreground">Errors</h3>
             <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
               <div className="flex items-center gap-3">
@@ -150,7 +177,7 @@ export function NotificationPreferencesStep({
               <Select
                 value={errorSelectValue}
                 onValueChange={onErrorSelectChange}
-                disabled={isLoading}
+                disabled={isLoading || isDisabled}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />
@@ -168,6 +195,12 @@ export function NotificationPreferencesStep({
         )}
       </CardContent>
       <CardFooter className="flex gap-3">
+        {onBack && (
+          <Button variant="outline" onClick={onBack} disabled={isLoading}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+        )}
         <Button
           variant="outline"
           onClick={onSkip}
@@ -177,7 +210,7 @@ export function NotificationPreferencesStep({
           <SkipForward className="mr-2 h-4 w-4" />
           Skip
         </Button>
-        <Button onClick={onSave} disabled={isLoading} className="flex-1">
+        <Button onClick={onSave} disabled={isLoading || isDisabled} className="flex-1">
           {isLoading ? (
             "Saving..."
           ) : (

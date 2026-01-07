@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Database, Zap, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { getDocsLink } from "@/lib/utils"
 import {
   PageHeader,
   Callout,
@@ -15,27 +16,27 @@ const warehouses = [
   {
     name: "Snowflake",
     description: "Track row counts, query IDs, and warehouse usage for Snowflake operations.",
-    href: "/docs/operators/snowflake",
+    href: getDocsLink("/operators/snowflake"),
   },
   {
     name: "BigQuery",
     description: "Monitor bytes billed, slot usage, and job statistics for BigQuery.",
-    href: "/docs/operators/bigquery",
+    href: getDocsLink("/operators/bigquery"),
   },
   {
     name: "Amazon Redshift",
     description: "Capture execution metadata and data movement for Redshift clusters.",
-    href: "/docs/operators/redshift",
+    href: getDocsLink("/operators/redshift"),
   },
   {
     name: "PostgreSQL",
     description: "Track row counts and query performance for Postgres databases.",
-    href: "/docs/operators/postgres",
+    href: getDocsLink("/operators/postgres"),
   },
   {
     name: "Generic SQL",
     description: "Support for MySQL, SQLite, Oracle, and other SQL-based operators.",
-    href: "/docs/operators/generic-sql",
+    href: getDocsLink("/operators/generic-sql"),
   },
 ]
 

@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { cn, getDocsLink } from "@/lib/utils"
 import { GITHUB_URL } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Logo } from "@/components/shared/logo"
 import {
   Collapsible,
   CollapsibleContent,
@@ -17,7 +18,6 @@ import {
   SheetContent,
 } from "@/components/ui/sheet"
 import { 
-  Shield, 
   Book, 
   ChevronDown, 
   Home,
@@ -52,62 +52,38 @@ const mainSections: NavSection[] = [
   {
     title: "Getting Started",
     items: [
-      { title: "Quickstart", href: "/docs", icon: Home },
+      { title: "Quickstart", href: getDocsLink("/"), icon: Home },
+    ],
+  },
+  {
+    title: "Server Reference",
+    items: [
+      { title: "Environment Variables", href: getDocsLink("/server-reference/environment-variables"), icon: Settings },
     ],
   },
   {
     title: "SDK Reference",
     items: [
-      { title: "Manual Metrics", href: "/docs/metrics", icon: BarChart3 },
-      { title: "Environment Variables", href: "/docs/sdk-reference/environment-variables", icon: Settings },
+      { title: "Manual Metrics", href: getDocsLink("/metrics"), icon: BarChart3 },
+      { title: "Environment Variables", href: getDocsLink("/sdk-reference/environment-variables"), icon: Settings },
+    ],
+  },
+  {
+    title: "Automatic Tracking",
+    items: [
+      { title: "Overview", href: getDocsLink("/operators"), icon: Zap },
+      { title: "SQL & Warehouse", href: getDocsLink("/operators/sql"), icon: Database },
+      { title: "Cloud Storage", href: getDocsLink("/operators/storage"), icon: HardDrive },
+      { title: "Transformation", href: getDocsLink("/operators/transformation"), icon: Zap },
     ],
   },
   {
     title: "Dashboard",
     items: [
       { title: "Live Demo", href: "/demo", icon: LayoutDashboard },
-      { title: "Error Tracking", href: "/docs/error-tracking", icon: AlertTriangle },
-      { title: "Notifications", href: "/docs/notifications", icon: Mail },
-      { title: "Webhooks", href: "/docs/webhooks", icon: Webhook },
-    ],
-  },
-]
-
-const operatorSections: NavSection[] = [
-  {
-    title: "Automatic Tracking",
-    items: [
-      { title: "Overview", href: "/docs/operators", icon: Zap },
-    ],
-  },
-  {
-    title: "SQL & Warehouse",
-    items: [
-      { title: "Overview", href: "/docs/operators/sql", icon: Database },
-      { title: "Snowflake", href: "/docs/operators/snowflake", icon: Database },
-      { title: "BigQuery", href: "/docs/operators/bigquery", icon: Database },
-      { title: "Redshift", href: "/docs/operators/redshift", icon: Database },
-      { title: "PostgreSQL", href: "/docs/operators/postgres", icon: Database },
-      { title: "Generic SQL", href: "/docs/operators/generic-sql", icon: Database },
-    ],
-  },
-  {
-    title: "Cloud Storage",
-    items: [
-      { title: "Overview", href: "/docs/operators/storage", icon: HardDrive },
-      { title: "AWS S3", href: "/docs/operators/s3", icon: HardDrive },
-      { title: "Google GCS", href: "/docs/operators/gcs", icon: HardDrive },
-      { title: "Azure Blob", href: "/docs/operators/azure-blob", icon: HardDrive },
-    ],
-  },
-  {
-    title: "Transformation",
-    items: [
-      { title: "Overview", href: "/docs/operators/transformation", icon: Zap },
-      { title: "dbt Cloud", href: "/docs/operators/dbt-cloud", icon: Zap },
-      { title: "dbt Core", href: "/docs/operators/dbt-core", icon: Zap },
-      { title: "Apache Spark", href: "/docs/operators/spark", icon: Zap },
-      { title: "Bash & Scripts", href: "/docs/operators/bash", icon: Zap },
+      { title: "Error Tracking", href: getDocsLink("/error-tracking"), icon: AlertTriangle },
+      { title: "Notifications", href: getDocsLink("/notifications"), icon: Mail },
+      { title: "Webhooks", href: getDocsLink("/webhooks"), icon: Webhook },
     ],
   },
 ]
@@ -195,12 +171,10 @@ function NavSection({ section, isOpen, onToggle, onLinkClick }: {
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     "Getting Started": true,
+    "Server Reference": true,
     "SDK Reference": true,
     "Dashboard": true,
     "Automatic Tracking": true,
-    "SQL & Warehouse": false,
-    "Cloud Storage": false,
-    "Transformation": false,
   })
 
   const toggleSection = (title: string) => {
@@ -217,8 +191,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Shield className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold">Granyt</span>
+          <Logo size="md" />
           <span className="text-xs text-muted-foreground ml-1">Docs</span>
         </motion.div>
       </Link>
@@ -227,22 +200,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
       <ScrollArea className="flex-1 py-4">
         <nav className="space-y-2 px-2">
           {mainSections.map((section) => (
-            <NavSection
-              key={section.title}
-              section={section}
-              isOpen={openSections[section.title] ?? true}
-              onToggle={() => toggleSection(section.title)}
-              onLinkClick={onLinkClick}
-            />
-          ))}
-
-          <div className="pt-6 pb-2 px-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-              Operators
-            </p>
-          </div>
-
-          {operatorSections.map((section) => (
             <NavSection
               key={section.title}
               section={section}
@@ -275,6 +232,19 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
             <Github className="h-4 w-4" />
             GitHub
             <ExternalLink className="h-3 w-3 ml-auto" />
+          </Link>
+        </motion.div>
+        <motion.div
+          whileHover={{ x: 2 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        >
+          <Link
+            href="mailto:johnny@granyt.dev"
+            onClick={onLinkClick}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-2"
+          >
+            <Mail className="h-4 w-4" />
+            Contact
           </Link>
         </motion.div>
 
@@ -323,7 +293,7 @@ export default function DocsLayout({
             <span className="text-sm text-muted-foreground hidden sm:block">Documentation</span>
             {/* Mobile logo */}
             <Link href="/" className="flex items-center gap-2 lg:hidden">
-              <Shield className="h-5 w-5 text-primary" />
+              <Logo size="sm" showText={false} />
               <span className="font-semibold">Docs</span>
             </Link>
           </div>

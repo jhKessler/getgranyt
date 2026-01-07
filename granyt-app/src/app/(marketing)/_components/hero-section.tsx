@@ -1,115 +1,30 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Github, Sparkles, BookOpen, Copy, Check } from "lucide-react"
-import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
-import { useFeatureFlagVariantKey, usePostHog } from "posthog-js/react"
+import { ArrowRight, Github, Sparkles, BookOpen } from "lucide-react"
+import { GITHUB_URL } from "@/lib/constants"
+import { getDocsLink } from "@/lib/utils"
 
-// Feature flag key for the headline A/B test
-const HEADLINE_EXPERIMENT_FLAG = "landing-headline-test"
-
-function InstallCommand({ onCopy }: { onCopy: () => void }) {
-  const command = INSTALL_COMMAND
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(command)
-    setCopied(true)
-    onCopy()
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="flex items-center gap-2 bg-zinc-950 border border-border/50 rounded-lg px-3 sm:px-4 py-3 font-mono text-sm max-w-full overflow-x-auto">
-      <code className="text-green-400 whitespace-nowrap text-xs sm:text-sm">{command}</code>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-        onClick={handleCopy}
-      >
-        {copied ? (
-          <Check className="h-4 w-4 text-green-500" />
-        ) : (
-          <Copy className="h-4 w-4" />
-        )}
-      </Button>
-    </div>
-  )
-}
-
-function HeadlineControl() {
+function HeroHeadline() {
   return (
     <>
       <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-        Pipeline Monitoring{" "}
+        Pipeline monitoring{" "}
         <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           you&apos;ll actually use
         </span>
       </h1>
       <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-        Rock-solid Airflow monitoring built for data engineers. <br className="hidden sm:block" /> Not for sales demos.
+        Granyt is a modern, open source all-in-one monitoring platform for Apache Airflow that lets you catch errors and data issues before they reach production.
       </p>
     </>
   )
 }
 
-function HeadlineTest() {
-  return (
-    <>
-      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-        Catch data problems{" "}
-        <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          before they reach production
-        </span>
-      </h1>
-      <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-        Open source observability for Apache Airflow. <br className="hidden sm:block" /> 
-        Track errors, data quality, and get alerted before bad data breaks your downstream pipelines.
-      </p>
-    </>
-  )
-}
-
-interface HeroSectionProps {
-  /** Server-side evaluated variant to prevent FOUC. Falls back to client-side if not provided. */
-  serverVariant?: string
-}
-
-export function HeroSection({ serverVariant }: HeroSectionProps) {
-  const posthog = usePostHog()
-  // Use server variant if available, otherwise fall back to client-side evaluation
-  const clientVariant = useFeatureFlagVariantKey(HEADLINE_EXPERIMENT_FLAG)
-  const variant = serverVariant ?? clientVariant
-
-  // Determine which headline to show
-  // - "test" → show test headline
-  // - "control" → show control headline  
-  // - undefined/null → flags loading, default to control (but don't track as control)
-  const showTestHeadline = "control" //variant === "test"
-  const flagsLoaded = variant !== undefined && variant !== null
-
-  // Track CTA clicks - only include variant if flags are loaded
-  const trackCurlCopy = () => {
-    posthog?.capture("landing_curl_copied", {
-      experiment_variant: flagsLoaded ? variant : "unknown",
-    })
-  }
-
-  const trackDocsClick = () => {
-    posthog?.capture("landing_docs_clicked", {
-      experiment_variant: flagsLoaded ? variant : "unknown",
-    })
-  }
-
-  const trackGithubClick = () => {
-    posthog?.capture("landing_github_clicked", {
-      experiment_variant: flagsLoaded ? variant : "unknown",
-    })
-  }
+export function HeroSection() {
 
   return (
     <section className="relative overflow-hidden">
@@ -120,14 +35,13 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
       </div>
 
 
-      <div className="container mx-auto max-w-6xl px-4 py-24 md:py-32">
+      <div className="container mx-auto max-w-6xl px-4 py-12 md:py-32">
         <div className="flex flex-col items-center text-center space-y-8">
           {/* Badge */}
           <Link
             href={GITHUB_URL}
             target="_blank"
             className="group"
-            onClick={trackGithubClick}
           >
             <Badge variant="secondary" className="gap-2 px-4 py-2 text-sm hover:bg-secondary/80 transition-colors cursor-pointer">
               <Sparkles className="h-4 w-4" />
@@ -136,21 +50,15 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
             </Badge>
           </Link>
 
-          {/* Main heading - A/B tested */}
+          {/* Main heading */}
           <div className="space-y-4 max-w-4xl px-2">
-            {showTestHeadline ? <HeadlineTest /> : <HeadlineControl />}
+            <HeroHeadline />
           </div>
-
-          {/* Primary CTA - Install command */}
-          <InstallCommand onCopy={trackCurlCopy} />
 
           {/* Secondary CTAs */}
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild size="lg" className="gap-2 text-base">
-              <Link
-                href="/docs"
-                onClick={trackDocsClick}
-              >
+              <Link href={getDocsLink("/")}>
                 <BookOpen className="h-4 w-4" />
                 Docs
               </Link>
@@ -159,7 +67,6 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
               <Link
                 href={GITHUB_URL}
                 target="_blank"
-                onClick={trackGithubClick}
               >
                 <Github className="h-4 w-4" />
                 Star on GitHub
@@ -181,6 +88,19 @@ export function HeroSection({ serverVariant }: HeroSectionProps) {
               <div className="h-2 w-2 rounded-full bg-green-500" />
               <span>5-minute install</span>
             </div>
+          </div>
+
+          {/* Built for Airflow */}
+          <div className="flex items-center gap-3 pt-4">
+            <span className="text-xs text-muted-foreground/60">Built for</span>
+            <Image
+              src="/airflow_transparent.png"
+              alt="Apache Airflow"
+              width={28}
+              height={28}
+              className="opacity-60 hover:opacity-100 transition-opacity"
+            />
+            <span className="text-sm text-muted-foreground/80">Apache Airflow</span>
           </div>
         </div>
       </div>

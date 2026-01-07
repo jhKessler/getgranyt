@@ -17,7 +17,7 @@ export const metadata = {
   description: "Automatic metric capture and tracking for GCS operators in Airflow.",
 }
 
-const GITHUB_ADAPTER_URL = "https://github.com/granyt-ai/granyt-sdk/blob/main/src/granyt_sdk/integrations/airflow/operator_adapters/storage/gcs.py"
+const GITHUB_ADAPTER_URL = "https://github.com/jhkessler/getgranyt/blob/main/src/granyt_sdk/integrations/airflow/operator_adapters/storage/gcs.py"
 
 export default function GCSPage() {
   return (

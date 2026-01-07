@@ -1,14 +1,15 @@
 # =====================================================
-# Granyt App - Standalone Docker Compose
+# Granyt App - Production Docker Compose
 # =====================================================
 #
-# This file allows you to run Granyt without building from source.
-# Just download this file, create a .env file, and run!
+# This file runs the full Granyt stack WITHOUT exposing any ports.
+# Use this when running behind a reverse proxy (nginx, traefik, etc.)
 #
 # Quick Start:
-# 1. Download this file: docker-compose.standalone.yml
+# 1. Download this file: docker-compose.production.yml
 # 2. Create a .env file with the required variables (see below)
-# 3. Run: docker compose -f docker-compose.standalone.yml up -d
+# 3. Run: docker compose -f docker-compose.production.yml up -d
+# 4. Configure your reverse proxy to forward traffic to the app container
 #
 # Required .env file contents:
 # ----------------------------
@@ -27,6 +28,14 @@
 # SMTP_FROM_EMAIL=alerts@your-domain.com
 # SMTP_FROM_NAME=Granyt Alerts
 #
+# Reverse Proxy Configuration:
+# ----------------------------
+# The app service is accessible on port 3000 within the granyt-network.
+# Configure your reverse proxy to connect to:
+#   - Container: granyt-app-prod
+#   - Port: 3000
+#   - Network: granyt-network
+#
 # =====================================================
 
 services:
@@ -35,7 +44,7 @@ services:
   # =========================
   postgres:
     image: postgres:17-alpine
-    container_name: granyt-postgres
+    container_name: granyt-postgres-prod
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-granyt}
@@ -58,7 +67,7 @@ services:
   # =========================
   migrations:
     image: ghcr.io/jhkessler/granyt-app:${GRANYT_VERSION:-latest}-migrations
-    container_name: granyt-migrations
+    container_name: granyt-migrations-prod
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-granyt}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-granyt}?schema=public
     depends_on:
@@ -71,12 +80,11 @@ services:
   # =========================
   # Next.js Application
   # =========================
+  # No ports exposed - access via reverse proxy on granyt-network
   app:
     image: ghcr.io/jhkessler/granyt-app:${GRANYT_VERSION:-latest}
-    container_name: granyt-app
+    container_name: granyt-app-prod
     restart: unless-stopped
-    ports:
-      - "${APP_PORT:-3000}:3000"
     environment:
       # Database
       DATABASE_URL: postgresql://${POSTGRES_USER:-granyt}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-granyt}?schema=public
@@ -120,7 +128,7 @@ services:
 # =========================
 volumes:
   postgres-data:
-    name: granyt-postgres-data
+    name: granyt-postgres-data-prod
 
 # =========================
 # Networks

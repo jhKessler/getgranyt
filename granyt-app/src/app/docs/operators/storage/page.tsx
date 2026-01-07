@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { HardDrive, Zap, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { getDocsLink } from "@/lib/utils"
 import {
   PageHeader,
   Callout,
@@ -15,17 +16,17 @@ const providers = [
   {
     name: "AWS S3",
     description: "Track file transfers, bucket operations, and data volume for Amazon S3.",
-    href: "/docs/operators/s3",
+    href: getDocsLink("/operators/s3"),
   },
   {
     name: "Google Cloud Storage",
     description: "Monitor object counts, bucket synchronization, and regional metadata for GCS.",
-    href: "/docs/operators/gcs",
+    href: getDocsLink("/operators/gcs"),
   },
   {
     name: "Azure Blob Storage",
     description: "Capture container operations and blob transfers for Azure storage.",
-    href: "/docs/operators/azure-blob",
+    href: getDocsLink("/operators/azure-blob"),
   },
 ]
 

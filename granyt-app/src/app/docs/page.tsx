@@ -1,6 +1,7 @@
-import { Shield, Zap, BarChart3, Mail, Settings } from "lucide-react"
+import { Shield, Zap, BarChart3, Mail, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
+import { getDocsLink } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   PageHeader,
@@ -17,45 +18,94 @@ export const metadata = {
   description: "Get started with Granyt - Open source data observability for Apache Airflow",
 }
 
-const DOCKER_COMPOSE_YAML = `services:
+const DOCKER_COMPOSE_YAML = `# Quick Start:
+# 1. Save this file as docker-compose.yml
+# 2. Create a .env file with the required variables (see below)
+# 3. Run: docker compose up -d
+
+services:
+  # PostgreSQL Database
   postgres:
     image: postgres:17-alpine
+    container_name: granyt-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: granyt
-      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
-      POSTGRES_DB: granyt
+      POSTGRES_USER: \${POSTGRES_USER:-granyt}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: \${POSTGRES_DB:-granyt}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    shm_size: 128mb
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U granyt -d granyt"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U \${POSTGRES_USER:-granyt} -d \${POSTGRES_DB:-granyt}"]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    networks:
+      - granyt-network
 
-  app:
-    image: ghcr.io/jhkessler/granyt-app:latest
-    ports:
-      - "3000:3000"
+  # Database Migrations
+  migrations:
+    image: ghcr.io/jhkessler/granyt-app:\${GRANYT_VERSION:-latest}-migrations
+    container_name: granyt-migrations
     environment:
-      DATABASE_URL: postgresql://granyt:\${POSTGRES_PASSWORD}@postgres:5432/granyt?schema=public
-      BETTER_AUTH_SECRET: \${BETTER_AUTH_SECRET}
-      BETTER_AUTH_URL: http://localhost:3000
+      DATABASE_URL: postgresql://\${POSTGRES_USER:-granyt}:\${POSTGRES_PASSWORD}@postgres:5432/\${POSTGRES_DB:-granyt}?schema=public
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - granyt-network
+    restart: "no"
+
+  # Next.js Application
+  app:
+    image: ghcr.io/jhkessler/granyt-app:\${GRANYT_VERSION:-latest}
+    container_name: granyt-app
+    restart: unless-stopped
+    ports:
+      - "\${APP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://\${POSTGRES_USER:-granyt}:\${POSTGRES_PASSWORD}@postgres:5432/\${POSTGRES_DB:-granyt}?schema=public
+      BETTER_AUTH_SECRET: \${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+      BETTER_AUTH_URL: \${BETTER_AUTH_URL:?BETTER_AUTH_URL is required}
+      NEXT_PUBLIC_APP_URL: \${BETTER_AUTH_URL:?BETTER_AUTH_URL is required}
+      NODE_ENV: production
+      # Email Notifications (Optional)
+      SMTP_HOST: \${SMTP_HOST:-}
+      SMTP_PORT: \${SMTP_PORT:-587}
+      SMTP_USER: \${SMTP_USER:-}
+      SMTP_PASSWORD: \${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: \${SMTP_FROM_EMAIL:-}
+      SMTP_FROM_NAME: \${SMTP_FROM_NAME:-Granyt Alerts}
+      SMTP_SECURE: \${SMTP_SECURE:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - granyt-network
 
 volumes:
-  postgres-data:`
+  postgres-data:
+    name: granyt-postgres-data
 
-const DOT_ENV_EXAMPLE = `POSTGRES_PASSWORD=your-secure-password # Generate with: openssl rand -base64 32
-BETTER_AUTH_SECRET=your-32-char-secret-key # Generate with: openssl rand -base64 32
-BETTER_AUTH_URL=http://localhost:3000`
+networks:
+  granyt-network:
+    name: granyt-network
+    driver: bridge`
+
+const DOT_ENV_EXAMPLE = `# Required
+POSTGRES_PASSWORD=your-secure-database-password    # Generate with: openssl rand -hex 32
+BETTER_AUTH_SECRET=your-32-char-secret-key-here    # Generate with: openssl rand -hex 32
+BETTER_AUTH_URL=https://your-domain.com            # Or http://localhost:3000 for local dev`
 
 export default function QuickstartPage() {
   return (
@@ -76,6 +126,14 @@ export default function QuickstartPage() {
         <div className="space-y-4">
           <p className="text-muted-foreground">
             Choose your preferred deployment method to start the Granyt server. This will set up the dashboard and the API endpoints.
+            For production deployment instructions, see the{" "}
+            <Link 
+              href={`${GITHUB_URL}/blob/main/granyt-app/DEPLOYMENT.md`}
+              target="_blank"
+              className="text-primary hover:underline"
+            >
+              deployment guide
+            </Link>.
           </p>
 
           <Tabs defaultValue="shell" className="w-full">
@@ -100,11 +158,11 @@ export default function QuickstartPage() {
                     <li>
                       Download{" "}
                       <Link 
-                        href={`${GITHUB_URL}/blob/main/granyt-app/docker-compose.standalone.yml`}
+                        href={`${GITHUB_URL}/blob/main/granyt-app/docker-compose.yml`}
                         target="_blank"
                         className="text-primary hover:underline"
                       >
-                        <InlineCode>docker-compose.standalone.yml</InlineCode>
+                        <InlineCode>docker-compose.yml</InlineCode>
                       </Link>{" "}
                       from GitHub
                     </li>
@@ -151,7 +209,7 @@ export default function QuickstartPage() {
           </Tabs>
 
           <Callout variant="info">
-            Once the server is running, it will be available at <strong>http://localhost:3000</strong>. Open your dashboard under <strong>/register</strong> and follow the instructions to generate an <strong>API Key</strong>.
+            Once the server is running, go to <strong>http://localhost:3000/register</strong> and follow the instructions to generate an <strong>API Key</strong>.
           </Callout>
         </div>
       </section>
@@ -179,7 +237,7 @@ export default function QuickstartPage() {
               content: (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Set these variables in your Airflow environment (e.g., in your <InlineCode>docker-compose.yml</InlineCode> or Airflow configuration).
+                    Set these variables in your Airflow scheduler and workers (e.g., in your <InlineCode>docker-compose.yml</InlineCode> or Airflow configuration).
                   </p>
                   <CodeBlock 
                     code={`export GRANYT_ENDPOINT="https://your-granyt-instance.com"\nexport GRANYT_API_KEY="your-api-key"`} 
@@ -220,7 +278,7 @@ export default function QuickstartPage() {
                 Automatic Tracking
               </h4>
               <p className="text-sm text-muted-foreground">
-                Granyt automatically hooks into supported Airflow operators (Snowflake, BigQuery, S3, GCS, dbt, and generic SQL) to capture row counts, query IDs, and execution metadata without any extra code.
+                Granyt supports popular Airflow operators (Snowflake, BigQuery, S3, GCS, dbt, and generic SQL) to capture row counts, query IDs, and execution metadata without any extra code.
               </p>
             </div>
             <div className="space-y-3">
@@ -229,7 +287,7 @@ export default function QuickstartPage() {
                 Manual Capture
               </h4>
               <p className="text-sm text-muted-foreground">
-                Use the <InlineCode>compute_df_metrics</InlineCode> helper to extract metrics from your DataFrames (Pandas, Polars, Spark) and return them via Airflow XCom.
+                Use the <InlineCode>compute_df_metrics</InlineCode> helper to extract metrics from your DataFrames (Pandas, Polars) and return them via Airflow XCom.
               </p>
             </div>
           </div>
@@ -237,7 +295,7 @@ export default function QuickstartPage() {
           <div className="space-y-4">
             <h4 className="font-semibold">How Manual Metrics Work</h4>
             <p className="text-sm text-muted-foreground">
-              Granyt automatically captures any dictionary returned under the <InlineCode>granyt</InlineCode> key in your task&apos;s return value. Use <InlineCode>compute_df_metrics</InlineCode> to easily generate DataFrame schema and metrics, passing the result to <InlineCode>granyt[&quot;df_schema&quot;]</InlineCode>.
+              Granyt automatically captures any dictionary returned under the <InlineCode>granyt</InlineCode> key in your task&apos;s return value. Use <InlineCode>compute_df_metrics</InlineCode> to easily generate DataFrame schema and metrics, passing the result to <InlineCode>granyt[&quot;df_metrics&quot;]</InlineCode>.
             </p>
             <CodeBlock 
               language="python"
@@ -248,7 +306,8 @@ def my_task():
     df = pd.read_csv(...)
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df)
+            "high_value_orders": (df_raw["amount"] > 1000).sum(),
+            "df_metrics": compute_df_metrics(df)
         }
     }`}
             />
@@ -261,10 +320,9 @@ def my_task():
             </p>
             
             <Tabs defaultValue="pandas" className="w-full">
-              <TabsList className="grid w-full max-w-[400px] grid-cols-3">
+              <TabsList className="grid w-full max-w-[400px] grid-cols-2">
                 <TabsTrigger value="pandas">Pandas</TabsTrigger>
                 <TabsTrigger value="polars">Polars</TabsTrigger>
-                <TabsTrigger value="spark">PySpark</TabsTrigger>
               </TabsList>
               <TabsContent value="pandas" className="mt-4">
                 <CodeBlock 
@@ -282,7 +340,7 @@ def transform_data():
     # Return metrics via XCom
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df_clean)
+            "df_metrics": compute_df_metrics(df_clean)
         }
     }`}
                 />
@@ -303,28 +361,7 @@ def transform_data():
     # Return metrics via XCom
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df_clean)
-        }
-    }`}
-                />
-              </TabsContent>
-              <TabsContent value="spark" className="mt-4 space-y-4">
-                <CodeBlock 
-                  language="python"
-                  code={`from airflow.decorators import task
-from granyt_sdk import compute_df_metrics
-
-@task
-def transform_spark_data():
-    # Load and transform data
-    df = spark.read.table("raw_events")
-    df_clean = df.filter(df.value.isNotNull())
-    
-    # Return metrics via XCom.
-    # The SDK collects null counts and other stats efficiently.
-    return {
-        "granyt": {
-            "df_schema": compute_df_metrics(df_clean)
+            "df_metrics": compute_df_metrics(df_clean)
         }
     }`}
                 />
@@ -363,22 +400,22 @@ def train_model():
 
       <section className="grid gap-6 md:grid-cols-3 pt-6">
         <LinkCard
-          href="/docs/notifications"
+          href={getDocsLink("/notifications")}
           icon={Mail}
-          title="Setup Notifications"
+          title="Setup Alerts"
           description="Get alerted by Email or Webhook when your pipelines fail or data quality drops."
         />
         <LinkCard
-          href="/docs/metrics"
-          icon={BarChart3}
-          title="Full Metrics Docs"
-          description="Deep dive into all the metrics and configuration options available in the SDK."
+          href={getDocsLink("/operators")}
+          icon={Zap}
+          title="Operator Support"
+          description="See which Airflow operators are supported for automatic metadata and row count tracking."
         />
         <LinkCard
-          href="/docs/sdk-reference/environment-variables"
-          icon={Settings}
-          title="SDK Configuration"
-          description="Explore all environment variables available to fine-tune the Granyt SDK."
+          href={getDocsLink("/error-tracking")}
+          icon={AlertTriangle}
+          title="Error Tracking"
+          description="Learn how Granyt captures and displays stack traces and logs for failed tasks."
         />
       </section>
     </div>

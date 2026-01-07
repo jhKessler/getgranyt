@@ -10,7 +10,6 @@ import {
   Layers,
   FileCode,
   Clock,
-  Hash,
 } from "lucide-react"
 import {
   PageHeader,
@@ -156,25 +155,6 @@ TypeError: unsupported operand type(s) for -: 'datetime.date' and 'str'`}
           of the exception type and normalized error message. This helps you identify recurring 
           issues across multiple runs and DAGs.
         </p>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <Hash className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-semibold mb-2">Fingerprint Example</h3>
-                <CodeBlock 
-                  language="text"
-                  code="TypeError:unsupported_operand_type_for_datetime.date_and_str"
-                  inline
-                />
-                <p className="text-sm text-muted-foreground mt-3">
-                  All errors with this fingerprint are grouped together, showing you the total 
-                  occurrence count, affected DAGs, and first/last seen timestamps.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </section>
 
       {/* Error Status */}
@@ -260,70 +240,6 @@ TypeError: unsupported operand type(s) for -: 'datetime.date' and 'str'`}
             </CardContent>
           </Card>
         </div>
-      </section>
-
-      {/* Manual Error Capture */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-bold">Manual Error Capture</h2>
-        <p className="text-muted-foreground">
-          While errors are captured automatically on task failures, you can also manually 
-          capture errors or messages:
-        </p>
-        <Card>
-          <CardContent className="pt-6">
-            <CodeBlock 
-              language="python"
-              code={`from granyt_sdk import GranytClient
-
-client = GranytClient()
-
-# Capture an exception manually
-try:
-    risky_operation()
-except Exception as e:
-    client.capture_exception(e, context={
-        "user_id": 123,
-        "operation": "data_validation"
-    })
-
-# Capture a message (warning, info, etc.)
-client.capture_message(
-    "Data quality check failed: 15% null values in user_email",
-    level="warning"
-)`}
-            />
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Security */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-bold">Security &amp; Privacy</h2>
-        <Card className="bg-muted/30">
-          <CardContent className="pt-6 space-y-4">
-            <p className="text-muted-foreground">
-              The SDK automatically redacts sensitive information:
-            </p>
-            <div className="grid gap-3 md:grid-cols-2">
-              {[
-                "API keys and tokens",
-                "Passwords and secrets",
-                "Database connection strings",
-                "AWS/Azure/GCP credentials",
-                "Airflow connections",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span className="text-muted-foreground">{item}</span>
-                </div>
-              ))}
-            </div>
-            <Callout variant="tip">
-              Variable names containing KEY, SECRET, PASSWORD, TOKEN, CREDENTIAL, AUTH, 
-              or PRIVATE are automatically redacted to <code className="text-xs">&lt;redacted&gt;</code>.
-            </Callout>
-          </CardContent>
-        </Card>
       </section>
 
       {/* Error Detail View */}

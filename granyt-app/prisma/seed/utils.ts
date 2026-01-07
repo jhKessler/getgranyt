@@ -30,10 +30,10 @@ export function generateApiKey(prefix: string): string {
 }
 
 /**
- * Generate a random secure password
+ * Generate a random secure password (alphanumeric only)
  */
 export function generateRandomPassword(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let password = "";
   const bytes = randomBytes(16);
   for (let i = 0; i < 16; i++) {

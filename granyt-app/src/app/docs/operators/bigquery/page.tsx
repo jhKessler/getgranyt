@@ -17,7 +17,7 @@ export const metadata = {
   description: "Automatic metric capture and tracking for Google BigQuery operators in Airflow.",
 }
 
-const GITHUB_ADAPTER_URL = "https://github.com/granyt-ai/granyt-sdk/blob/main/src/granyt_sdk/integrations/airflow/operator_adapters/sql/bigquery.py"
+const GITHUB_ADAPTER_URL = "https://github.com/jhkessler/getgranyt/blob/main/src/granyt_sdk/integrations/airflow/operator_adapters/sql/bigquery.py"
 
 export default function BigQueryPage() {
   return (

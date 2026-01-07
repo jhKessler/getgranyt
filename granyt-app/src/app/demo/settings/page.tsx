@@ -25,6 +25,8 @@ export default function DemoSettingsPage() {
       airflowSettings={{ airflowUrl: null }}
       handleSaveAirflowUrl={() => {}}
       isSavingAirflowSettings={false}
+      setupStatus={{ hasDagRuns: true, hasNotificationChannel: true, hasErrors: true }}
+      isLoadingSetupStatus={false}
     />
   )
 }

@@ -7,3 +7,5 @@ export { ToolConsolidationSection } from "./tool-consolidation-section"
 export { DemoPreviewSection } from "./demo-preview-section"
 export { DataValidationSection } from "./data-validation-section"
 export { OperatorMetricsSection } from "./operator-metrics-section"
+export { FadeIn } from "./fade-in"
+

@@ -14,7 +14,7 @@ We take the security of Granyt seriously. If you believe you've found a security
 
 **Please do NOT report security vulnerabilities through public GitHub issues.**
 
-Instead, please send an email to: **security@granyt.dev** (or create a private security advisory on GitHub)
+Instead, please send an email to: **johnny@granyt.dev** (or create a private security advisory on GitHub)
 
 Include the following information:
 
@@ -60,10 +60,10 @@ The following are **out of scope**:
 1. **Use strong secrets**
    ```bash
    # Generate secure BETTER_AUTH_SECRET
-   openssl rand -base64 32
+   openssl rand -hex 32
    
    # Use a strong PostgreSQL password
-   openssl rand -base64 24
+   openssl rand -hex 24
    ```
 
 2. **Use HTTPS** - Always deploy behind a reverse proxy with TLS

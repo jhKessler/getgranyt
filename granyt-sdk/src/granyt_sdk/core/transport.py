@@ -7,7 +7,6 @@ and proper error handling. Supports multi-endpoint broadcasting.
 
 import json
 import logging
-import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import Empty, Queue
 from threading import Event, Thread

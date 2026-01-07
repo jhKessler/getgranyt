@@ -64,7 +64,7 @@ class TestOpenLineageAdapterInit:
 
     def test_producer_constant(self):
         """Test PRODUCER constant is set."""
-        assert OpenLineageAdapter.PRODUCER == "https://github.com/granyt/granyt-sdk"
+        assert OpenLineageAdapter.PRODUCER == "https://github.com/jhkessler/getgranyt"
 
     def test_schema_url_constant(self):
         """Test SCHEMA_URL constant is set."""

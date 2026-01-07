@@ -67,7 +67,7 @@ export const env = createEnv({
     NEXT_PUBLIC_POSTHOG_KEY: z.string().optional().describe("PostHog analytics API key"),
     NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional().describe("PostHog host URL"),
     NEXT_PUBLIC_GITHUB_URL: z.string().url().optional().describe("GitHub repository URL"),
-    NEXT_PUBLIC_DOCS_URL: z.string().default("/docs").describe("Base URL for documentation links (e.g. '/docs' or 'https://docs.granyt.dev')"),
+    NEXT_PUBLIC_DOCS_URL: z.string().default("/docs").describe("Base URL for documentation links (e.g. '/docs' or 'https://granyt.dev/docs')"),
   },
 
   /**

@@ -1,6 +1,7 @@
- import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { getDocsLink } from "@/lib/utils"
 import { 
   BarChart3,
   Code2,
@@ -37,7 +38,7 @@ export default function MetricsPage() {
       <section className="space-y-4">
         <h2 className="text-2xl font-bold">Overview</h2>
         <p className="text-muted-foreground">
-          While Granyt provides <Link href="/docs/operators" className="text-primary hover:underline">Automatic Operator Tracking</Link> for many Airflow operators, you can also manually capture metrics from your DataFrames using the Granyt SDK.
+          While Granyt provides <Link href={getDocsLink("/operators")} className="text-primary hover:underline">Automatic Operator Tracking</Link> for many Airflow operators, you can also manually capture metrics from your DataFrames using the Granyt SDK.
         </p>
       </section>
 
@@ -52,7 +53,7 @@ export default function MetricsPage() {
           lets you capture statistics from your DataFrames at any point in your DAG. 
           Use it to track row counts, schema information, data quality metrics, and custom KPIs.
           Metrics are passed to Granyt via the <InlineCode>granyt</InlineCode> key in your task&apos;s return value,
-          with DataFrame schema passed to the <InlineCode>df_schema</InlineCode> sub-key.
+          with DataFrame schema passed to the <InlineCode>df_metrics</InlineCode> sub-key.
         </p>
         <Card className="bg-muted/30">
           <CardContent className="pt-6">
@@ -71,10 +72,10 @@ def process_users():
     })
 
     # Compute metrics from the DataFrame, e.g. row count, column dtypes, etc.
-    # Pass to df_schema for automatic schema tracking
+    # Pass to df_metrics for automatic schema tracking
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df),
+            "df_metrics": compute_df_metrics(df),
             "custom_metric": 42
         }
     }`}
@@ -125,7 +126,7 @@ def process_users():
             />
             <p className="text-sm text-muted-foreground mb-4 mt-6">
               Computes metrics from a DataFrame for use with the <InlineCode>granyt</InlineCode> key.
-              Returns a dictionary that should be assigned to <InlineCode>granyt[&quot;df_schema&quot;]</InlineCode>.
+              Returns a dictionary that should be assigned to <InlineCode>granyt[&quot;df_metrics&quot;]</InlineCode>.
             </p>
           </CardContent>
         </Card>
@@ -137,7 +138,7 @@ def process_users():
         
         <ParameterCard
           name="df"
-          description="The DataFrame to compute metrics from. Supports Pandas, Polars, PySpark, or any custom registered type."
+          description="The DataFrame to compute metrics from. Supports Pandas, Polars, or any custom registered type."
           type="Any"
           typeLabel="DataFrame-like object"
         />
@@ -155,14 +156,14 @@ def process_users():
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              The function returns a dictionary containing all computed metrics, ready to be assigned to your <InlineCode>granyt[&quot;df_schema&quot;]</InlineCode> return value:
+              The function returns a dictionary containing all computed metrics, ready to be assigned to your <InlineCode>granyt[&quot;df_metrics&quot;]</InlineCode> return value:
             </p>
             <DataTable
               headers={["Field", "Type", "Description"]}
               rows={[
                 ["row_count", "int", "Number of rows"],
                 ["column_count", "int", "Number of columns"],
-                ["dataframe_type", "str", '"pandas", "polars", "spark", etc.'],
+                ["dataframe_type", "str", '"pandas", "polars", etc.'],
                 ["column_dtypes", "Dict[str, str]", "Column name to dtype mapping"],
                 ["null_counts", "Dict[str, int]", "Null counts per column"],
                 ["empty_string_counts", "Dict[str, int]", "Empty string counts"],
@@ -196,41 +197,6 @@ def process_users():
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">PySpark</h3>
-              <p className="text-sm text-muted-foreground">
-                Native support for <InlineCode>pyspark.sql.DataFrame</InlineCode> using 
-                the Observation API for efficient metrics.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Spark Performance */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-bold">Spark Performance & Efficiency</h2>
-        <p className="text-muted-foreground">
-          The Spark adapter is designed for high performance. It ensures that capturing 
-          metrics doesn&apos;t slow down your production pipelines or cause redundant computations.
-        </p>
-        <div className="grid gap-6">
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Observation API</h3>
-            <p className="text-sm text-muted-foreground">
-              Instead of running multiple jobs for counts and null checks, the SDK uses the 
-              Spark Observation API. This calculates all statistics in a single pass over the data.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Automatic Caching</h3>
-            <p className="text-sm text-muted-foreground">
-              The SDK automatically calls <InlineCode>.cache()</InlineCode> on your DataFrame 
-              if it isn&apos;t already cached. This ensures that the work done to calculate 
-              metrics is reused by your subsequent ETL steps.
-            </p>
-          </div>
         </div>
       </section>
 
@@ -290,7 +256,7 @@ register_adapter(DaskAdapter)`}
             </p>
           </div>
           <Button asChild variant="outline">
-            <Link href="https://github.com/granyt-ai/granyt-sdk" target="_blank">
+            <Link href="https://github.com/jhkessler/getgranyt" target="_blank">
               Open Pull Request
               <ExternalLink className="ml-2 h-4 w-4" />
             </Link>
@@ -319,7 +285,7 @@ def extract_users():
     return {
         "data": df.to_dict(),
         "granyt": {
-            "df_schema": compute_df_metrics(df)
+            "df_metrics": compute_df_metrics(df)
         }
     }
 
@@ -336,7 +302,7 @@ def transform_users(payload):
     return {
         "data": df.to_dict(),
         "granyt": {
-            "df_schema": compute_df_metrics(df),
+            "df_metrics": compute_df_metrics(df),
             "valid_emails": int((df['email'].str.contains('@')).sum()),
             "active_users": int((df['status'] == 'active').sum())
         }
@@ -353,7 +319,7 @@ def load_users(payload):
     return {
         "rows_loaded": rows_loaded,
         "granyt": {
-            "df_schema": compute_df_metrics(df),
+            "df_metrics": compute_df_metrics(df),
             "total_users_loaded": rows_loaded
         }
     }
@@ -374,7 +340,7 @@ user_pipeline()`}
       <InfoSection title="Best Practices">
         <CheckList items={[
           <>Use descriptive metric names that reflect the data&apos;s purpose (e.g., row_count, null_rate)</>,
-          <>Always return metrics via the <InlineCode>granyt</InlineCode> key with DataFrame schema in <InlineCode>df_schema</InlineCode></>,
+          <>Always return metrics via the <InlineCode>granyt</InlineCode> key with DataFrame schema in <InlineCode>df_metrics</InlineCode></>,
         ]} />
       </InfoSection>
     </div>

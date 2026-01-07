@@ -83,7 +83,7 @@ def transform_data():
     return {
         "data": df_clean.to_dict(),
         "granyt": {
-            "df_schema": compute_df_metrics(df_clean),
+            "df_metrics": compute_df_metrics(df_clean),
             "high_value_orders": len(df_clean[df_clean["amount"] > 1000])
         }
     }`}
@@ -109,7 +109,7 @@ def transform_data():
     return {
         "data": df_clean.to_dicts(),
         "granyt": {
-            "df_schema": compute_df_metrics(df_clean),
+            "df_metrics": compute_df_metrics(df_clean),
             "high_value_orders": df_clean.filter(pl.col("amount") > 1000).height
         }
     }`}
@@ -135,7 +135,7 @@ def transform_data():
     # Return metrics via granyt key
     return {
         "granyt": {
-            "df_schema": compute_df_metrics(df_clean),
+            "df_metrics": compute_df_metrics(df_clean),
             "high_value_orders": df_clean.filter(df_clean["amount"] > 1000).count()
         }
     }`}

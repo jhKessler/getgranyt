@@ -9,7 +9,7 @@ import pytest
 
 from granyt_sdk.features.metrics.core import (
     _ADAPTERS,
-    DF_SCHEMA_KEY,
+    DF_METRICS_KEY,
     GRANYT_KEY,
     METRICS_KEYS,
     SCHEMA_KEYS,
@@ -19,7 +19,7 @@ from granyt_sdk.features.metrics.core import (
     _get_adapter,
     compute_df_metrics,
     register_adapter,
-    validate_df_schema,
+    validate_df_metrics,
 )
 
 
@@ -221,21 +221,21 @@ class TestComputeDfMetrics:
             compute_df_metrics(df="not a dataframe")
 
     def test_returns_dict_for_xcom(self, pandas_df):
-        """Test that metrics can be used directly in granyt.df_schema."""
+        """Test that metrics can be used directly in granyt.df_metrics."""
         metrics = compute_df_metrics(df=pandas_df)
 
-        # Should be a plain dict that can be assigned to granyt.df_schema
+        # Should be a plain dict that can be assigned to granyt.df_metrics
         assert isinstance(metrics, dict)
 
         # Simulate usage pattern with new granyt key
         result = {
             "granyt": {
-                "df_schema": metrics,
+                "df_metrics": metrics,
                 "custom_metric": 42,
             }
         }
 
-        assert result["granyt"]["df_schema"]["row_count"] == 5
+        assert result["granyt"]["df_metrics"]["row_count"] == 5
         assert result["granyt"]["custom_metric"] == 42
 
     def test_column_dtypes_structure(self, pandas_df):
@@ -267,13 +267,13 @@ class TestComputeDfMetrics:
         assert metrics["memory_bytes"] > 0
 
 
-class TestValidateDfSchema:
-    """Tests for validate_df_schema function."""
+class TestValidateDfMetrics:
+    """Tests for validate_df_metrics function."""
 
     def test_valid_schema_with_required_fields(self):
         """Test validation passes with required fields."""
         schema = {"column_dtypes": {"col1": "int64", "col2": "object"}}
-        assert validate_df_schema(schema) is True
+        assert validate_df_metrics(schema) is True
 
     def test_valid_schema_with_all_fields(self):
         """Test validation passes with all fields."""
@@ -286,29 +286,29 @@ class TestValidateDfSchema:
             "dataframe_type": "pandas",
             "memory_bytes": 1024,
         }
-        assert validate_df_schema(schema) is True
+        assert validate_df_metrics(schema) is True
 
     def test_invalid_not_dict(self, caplog):
         """Test validation fails for non-dict."""
-        assert validate_df_schema("not a dict") is False
+        assert validate_df_metrics("not a dict") is False
         assert "must be a dictionary" in caplog.text
 
     def test_invalid_missing_column_dtypes(self, caplog):
         """Test validation fails when column_dtypes missing."""
         schema = {"row_count": 100}
-        assert validate_df_schema(schema) is False
+        assert validate_df_metrics(schema) is False
         assert "missing required 'column_dtypes'" in caplog.text
 
     def test_invalid_column_dtypes_not_dict(self, caplog):
         """Test validation fails when column_dtypes is not dict."""
         schema = {"column_dtypes": "not a dict"}
-        assert validate_df_schema(schema) is False
+        assert validate_df_metrics(schema) is False
         assert "column_dtypes'] must be a dictionary" in caplog.text
 
     def test_invalid_column_dtypes_values(self, caplog):
         """Test validation fails when column_dtypes has non-string values."""
         schema = {"column_dtypes": {"col1": 123}}
-        assert validate_df_schema(schema) is False
+        assert validate_df_metrics(schema) is False
         assert "string keys and values" in caplog.text
 
     def test_warning_for_invalid_null_counts(self, caplog):
@@ -318,7 +318,7 @@ class TestValidateDfSchema:
             "null_counts": "not a dict",
         }
         # Should still pass since column_dtypes is valid
-        assert validate_df_schema(schema) is True
+        assert validate_df_metrics(schema) is True
         assert "null_counts'] must be a dictionary" in caplog.text
 
 
@@ -329,9 +329,9 @@ class TestConstants:
         """Test GRANYT_KEY constant value."""
         assert GRANYT_KEY == "granyt"
 
-    def test_df_schema_key_constant(self):
-        """Test DF_SCHEMA_KEY constant value."""
-        assert DF_SCHEMA_KEY == "df_schema"
+    def test_df_metrics_key_constant(self):
+        """Test DF_METRICS_KEY constant value."""
+        assert DF_METRICS_KEY == "df_metrics"
 
     def test_schema_keys_constant(self):
         """Test SCHEMA_KEYS contains expected keys."""
