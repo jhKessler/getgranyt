@@ -26,7 +26,7 @@
 ## ✨ Features
 
 - **Automatic Lineage Tracking** - Captures DAG/task run status using OpenLineage without any manual instrumentation
-- **Rich Error Capture** - Sentry-like error capturing with full stack traces, context variables, and system information
+- **Rich Error Capture** - Sentry-like error capturing with full stack traces and context variables
 - **Zero Configuration** - Just install and set environment variables - no code changes required
 - **Operator Adapters** - Built-in support for popular operators (Snowflake, BigQuery, dbt, S3, and more)
 - **DataFrame Metrics** - Automatic schema and metrics extraction from Pandas/Polars DataFrames

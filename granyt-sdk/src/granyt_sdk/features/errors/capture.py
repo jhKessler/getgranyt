@@ -201,7 +201,6 @@ class ErrorCapture:
         return frames
 
     def _extract_system_info(self) -> Dict[str, Any]:
-        """Extract system information."""
         info: Dict[str, Any] = {
             "python_version": sys.version,
             "python_implementation": platform.python_implementation(),

@@ -109,7 +109,6 @@ When a task fails, the SDK automatically captures:
 
 - Full stack trace with local variables
 - Task instance metadata (dag_id, task_id, run_id, try_number, etc.)
-- System information (Python version, Airflow version, hostname, etc.)
 - DAG configuration and task parameters
 - Environment context
 - Previous log entries
