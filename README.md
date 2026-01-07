@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="granyt-app/public/logo.png" width="200" alt="Granyt Logo" />
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/github/license/jhkessler/getgranyt?style=for-the-badge" alt="MIT License" />
   <img src="https://img.shields.io/github/v/release/jhkessler/getgranyt?style=for-the-badge" alt="Latest Release" />
   <img src="https://img.shields.io/github/actions/workflow/status/jhkessler/getgranyt/ci.yml?style=for-the-badge" alt="Build Status" />
