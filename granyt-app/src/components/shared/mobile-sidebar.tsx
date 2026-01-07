@@ -14,10 +14,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { 
-  Shield, 
   Menu,
   LucideIcon,
 } from "lucide-react"
+import { Logo } from "./logo"
 
 export interface NavItem {
   name: string
@@ -59,8 +59,7 @@ export function MobileSidebar({
       <SheetContent side="left" className="w-[280px] p-0">
         <SheetHeader className="border-b px-6 py-4">
           <SheetTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
-            <span className="font-bold">Granyt</span>
+            <Logo size="sm" />
             {variant === "demo" && (
               <Badge variant="secondary" className="ml-auto text-xs">Demo</Badge>
             )}

@@ -8,6 +8,10 @@ import { env } from "@/env"
 
 const POSTHOG_KEY = env.NEXT_PUBLIC_POSTHOG_KEY
 const POSTHOG_HOST = env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com"
+const GRANYT_MODE = env.NEXT_PUBLIC_GRANYT_MODE?.toUpperCase()
+
+// PostHog is only enabled in DOCS mode for pageviews and session replay
+const IS_POSTHOG_ENABLED = GRANYT_MODE === "DOCS" && !!POSTHOG_KEY
 
 function PostHogPageView() {
   const pathname = usePathname()
@@ -31,19 +35,35 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const initialized = useRef(false)
 
   useEffect(() => {
-    if (!POSTHOG_KEY || initialized.current) return
+    if (!IS_POSTHOG_ENABLED || initialized.current) return
     initialized.current = true
 
-    posthog.init(POSTHOG_KEY, {
+    posthog.init(POSTHOG_KEY!, {
       api_host: POSTHOG_HOST,
       person_profiles: "identified_only",
       capture_pageview: false, // We'll capture manually for SPA navigation
       capture_pageleave: true, // Track time on page automatically
+      autocapture: false, // Disable autocapture - only pageviews and session replay
+      // Filter events to only allow pageviews and session replay
+      before_send: (event) => {
+        if (!event) return null
+        const allowedEvents = [
+          "$pageview",
+          "$pageleave",
+          "$snapshot", // Session replay
+          "$performance_event",
+          "$feature_flag_called", // Required for A/B tests
+        ]
+        if (!allowedEvents.includes(event.event)) {
+          return null // Drop all other events
+        }
+        return event
+      },
     })
   }, [])
 
-  if (!POSTHOG_KEY) {
-    // If PostHog is not configured, just render children
+  if (!IS_POSTHOG_ENABLED) {
+    // If PostHog is not enabled, just render children
     return <>{children}</>
   }
 

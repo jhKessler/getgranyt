@@ -6,7 +6,6 @@ the `granyt` key in Airflow task return values.
 """
 
 import logging
-import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Protocol, Type, Union, runtime_checkable
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Constants for the special keys in task return values
 GRANYT_KEY = "granyt"
-DF_SCHEMA_KEY = "df_schema"
+DF_METRICS_KEY = "df_metrics"
 
 # Keys that belong in the schema object (sent to backend's 'schema' field)
 SCHEMA_KEYS = {"column_dtypes", "null_counts", "empty_string_counts"}
@@ -24,10 +23,10 @@ SCHEMA_KEYS = {"column_dtypes", "null_counts", "empty_string_counts"}
 METRICS_KEYS = {"row_count", "column_count", "dataframe_type", "memory_bytes"}
 
 
-def validate_df_schema(df_schema: Any) -> bool:
-    """Validate that df_schema has the required structure.
+def validate_df_metrics(df_metrics: Any) -> bool:
+    """Validate that df_metrics has the required structure.
 
-    The df_schema must be a dictionary containing at minimum:
+    The df_metrics must be a dictionary containing at minimum:
     - column_dtypes: Dict[str, str] - mapping of column names to their dtypes
 
     Optional fields:
@@ -39,31 +38,31 @@ def validate_df_schema(df_schema: Any) -> bool:
     - memory_bytes: int - memory usage in bytes
 
     Args:
-        df_schema: The value to validate
+        df_metrics: The value to validate
 
     Returns:
         True if validation passes, False otherwise (with warning logged)
     """
-    if not isinstance(df_schema, dict):
+    if not isinstance(df_metrics, dict):
         logger.warning(
-            f"df_schema must be a dictionary, got {type(df_schema).__name__}. "
+            f"df_metrics must be a dictionary, got {type(df_metrics).__name__}. "
             "Schema will not be sent to Granyt."
         )
         return False
 
     # column_dtypes is required
-    if "column_dtypes" not in df_schema:
+    if "column_dtypes" not in df_metrics:
         logger.warning(
-            "df_schema is missing required 'column_dtypes' field. "
+            "df_metrics is missing required 'column_dtypes' field. "
             "Schema will not be sent to Granyt. "
             "Use compute_df_metrics() to generate a valid schema."
         )
         return False
 
-    column_dtypes = df_schema["column_dtypes"]
+    column_dtypes = df_metrics["column_dtypes"]
     if not isinstance(column_dtypes, dict):
         logger.warning(
-            f"df_schema['column_dtypes'] must be a dictionary, got {type(column_dtypes).__name__}. "
+            f"df_metrics['column_dtypes'] must be a dictionary, got {type(column_dtypes).__name__}. "
             "Schema will not be sent to Granyt."
         )
         return False
@@ -72,42 +71,42 @@ def validate_df_schema(df_schema: Any) -> bool:
     for col_name, dtype in column_dtypes.items():
         if not isinstance(col_name, str) or not isinstance(dtype, str):
             logger.warning(
-                f"df_schema['column_dtypes'] must have string keys and values, "
+                f"df_metrics['column_dtypes'] must have string keys and values, "
                 f"got {type(col_name).__name__}: {type(dtype).__name__}. "
                 "Schema will not be sent to Granyt."
             )
             return False
 
     # Validate optional null_counts if present
-    if "null_counts" in df_schema:
-        null_counts = df_schema["null_counts"]
+    if "null_counts" in df_metrics:
+        null_counts = df_metrics["null_counts"]
         if not isinstance(null_counts, dict):
             logger.warning(
-                f"df_schema['null_counts'] must be a dictionary, got {type(null_counts).__name__}. "
+                f"df_metrics['null_counts'] must be a dictionary, got {type(null_counts).__name__}. "
                 "null_counts will be ignored."
             )
         else:
             for col_name, count in null_counts.items():
                 if not isinstance(col_name, str) or not isinstance(count, (int, type(None))):
                     logger.warning(
-                        f"df_schema['null_counts'] must have string keys and int/null values. "
+                        "df_metrics['null_counts'] must have string keys and int/null values. "
                         "null_counts will be ignored."
                     )
                     break
 
     # Validate optional empty_string_counts if present
-    if "empty_string_counts" in df_schema:
-        empty_counts = df_schema["empty_string_counts"]
+    if "empty_string_counts" in df_metrics:
+        empty_counts = df_metrics["empty_string_counts"]
         if not isinstance(empty_counts, dict):
             logger.warning(
-                f"df_schema['empty_string_counts'] must be a dictionary, got {type(empty_counts).__name__}. "
+                f"df_metrics['empty_string_counts'] must be a dictionary, got {type(empty_counts).__name__}. "
                 "empty_string_counts will be ignored."
             )
         else:
             for col_name, count in empty_counts.items():
                 if not isinstance(col_name, str) or not isinstance(count, (int, type(None))):
                     logger.warning(
-                        f"df_schema['empty_string_counts'] must have string keys and int/null values. "
+                        "df_metrics['empty_string_counts'] must have string keys and int/null values. "
                         "empty_string_counts will be ignored."
                     )
                     break
@@ -294,7 +293,7 @@ def compute_df_metrics(
     """Compute metrics from a DataFrame for use with the granyt key.
 
     This function calculates DataFrame statistics that should be passed
-    to the `granyt["df_schema"]` key in your task's return value. The SDK
+    to the `granyt["df_metrics"]` key in your task's return value. The SDK
     automatically splits this into schema (column types, null counts) and
     metrics (row count, memory) before sending to the backend.
 
@@ -304,7 +303,7 @@ def compute_df_metrics(
 
     Returns:
         A dictionary containing the computed metrics, ready to be assigned
-        to your granyt["df_schema"] return value.
+        to your granyt["df_metrics"] return value.
 
     Example:
         @task
@@ -312,7 +311,7 @@ def compute_df_metrics(
             df = pd.read_parquet("data.parquet")
             return {
                 "granyt": {
-                    "df_schema": compute_df_metrics(df),
+                    "df_metrics": compute_df_metrics(df),
                     "custom_metric": 42
                 }
             }

@@ -6,68 +6,88 @@
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License" />
 </p>
 
-<h1 align="center">🔍 Granyt</h1>
+<h1 align="center">Granyt App</h1>
 
 <p align="center">
-  <strong>Open-source data pipeline observability platform</strong><br>
-  Monitor, debug, and optimize your Airflow DAGs with real-time insights
+  <strong>Web dashboard for Granyt - the modern, open-source Airflow observability platform</strong><br>
+  A Next.js application for monitoring, debugging, and configuring your data pipelines
 </p>
 
 <p align="center">
   <a href="#-features">Features</a> •
   <a href="#-quick-start">Quick Start</a> •
-  <a href="#-installation">Installation</a> •
-  <a href="#-configuration">Configuration</a> •
   <a href="#-api-reference">API</a> •
   <a href="#-contributing">Contributing</a>
 </p>
+
+> **Note:** This is the web dashboard component of Granyt. For the complete project overview and installation guide, see the [main README](../README.md).
 
 ---
 
 ## ✨ Features
 
 - **📊 DAG Monitoring** - Real-time visibility into your data pipelines with run history, duration trends, and success rates
-- **🚨 Smart Alerts** - Configurable alerts for failures, changes in source data, and pipeline anomalies with email, Slack, and webhook notifications
+- **🚨 Smart Alerts** - Configurable alerts for failures, SLA breaches, and pipeline anomalies with email, Slack, and webhook notifications
 - **🐛 Error Tracking** - Centralized error aggregation with fingerprinting and stack trace analysis
+- **🔑 API Key Management** - Generate and manage API keys for SDK authentication
 - **🌙 Dark Mode** - Beautiful UI with light and dark theme support
 - **🐳 Docker Ready** - One-command deployment with Docker Compose
 
 ## 🖼️ Screenshots
 
+<!-- TODO: Add actual screenshots -->
 <details>
 <summary>Click to expand</summary>
 
 ### DAG Overview
-![DAG Overview](docs/screenshots/dags.png)
+![DAG Overview](docs/screenshots/dags-placeholder.png)
 
 ### Error Tracking
-![Error Tracking](docs/screenshots/errors.png)
+![Error Tracking](docs/screenshots/errors-placeholder.png)
 
 ### Alerts Configuration
-![Alerts](docs/screenshots/alerts.png)
+![Alerts](docs/screenshots/alerts-placeholder.png)
 
 </details>
+
+---
+
+## 🏗️ Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| **Framework** | Next.js 15 (App Router) |
+| **Language** | TypeScript |
+| **Database** | PostgreSQL 17 + Prisma ORM |
+| **Styling** | Tailwind CSS + shadcn/ui |
+| **API** | tRPC |
+| **Auth** | better-auth |
+| **State** | Zustand, TanStack Query |
+
+---
 
 ## 🚀 Quick Start
 
 ### Using Docker (Recommended)
 
 ```bash
-# Clone the repository
-git clone https://github.com/jhKessler/getgranyt.git
-cd getgranyt/granyt-app
+# Download the docker-compose file
+curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/docker-compose.yml
 
-# Copy environment file and configure
-cp .env.standalone.example .env
-
-# Edit .env with your settings (required: POSTGRES_PASSWORD, BETTER_AUTH_SECRET)
-# Generate a secret: openssl rand -base64 32
+# Create a .env file with required variables
+cat > .env << EOF
+POSTGRES_PASSWORD=$(openssl rand -base64 24)
+BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+BETTER_AUTH_URL=http://localhost:3000
+EOF
 
 # Start with Docker Compose
-docker compose -f docker-compose.standalone.yml up -d
+docker compose up -d
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and create your first account!
+
+> For production deployment with SMTP, reverse proxy setup, and more options, see the [Deployment Guide](DEPLOYMENT.md).
 
 ### Local Development
 
@@ -89,13 +109,50 @@ npm run db:seed  # Creates demo data (save the generated credentials!)
 npm run dev
 ```
 
+### Development Commands
+
+```bash
+npm run dev          # Start dev server with Turbopack
+npm run build        # Production build
+npm run test         # Run tests (Vitest)
+npm run lint         # Run ESLint
+npm run db:studio    # Open Prisma Studio
+npm run db:migrate   # Run migrations
+npm run db:seed      # Seed demo data
+```
+
+---
+
+## 📁 Project Structure
+
+```
+granyt-app/
+├── prisma/              # Database schema (split into multiple .prisma files)
+│   └── seed/            # Seed data scripts
+├── migrations/          # Prisma migrations
+├── src/
+│   ├── app/             # Next.js App Router
+│   │   ├── api/         # REST API endpoints (/api/v1/*)
+│   │   ├── dashboard/   # Main dashboard pages
+│   │   │   └── _components/  # Page-specific components
+│   │   └── (marketing)/ # Landing pages
+│   ├── components/      # React components
+│   │   ├── ui/          # shadcn/ui components
+│   │   └── shared/      # Shared components
+│   ├── lib/             # Utilities, hooks, and config
+│   └── server/          # Backend logic
+│       ├── routers/     # tRPC routers
+│       └── services/    # Business logic (one folder per domain)
+└── docker-compose.*.yml # Docker configurations
+```
+
+---
+
 ## 📦 Installation
 
 ### Prerequisites
 
 - **Docker** (recommended) or Node.js 20+
-- **PostgreSQL 15+** (included in Docker setup)
-- 2GB RAM minimum
 
 ### Production Deployment
 
@@ -123,25 +180,18 @@ See the [Deployment Guide](DEPLOYMENT.md) for detailed production setup instruct
 1. Create an API key in Settings → API Keys
 2. Install the Granyt SDK in your Airflow environment:
 
+   The Granyt SDK is a Python listener that must be installed where your Airflow workers and scheduler run. It automatically captures DAG and task execution events and sends them to your Granyt dashboard.
+
+   Install the SDK in your Airflow environment's Python (e.g., add to your `requirements.txt` or install directly in your Airflow container/virtualenv):
+
 ```bash
-pip install granyt
+pip install granyt-sdk
 ```
-
-3. Configure the listener in your `airflow.cfg`:
-
-```ini
-[core]
-lazy_load_plugins = False
-
-[listeners]
-listener_plugins = granyt.listener
-```
-
-4. Set environment variables:
+3. Set environment variables:
 
 ```bash
 export GRANYT_API_URL=https://your-granyt-instance.com
-export GRANYT_API_KEY=granyt_prod_xxxxx
+export GRANYT_API_KEY=granyt_xxxx
 ```
 
 ### Alert Configuration
@@ -153,89 +203,6 @@ Granyt supports multiple notification channels:
 - **Resend** - Native Resend integration
 
 Configure in Settings → Notifications.
-
-## 📡 API Reference
-
-### Authentication
-
-All API requests require an API key in the `X-API-Key` header:
-
-```bash
-curl -H "X-API-Key: granyt_prod_xxxxx" \
-  https://your-instance.com/api/v1/metrics
-```
-
-### Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/metrics` | Ingest custom metrics |
-| `POST` | `/api/v1/errors` | Report errors |
-| `POST` | `/api/v1/lineage` | Submit lineage data |
-| `GET` | `/api/health` | Health check |
-
-### Metrics Payload Example
-
-```json
-{
-  "captured_at": "2024-01-15T10:30:00Z",
-  "dag_id": "my_dag",
-  "run_id": "scheduled__2024-01-15",
-  "task_id": "extract",
-  "metrics": {
-    "row_count": 1500,
-    "duration_seconds": 45.2
-  }
-}
-```
-
-## 🏗️ Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| **Framework** | Next.js 15 (App Router) |
-| **Language** | TypeScript 5 |
-| **Database** | PostgreSQL 17 + Prisma ORM |
-| **Styling** | Tailwind CSS 4 + shadcn/ui |
-| **API** | tRPC for type-safe APIs |
-| **Auth** | better-auth |
-| **Charts** | Recharts |
-| **Validation** | Zod |
-
-## 📁 Project Structure
-
-```
-granyt-app/
-├── prisma/              # Database schema & migrations
-│   ├── schema.prisma    # Main schema
-│   └── seed/            # Seed data scripts
-├── src/
-│   ├── app/             # Next.js pages & API routes
-│   │   ├── api/         # REST API endpoints
-│   │   ├── dashboard/   # Main app pages
-│   │   └── (marketing)/ # Landing pages
-│   ├── components/      # React components
-│   │   ├── ui/          # shadcn/ui components
-│   │   └── shared/      # Shared components
-│   ├── lib/             # Utilities & config
-│   └── server/          # Backend logic
-│       ├── routers/     # tRPC routers
-│       └── services/    # Business logic
-└── docker-compose.yml   # Docker configuration
-```
-
-## 🧪 Testing
-
-```bash
-# Run tests
-npm test
-
-# Run with coverage
-npm run test:coverage
-
-# Run in watch mode
-npm run test:watch
-```
 
 ## 🤝 Contributing
 
@@ -266,10 +233,9 @@ This project is licensed under the MIT License - see the [LICENSE](../LICENSE) f
 - [shadcn/ui](https://ui.shadcn.com/) for the beautiful component library
 - [better-auth](https://github.com/better-auth/better-auth) for authentication
 - [Recharts](https://recharts.org/) for charting
-- The open-source community
 
 ---
 
 <p align="center">
-  Made with ❤️ by the Granyt team
+  <a href="../README.md">← Back to main README</a>
 </p>

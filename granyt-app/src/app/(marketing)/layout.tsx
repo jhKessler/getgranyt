@@ -4,7 +4,9 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Github, BookOpen, Menu } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
+import { Logo } from "@/components/shared/logo"
 import { GITHUB_URL } from "@/lib/constants"
+import { getDocsLink } from "@/lib/utils"
 import {
   Sheet,
   SheetContent,
@@ -17,15 +19,12 @@ function MarketingHeader() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <span className="text-lg font-bold text-primary-foreground">G</span>
-          </div>
-          <span className="text-xl font-bold">Granyt</span>
+          <Logo size="md" />
         </Link>
         
         <nav className="hidden md:flex items-center gap-6">
           <Link 
-            href="/docs" 
+            href={getDocsLink("/")} 
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Docs
@@ -48,7 +47,7 @@ function MarketingHeader() {
             </Link>
           </Button>
           <Button asChild size="sm" className="hidden sm:flex">
-            <Link href="/docs">
+            <Link href={getDocsLink("/")}>
               <BookOpen className="h-4 w-4 mr-2" />
               Docs
             </Link>
@@ -66,7 +65,7 @@ function MarketingHeader() {
               <nav className="flex flex-col gap-4 mt-8">
                 <SheetClose asChild>
                   <Link 
-                    href="/docs" 
+                    href={getDocsLink("/")} 
                     className="flex items-center gap-3 text-lg font-medium hover:text-primary transition-colors py-2"
                   >
                     <BookOpen className="h-5 w-5" />
@@ -112,9 +111,9 @@ function MarketingFooter() {
           <div>
             <h4 className="font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/docs" className="hover:text-foreground transition-colors">Documentation</Link></li>
-              <li><Link href="/docs/data-metrics" className="hover:text-foreground transition-colors">Data Metrics</Link></li>
-              <li><Link href="/docs/error-tracking" className="hover:text-foreground transition-colors">Error Tracking</Link></li>
+              <li><Link href={getDocsLink("/")} className="hover:text-foreground transition-colors">Documentation</Link></li>
+              <li><Link href={getDocsLink("/data-metrics")} className="hover:text-foreground transition-colors">Data Metrics</Link></li>
+              <li><Link href={getDocsLink("/error-tracking")} className="hover:text-foreground transition-colors">Error Tracking</Link></li>
             </ul>
           </div>
           

@@ -2,11 +2,9 @@ import logging
 from typing import Any, Optional
 
 from granyt_sdk.features.metrics import (
-    DF_SCHEMA_KEY,
+    DF_METRICS_KEY,
     GRANYT_KEY,
-    METRICS_KEYS,
-    SCHEMA_KEYS,
-    validate_df_schema,
+    validate_df_metrics,
 )
 from granyt_sdk.integrations.airflow.operator_adapters.base import (
     OperatorAdapter,
@@ -98,10 +96,10 @@ class PythonAdapter(OperatorAdapter):
         """Parse Python callable result for metrics.
 
         Handles the 'granyt' key structure:
-        - granyt.df_schema: DataFrame schema/metrics from compute_df_metrics()
+        - granyt.df_metrics: DataFrame schema/metrics from compute_df_metrics()
         - granyt.<custom_key>: Any custom user-defined metrics
 
-        The df_schema is split into:
+        The df_metrics is split into:
         - Schema fields (column_dtypes, null_counts, empty_string_counts) -> backend's 'schema' field
         - Metric fields (row_count, column_count, dataframe_type, memory_bytes) -> backend's 'metrics' field
         """
@@ -115,44 +113,44 @@ class PythonAdapter(OperatorAdapter):
 
         metrics.custom_metrics = metrics.custom_metrics or {}
 
-        # Handle df_schema if present - this comes from compute_df_metrics()
-        if DF_SCHEMA_KEY in granyt_data:
-            df_schema = granyt_data[DF_SCHEMA_KEY]
+        # Handle df_metrics if present - this comes from compute_df_metrics()
+        if DF_METRICS_KEY in granyt_data:
+            df_metrics = granyt_data[DF_METRICS_KEY]
 
             # Validate the schema structure - raise error if invalid
-            if not validate_df_schema(df_schema):
+            if not validate_df_metrics(df_metrics):
                 raise ValueError(
-                    f"Invalid df_schema structure. "
-                    f"df_schema must be a dictionary with 'column_dtypes' (Dict[str, str]) as a required field. "
-                    f"Got: {type(df_schema).__name__}. "
+                    f"Invalid df_metrics structure. "
+                    f"df_metrics must be a dictionary with 'column_dtypes' (Dict[str, str]) as a required field. "
+                    f"Got: {type(df_metrics).__name__}. "
                     f"Use compute_df_metrics() to generate a valid schema."
                 )
 
             # Extract schema fields for backend's 'schema' field
             schema_data = {}
-            if "column_dtypes" in df_schema:
-                schema_data["column_dtypes"] = df_schema["column_dtypes"]
-            if "null_counts" in df_schema:
-                schema_data["null_counts"] = df_schema["null_counts"]
-            if "empty_string_counts" in df_schema:
-                schema_data["empty_string_counts"] = df_schema["empty_string_counts"]
+            if "column_dtypes" in df_metrics:
+                schema_data["column_dtypes"] = df_metrics["column_dtypes"]
+            if "null_counts" in df_metrics:
+                schema_data["null_counts"] = df_metrics["null_counts"]
+            if "empty_string_counts" in df_metrics:
+                schema_data["empty_string_counts"] = df_metrics["empty_string_counts"]
 
             if schema_data:
                 metrics.custom_metrics["schema"] = schema_data
 
             # Extract metric fields
-            if "row_count" in df_schema:
-                metrics.row_count = df_schema["row_count"]
-            if "memory_bytes" in df_schema:
-                metrics.bytes_processed = df_schema["memory_bytes"]
+            if "row_count" in df_metrics:
+                metrics.row_count = df_metrics["row_count"]
+            if "memory_bytes" in df_metrics:
+                metrics.bytes_processed = df_metrics["memory_bytes"]
 
-            # Capture other metadata from df_schema
+            # Capture other metadata from df_metrics
             for key in ["dataframe_type", "column_count"]:
-                if key in df_schema:
-                    metrics.custom_metrics[key] = df_schema[key]
+                if key in df_metrics:
+                    metrics.custom_metrics[key] = df_metrics[key]
 
         # Process all other keys in granyt (custom metrics)
-        reserved_keys = {DF_SCHEMA_KEY}
+        reserved_keys = {DF_METRICS_KEY}
         for key, value in granyt_data.items():
             if key not in reserved_keys:
                 # Handle standard metric names
