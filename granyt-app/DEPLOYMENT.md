@@ -135,7 +135,7 @@ openssl rand -base64 24
 ## Docker Compose
 
 📜 **Docker Compose files:**
-- [docker-compose.standalone.yml](docker-compose.standalone.yml) - Exposes ports, for direct access
+- [docker-compose.yml](docker-compose.yml) - Exposes ports, for direct access
 - [docker-compose.production.yml](docker-compose.production.yml) - No exposed ports, for use behind reverse proxy
 
 ### Architecture Overview
@@ -186,7 +186,7 @@ app:
 
 1. **Download the compose file:**
    ```bash
-   curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/docker-compose.standalone.yml
+   curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/docker-compose.yml
    ```
 
 2. **Create your `.env` file** with [required variables](#environment-variables):
@@ -198,12 +198,12 @@ app:
 
 3. **Start Granyt:**
    ```bash
-   docker compose -f docker-compose.standalone.yml up -d
+   docker compose -f docker-compose.yml up -d
    ```
 
 4. **Check logs:**
    ```bash
-   docker compose -f docker-compose.standalone.yml logs -f
+   docker compose -f docker-compose.yml logs -f
    ```
 
 ### Standalone vs Production
@@ -212,7 +212,7 @@ app:
 |---------|------------|------------|
 | Port exposed | Yes (`APP_PORT`, default 3000) | No |
 | Use case | Direct access, development | Behind reverse proxy |
-| File | `docker-compose.standalone.yml` | `docker-compose.production.yml` |
+| File | `docker-compose.yml` | `docker-compose.production.yml` |
 
 For production behind a reverse proxy, use `docker-compose.production.yml` and configure your proxy to connect to:
 - Container: `granyt-app-prod`
@@ -425,10 +425,10 @@ Database migrations run automatically on startup. The migrations container will 
 
 ```bash
 # Pull latest images
-docker compose -f docker-compose.standalone.yml pull
+docker compose -f docker-compose.yml pull
 
 # Restart with new images (migrations run automatically)
-docker compose -f docker-compose.standalone.yml up -d
+docker compose -f docker-compose.yml up -d
 ```
 
 ### Update to Specific Version
@@ -440,8 +440,8 @@ docker compose -f docker-compose.standalone.yml up -d
 
 2. Pull and restart:
    ```bash
-   docker compose -f docker-compose.standalone.yml pull
-   docker compose -f docker-compose.standalone.yml up -d
+   docker compose -f docker-compose.yml pull
+   docker compose -f docker-compose.yml up -d
    ```
 
 ### Rollback
@@ -453,7 +453,7 @@ docker compose -f docker-compose.standalone.yml up -d
 
 2. Restart:
    ```bash
-   docker compose -f docker-compose.standalone.yml up -d
+   docker compose -f docker-compose.yml up -d
    ```
 
 > ⚠️ **Note**: Database migrations are forward-only. Rolling back the app version won't revert database changes.
@@ -504,7 +504,7 @@ granyt.example.com {
 
 ### Traefik (Docker labels)
 
-Add to your `docker-compose.standalone.yml`:
+Add to your `docker-compose.yml`:
 
 ```yaml
 services:
@@ -534,7 +534,7 @@ docker exec granyt-postgres pg_dump -U granyt granyt | gzip > backup_$(date +%Y%
 
 ```bash
 # Stop the app first
-docker compose -f docker-compose.standalone.yml stop app
+docker compose -f docker-compose.yml stop app
 
 # Restore from backup
 cat backup.sql | docker exec -i granyt-postgres psql -U granyt granyt
@@ -543,7 +543,7 @@ cat backup.sql | docker exec -i granyt-postgres psql -U granyt granyt
 gunzip -c backup.sql.gz | docker exec -i granyt-postgres psql -U granyt granyt
 
 # Start the app
-docker compose -f docker-compose.standalone.yml start app
+docker compose -f docker-compose.yml start app
 ```
 
 ### Automated Backups
@@ -563,12 +563,12 @@ Create a cron job for daily backups:
 
 ```bash
 # All services
-docker compose -f docker-compose.standalone.yml logs -f
+docker compose -f docker-compose.yml logs -f
 
 # Specific service
-docker compose -f docker-compose.standalone.yml logs -f app
-docker compose -f docker-compose.standalone.yml logs -f postgres
-docker compose -f docker-compose.standalone.yml logs -f migrations
+docker compose -f docker-compose.yml logs -f app
+docker compose -f docker-compose.yml logs -f postgres
+docker compose -f docker-compose.yml logs -f migrations
 ```
 
 ### Common Issues
@@ -577,7 +577,7 @@ docker compose -f docker-compose.standalone.yml logs -f migrations
 
 Check if PostgreSQL is ready:
 ```bash
-docker compose -f docker-compose.standalone.yml logs postgres
+docker compose -f docker-compose.yml logs postgres
 ```
 
 The migrations container waits for PostgreSQL to be healthy before running.
@@ -586,7 +586,7 @@ The migrations container waits for PostgreSQL to be healthy before running.
 
 Verify your [Environment Variables](#environment-variables) are correct and PostgreSQL is running:
 ```bash
-docker compose -f docker-compose.standalone.yml ps
+docker compose -f docker-compose.yml ps
 ```
 
 #### Port already in use
@@ -620,10 +620,10 @@ Should return:
 
 ```bash
 # Stop and remove everything
-docker compose -f docker-compose.standalone.yml down -v
+docker compose -f docker-compose.yml down -v
 
 # Start fresh
-docker compose -f docker-compose.standalone.yml up -d
+docker compose -f docker-compose.yml up -d
 ```
 
 ---

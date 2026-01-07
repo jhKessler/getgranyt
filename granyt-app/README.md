@@ -15,7 +15,6 @@
 
 <p align="center">
   <a href="#-features">Features</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
   <a href="#-quick-start">Quick Start</a> •
   <a href="#-api-reference">API</a> •
   <a href="#-contributing">Contributing</a>
@@ -57,16 +56,13 @@
 
 | Category | Technology |
 |----------|------------|
-| **Framework** | Next.js 15 (App Router, Turbopack) |
-| **Language** | TypeScript 5 |
+| **Framework** | Next.js 15 (App Router) |
+| **Language** | TypeScript |
 | **Database** | PostgreSQL 17 + Prisma ORM |
-| **Styling** | Tailwind CSS 4 + shadcn/ui |
-| **API** | tRPC (type-safe APIs) |
+| **Styling** | Tailwind CSS + shadcn/ui |
+| **API** | tRPC |
 | **Auth** | better-auth |
-| **Charts** | Recharts |
-| **Validation** | Zod |
 | **State** | Zustand, TanStack Query |
-| **Analytics** | PostHog |
 
 ---
 
@@ -76,7 +72,7 @@
 
 ```bash
 # Download the docker-compose file
-curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/docker-compose.standalone.yml
+curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/docker-compose.yml
 
 # Create a .env file with required variables
 cat > .env << EOF
@@ -86,7 +82,7 @@ BETTER_AUTH_URL=http://localhost:3000
 EOF
 
 # Start with Docker Compose
-docker compose -f docker-compose.standalone.yml up -d
+docker compose -f docker-compose.yml up -d
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and create your first account!
@@ -157,8 +153,6 @@ granyt-app/
 ### Prerequisites
 
 - **Docker** (recommended) or Node.js 20+
-- **PostgreSQL 15+** (included in Docker setup)
-- 2GB RAM minimum
 
 ### Production Deployment
 
@@ -191,24 +185,13 @@ See the [Deployment Guide](DEPLOYMENT.md) for detailed production setup instruct
    Install the SDK in your Airflow environment's Python (e.g., add to your `requirements.txt` or install directly in your Airflow container/virtualenv):
 
 ```bash
-pip install granyt
+pip install granyt-sdk
 ```
-
-3. Configure the listener in your `airflow.cfg`:
-
-```ini
-[core]
-lazy_load_plugins = False
-
-[listeners]
-listener_plugins = granyt.listener
-```
-
-4. Set environment variables:
+3. Set environment variables:
 
 ```bash
 export GRANYT_API_URL=https://your-granyt-instance.com
-export GRANYT_API_KEY=granyt_prod_xxxxx
+export GRANYT_API_KEY=granyt_xxxx
 ```
 
 ### Alert Configuration
@@ -220,89 +203,6 @@ Granyt supports multiple notification channels:
 - **Resend** - Native Resend integration
 
 Configure in Settings → Notifications.
-
-## 📡 API Reference
-
-### Authentication
-
-All API requests require an API key in the `X-API-Key` header:
-
-```bash
-curl -H "X-API-Key: granyt_prod_xxxxx" \
-  https://your-instance.com/api/v1/metrics
-```
-
-### Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/metrics` | Ingest custom metrics |
-| `POST` | `/api/v1/errors` | Report errors |
-| `POST` | `/api/v1/lineage` | Submit lineage data |
-| `GET` | `/api/health` | Health check |
-
-### Metrics Payload Example
-
-```json
-{
-  "captured_at": "2024-01-15T10:30:00Z",
-  "dag_id": "my_dag",
-  "run_id": "scheduled__2024-01-15",
-  "task_id": "extract",
-  "metrics": {
-    "row_count": 1500,
-    "duration_seconds": 45.2
-  }
-}
-```
-
-## 🏗️ Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| **Framework** | Next.js 15 (App Router) |
-| **Language** | TypeScript 5 |
-| **Database** | PostgreSQL 17 + Prisma ORM |
-| **Styling** | Tailwind CSS 4 + shadcn/ui |
-| **API** | tRPC for type-safe APIs |
-| **Auth** | better-auth |
-| **Charts** | Recharts |
-| **Validation** | Zod |
-
-## 📁 Project Structure
-
-```
-granyt-app/
-├── prisma/              # Database schema & migrations
-│   ├── schema.prisma    # Main schema
-│   └── seed/            # Seed data scripts
-├── src/
-│   ├── app/             # Next.js pages & API routes
-│   │   ├── api/         # REST API endpoints
-│   │   ├── dashboard/   # Main app pages
-│   │   └── (marketing)/ # Landing pages
-│   ├── components/      # React components
-│   │   ├── ui/          # shadcn/ui components
-│   │   └── shared/      # Shared components
-│   ├── lib/             # Utilities & config
-│   └── server/          # Backend logic
-│       ├── routers/     # tRPC routers
-│       └── services/    # Business logic
-└── docker-compose.yml   # Docker configuration
-```
-
-## 🧪 Testing
-
-```bash
-# Run tests
-npm test
-
-# Run with coverage
-npm run test:coverage
-
-# Run in watch mode
-npm run test:watch
-```
 
 ## 🤝 Contributing
 

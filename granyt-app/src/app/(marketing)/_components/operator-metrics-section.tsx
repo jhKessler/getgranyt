@@ -125,8 +125,6 @@ def transform_data():
     # Return data and metrics via granyt key
     return {
         "granyt": {
-            # captures df metadata
-            "df_metrics": granyt.compute_df_metrics(df_raw), 
             "high_value_orders": (df_raw["amount"] > 1000).sum()
         }
     }`}

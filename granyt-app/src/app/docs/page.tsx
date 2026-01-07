@@ -18,45 +18,94 @@ export const metadata = {
   description: "Get started with Granyt - Open source data observability for Apache Airflow",
 }
 
-const DOCKER_COMPOSE_YAML = `services:
+const DOCKER_COMPOSE_YAML = `# Quick Start:
+# 1. Save this file as docker-compose.yml
+# 2. Create a .env file with the required variables (see below)
+# 3. Run: docker compose up -d
+
+services:
+  # PostgreSQL Database
   postgres:
     image: postgres:17-alpine
+    container_name: granyt-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: granyt
-      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
-      POSTGRES_DB: granyt
+      POSTGRES_USER: \${POSTGRES_USER:-granyt}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: \${POSTGRES_DB:-granyt}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    shm_size: 128mb
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U granyt -d granyt"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U \${POSTGRES_USER:-granyt} -d \${POSTGRES_DB:-granyt}"]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    networks:
+      - granyt-network
 
-  app:
-    image: ghcr.io/jhkessler/granyt-app:latest
-    ports:
-      - "3000:3000"
+  # Database Migrations
+  migrations:
+    image: ghcr.io/jhkessler/granyt-app:\${GRANYT_VERSION:-latest}-migrations
+    container_name: granyt-migrations
     environment:
-      DATABASE_URL: postgresql://granyt:\${POSTGRES_PASSWORD}@postgres:5432/granyt?schema=public
-      BETTER_AUTH_SECRET: \${BETTER_AUTH_SECRET}
-      BETTER_AUTH_URL: http://localhost:3000
+      DATABASE_URL: postgresql://\${POSTGRES_USER:-granyt}:\${POSTGRES_PASSWORD}@postgres:5432/\${POSTGRES_DB:-granyt}?schema=public
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - granyt-network
+    restart: "no"
+
+  # Next.js Application
+  app:
+    image: ghcr.io/jhkessler/granyt-app:\${GRANYT_VERSION:-latest}
+    container_name: granyt-app
+    restart: unless-stopped
+    ports:
+      - "\${APP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://\${POSTGRES_USER:-granyt}:\${POSTGRES_PASSWORD}@postgres:5432/\${POSTGRES_DB:-granyt}?schema=public
+      BETTER_AUTH_SECRET: \${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+      BETTER_AUTH_URL: \${BETTER_AUTH_URL:?BETTER_AUTH_URL is required}
+      NEXT_PUBLIC_APP_URL: \${BETTER_AUTH_URL:?BETTER_AUTH_URL is required}
+      NODE_ENV: production
+      # Email Notifications (Optional)
+      SMTP_HOST: \${SMTP_HOST:-}
+      SMTP_PORT: \${SMTP_PORT:-587}
+      SMTP_USER: \${SMTP_USER:-}
+      SMTP_PASSWORD: \${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: \${SMTP_FROM_EMAIL:-}
+      SMTP_FROM_NAME: \${SMTP_FROM_NAME:-Granyt Alerts}
+      SMTP_SECURE: \${SMTP_SECURE:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - granyt-network
 
 volumes:
-  postgres-data:`
+  postgres-data:
+    name: granyt-postgres-data
 
-const DOT_ENV_EXAMPLE = `POSTGRES_PASSWORD=your-secure-password # Generate with: openssl rand -base64 32
-BETTER_AUTH_SECRET=your-32-char-secret-key # Generate with: openssl rand -base64 32
-BETTER_AUTH_URL=http://localhost:3000`
+networks:
+  granyt-network:
+    name: granyt-network
+    driver: bridge`
+
+const DOT_ENV_EXAMPLE = `# Required
+POSTGRES_PASSWORD=your-secure-database-password    # Generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET=your-32-char-secret-key-here    # Generate with: openssl rand -base64 32
+BETTER_AUTH_URL=https://your-domain.com            # Or http://localhost:3000 for local dev`
 
 export default function QuickstartPage() {
   return (
@@ -101,11 +150,11 @@ export default function QuickstartPage() {
                     <li>
                       Download{" "}
                       <Link 
-                        href={`${GITHUB_URL}/blob/main/granyt-app/docker-compose.standalone.yml`}
+                        href={`${GITHUB_URL}/blob/main/granyt-app/docker-compose.yml`}
                         target="_blank"
                         className="text-primary hover:underline"
                       >
-                        <InlineCode>docker-compose.standalone.yml</InlineCode>
+                        <InlineCode>docker-compose.yml</InlineCode>
                       </Link>{" "}
                       from GitHub
                     </li>

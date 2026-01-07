@@ -31,12 +31,12 @@
 ## ✨ Features
 
 - **📊 DAG Monitoring** - Real-time visibility into your data pipelines with run history, duration trends, and success rates
-- **🚨 Smart Alerts** - Configurable alerts for failures, SLA breaches, and pipeline anomalies with email, Slack, and webhook notifications
+- **🚨 Smart Alerts** - Configurable alerts for failures and data anomalies with email, Slack, and webhook notifications
 - **🐛 Error Tracking** - Centralized error aggregation with fingerprinting and stack trace analysis
 - **🔗 Lineage Tracking** - Automatic data lineage capture via OpenLineage integration
-- **📈 Metrics Collection** - Automatic extraction of metrics from popular operators (Snowflake, BigQuery, dbt, S3, and more)
-- **🐳 Docker Ready** - One-command deployment with Docker Compose
-
+- **📈 Metrics Collection** - Automatic capture of metrics from popular operators (Snowflake, BigQuery, dbt, S3, and more)
+- **🌐 Multi-Environment** - Unified monitoring across dev, staging and production environments
+- **🔓 Open Source & Self-Hostable** - Complete control over your data with flexible, self-hosted deployment
 ---
 
 ## 🚀 Quick Start
@@ -45,7 +45,7 @@
 
 ```bash
 # Download the docker-compose file
-curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/docker-compose.standalone.yml
+curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/docker-compose.yml
 
 # Create a .env file with required variables
 cat > .env << EOF
@@ -55,7 +55,7 @@ BETTER_AUTH_URL=http://localhost:3000
 EOF
 
 # Start with Docker Compose
-docker compose -f docker-compose.standalone.yml up -d
+docker compose -f docker-compose.yml up -d
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and create your account.
@@ -85,6 +85,107 @@ That's it! The SDK automatically captures lineage and errors from your DAGs.
 
 ---
 
+### Operator Adapters
+
+The SDK includes built-in adapters for popular Airflow operators that automatically extract rich metrics:
+
+| Category | Operators | Key Metrics |
+|----------|-----------|-------------|
+| **Snowflake** | `SnowflakeOperator`, `SnowflakeSqlApiOperator`, `S3ToSnowflakeOperator` | `row_count`, `query_id`, `warehouse`, `database`, `schema` |
+| **BigQuery** | `BigQueryInsertJobOperator`, `BigQueryCheckOperator`, `GCSToBigQueryOperator` | `bytes_processed`, `row_count`, `query_id`, `slot_milliseconds` |
+| **Generic SQL** | `SQLExecuteQueryOperator`, `SQLColumnCheckOperator`, `BranchSQLOperator` | `row_count`, `database`, `schema`, `table` |
+| **AWS S3** | `S3CopyObjectOperator`, `S3ListOperator`, `S3DeleteObjectsOperator` | `files_processed`, `bytes_processed`, `source_path`, `destination_path` |
+| **GCS** | `GCSCreateBucketOperator`, `GCSListObjectsOperator`, `GCSSynchronizeBucketsOperator` | `files_processed`, `bytes_processed`, `source_path`, `destination_path` |
+| **dbt** | `DbtCloudRunJobOperator`, `DbtRunOperator`, `DbtTestOperator` | `models_run`, `tests_passed`, `tests_failed`, `row_count` |
+
+For more details on how we extract metrics from specific operators, see the [Operator Adapters documentation](docs/operator_adapters.md).
+
+---
+
+### Rich Error Capture
+
+When a task fails, the SDK automatically captures:
+
+- Full stack trace with local variables
+- Task instance metadata (dag_id, task_id, run_id, try_number, etc.)
+- System information (Python version, Airflow version, hostname, etc.)
+- DAG configuration and task parameters
+- Environment context
+- Previous log entries
+
+---
+
+## 🚀 Usage
+
+Once installed and configured, the SDK works automatically. No code changes are required in your DAGs.
+
+### Reporting Metrics from Python Tasks
+
+The most flexible way to report metrics from an Airflow `@task` or `PythonOperator` is to include a `granyt` key in your return value. The SDK automatically captures everything inside this dictionary from the xcom.
+
+#### Simple Manual Metrics
+You can pass any key-value pairs you want to track in your dashboard:
+
+```python
+@task
+def process_data():
+    # ... your logic ...
+    return {
+        "granyt": {
+            "row_count": 1500,
+            "data_quality_passed": True,
+            "source_file": "users.csv"
+        }
+    }
+```
+
+#### Automatic Metric Calculation
+For deep data insights, use `compute_df_metrics`. It automatically calculates row counts, null counts, and column types from your Pandas or Polars DataFrames. Pass the result to `granyt["df_metrics"]` to get schema change detection and rich metrics:
+
+```python
+from granyt_sdk import compute_df_metrics
+
+@task
+def transform_data():
+    df = pd.read_parquet("data.parquet")
+    
+    return {
+        "granyt": {
+            # df_metrics automatically splits into schema and metrics
+            "df_metrics": compute_df_metrics(df),
+            "data_quality_passed": True
+        }
+    }
+```
+
+#### Custom DataFrame Support
+
+You can add support for other DataFrame types by creating a custom adapter:
+
+```python
+from granyt_sdk import DataFrameAdapter, register_adapter
+
+class SparkAdapter(DataFrameAdapter):
+    @classmethod
+    def can_handle(cls, df):
+        return hasattr(df, 'rdd')
+    
+    @classmethod
+    def get_type_name(cls):
+        return "spark"
+    
+    @classmethod
+    def get_columns_with_dtypes(cls, df):
+        return [(f.name, str(f.dataType)) for f in df.schema.fields]
+    
+    @classmethod
+    def get_row_count(cls, df):
+        return df.count()
+
+register_adapter(SparkAdapter)
+```
+
+---
 ## 📁 Project Structure
 
 This monorepo contains two main components:
