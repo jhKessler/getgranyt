@@ -20,7 +20,7 @@ const coreEnvVars = [
   },
   {
     variable: "BETTER_AUTH_SECRET",
-    description: "Secret key for authentication (minimum 16 characters). Generate with: openssl rand -base64 32",
+    description: "Secret key for authentication (minimum 16 characters). Generate with: openssl rand -hex 32",
   },
   {
     variable: "BETTER_AUTH_URL",
