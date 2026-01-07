@@ -99,7 +99,7 @@ The SDK includes built-in adapters for popular Airflow operators that automatica
 | **GCS** | `GCSCreateBucketOperator`, `GCSListObjectsOperator`, `GCSSynchronizeBucketsOperator` | `files_processed`, `bytes_processed`, `source_path`, `destination_path` |
 | **dbt** | `DbtCloudRunJobOperator`, `DbtRunOperator`, `DbtTestOperator` | `models_run`, `tests_passed`, `tests_failed`, `row_count` |
 
-For more details on how we extract metrics from specific operators, see the [Operator Adapters documentation](docs/operator_adapters.md).
+For more details on how we extract metrics from specific operators, see the [Operator Adapters documentation](https://granyt.dev/docs/operators).
 
 ---
 
@@ -120,9 +120,9 @@ When a task fails, the SDK automatically captures:
 
 Once installed and configured, the SDK works automatically. No code changes are required in your DAGs.
 
-### Reporting Metrics from Python Tasks
+### Reporting Custom Metrics from Python Tasks
 
-The most flexible way to report metrics from an Airflow `@task` or `PythonOperator` is to include a `granyt` key in your return value. The SDK automatically captures everything inside this dictionary from the xcom.
+The most flexible way to report custom metrics from an Airflow `@task` or `PythonOperator` is to include a `granyt` key in your return value. The SDK automatically captures everything inside this dictionary from the xcom.
 
 #### Simple Manual Metrics
 You can pass any key-value pairs you want to track in your dashboard:
@@ -152,7 +152,7 @@ def transform_data():
     
     return {
         "granyt": {
-            # df_metrics automatically splits into schema and metrics
+            # automatically captures schema and df metadata
             "df_metrics": compute_df_metrics(df),
             "data_quality_passed": True
         }
@@ -231,7 +231,7 @@ This monorepo contains two main components:
 | [Deployment Guide](./granyt-app/DEPLOYMENT.md) | Production deployment options |
 | [Contributing Guide](./granyt-app/CONTRIBUTING.md) | How to contribute to Granyt |
 | [Security Policy](./granyt-app/SECURITY.md) | Security practices and reporting |
-| [Operator Adapters](./granyt-sdk/docs/operator_adapters.md) | Supported Airflow operators |
+| [Operator Adapters](./granyt-sdk/https://granyt.dev/docs/operators) | Supported Airflow operators |
 
 ---
 
