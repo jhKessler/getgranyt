@@ -6,6 +6,7 @@ import {
   DemoPreviewSection,
   OperatorMetricsSection,
   CTASection,
+  FadeIn,
 } from "./_components"
 
 export const metadata: Metadata = {
@@ -23,12 +24,24 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <>
-      <HeroSection />
-      <OperatorMetricsSection />
-      <ToolConsolidationSection />
-      <InstallSection />
-      <DemoPreviewSection />
-      <CTASection />
+      <FadeIn>
+        <HeroSection />
+      </FadeIn>
+      <FadeIn>
+        <OperatorMetricsSection />
+      </FadeIn>
+      <FadeIn>
+        <ToolConsolidationSection />
+      </FadeIn>
+      <FadeIn>
+        <InstallSection />
+      </FadeIn>
+      <FadeIn>
+        <DemoPreviewSection />
+      </FadeIn>
+      <FadeIn>
+        <CTASection />
+      </FadeIn>
     </>
   )
 }
