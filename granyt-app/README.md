@@ -40,7 +40,7 @@
 <summary>Click to expand</summary>
 
 ### DAG Overview
-![DAG Overview](docs/screenshots/dags-placeholder.png)
+![DAG Overview](../images/demo.png)
 
 ### Error Tracking
 ![Error Tracking](docs/screenshots/errors-placeholder.png)

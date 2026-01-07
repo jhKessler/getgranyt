@@ -15,6 +15,12 @@
 
 ---
 
+## 🖼️ Screenshot
+
+![Granyt Dashboard](../images/demo.png)
+
+---
+
 ## ✨ Features
 
 - **Automatic Lineage Tracking** - Captures DAG/task run status using OpenLineage without any manual instrumentation

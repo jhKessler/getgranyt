@@ -23,8 +23,7 @@
 
 ## 🖼️ Screenshot
 
-<!-- TODO: Add screenshot of the dashboard -->
-![Granyt Dashboard](docs/screenshots/dashboard-placeholder.png)
+![Granyt Dashboard](images/demo.png)
 
 ---
 
