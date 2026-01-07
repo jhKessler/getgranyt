@@ -1,5 +1,5 @@
 ﻿<p align="center">
-  <img src="public/logo.png" width="200" alt="Granyt Logo" />
+  <img src="public/logo.png" width="40" alt="Granyt Logo" />
 </p>
 
 <p align="center">
