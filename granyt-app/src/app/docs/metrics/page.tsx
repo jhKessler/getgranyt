@@ -138,7 +138,7 @@ def process_users():
         
         <ParameterCard
           name="df"
-          description="The DataFrame to compute metrics from. Supports Pandas, Polars, PySpark, or any custom registered type."
+          description="The DataFrame to compute metrics from. Supports Pandas, Polars, or any custom registered type."
           type="Any"
           typeLabel="DataFrame-like object"
         />
@@ -163,7 +163,7 @@ def process_users():
               rows={[
                 ["row_count", "int", "Number of rows"],
                 ["column_count", "int", "Number of columns"],
-                ["dataframe_type", "str", '"pandas", "polars", "spark", etc.'],
+                ["dataframe_type", "str", '"pandas", "polars", etc.'],
                 ["column_dtypes", "Dict[str, str]", "Column name to dtype mapping"],
                 ["null_counts", "Dict[str, int]", "Null counts per column"],
                 ["empty_string_counts", "Dict[str, int]", "Empty string counts"],
@@ -197,41 +197,6 @@ def process_users():
               </p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">PySpark</h3>
-              <p className="text-sm text-muted-foreground">
-                Native support for <InlineCode>pyspark.sql.DataFrame</InlineCode> using 
-                the Observation API for efficient metrics.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Spark Performance */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-bold">Spark Performance & Efficiency</h2>
-        <p className="text-muted-foreground">
-          The Spark adapter is designed for high performance. It ensures that capturing 
-          metrics doesn&apos;t slow down your production pipelines or cause redundant computations.
-        </p>
-        <div className="grid gap-6">
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Observation API</h3>
-            <p className="text-sm text-muted-foreground">
-              Instead of running multiple jobs for counts and null checks, the SDK uses the 
-              Spark Observation API. This calculates all statistics in a single pass over the data.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Automatic Caching</h3>
-            <p className="text-sm text-muted-foreground">
-              The SDK automatically calls <InlineCode>.cache()</InlineCode> on your DataFrame 
-              if it isn&apos;t already cached. This ensures that the work done to calculate 
-              metrics is reused by your subsequent ETL steps.
-            </p>
-          </div>
         </div>
       </section>
 
@@ -291,7 +256,7 @@ register_adapter(DaskAdapter)`}
             </p>
           </div>
           <Button asChild variant="outline">
-            <Link href="https://github.com/granyt-ai/granyt-sdk" target="_blank">
+            <Link href="https://github.com/jhkessler/getgranyt" target="_blank">
               Open Pull Request
               <ExternalLink className="ml-2 h-4 w-4" />
             </Link>

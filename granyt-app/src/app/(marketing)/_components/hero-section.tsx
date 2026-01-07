@@ -1,42 +1,12 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Github, Sparkles, BookOpen, Copy, Check } from "lucide-react"
-import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
+import { ArrowRight, Github, Sparkles, BookOpen } from "lucide-react"
+import { GITHUB_URL } from "@/lib/constants"
 import { getDocsLink } from "@/lib/utils"
-
-function InstallCommand() {
-  const command = INSTALL_COMMAND
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(command)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="flex items-center gap-2 bg-zinc-950 border border-border/50 rounded-lg px-3 sm:px-4 py-3 font-mono text-sm max-w-full overflow-x-auto">
-      <code className="text-green-400 whitespace-nowrap text-xs sm:text-sm">{command}</code>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-        onClick={handleCopy}
-      >
-        {copied ? (
-          <Check className="h-4 w-4 text-green-500" />
-        ) : (
-          <Copy className="h-4 w-4" />
-        )}
-      </Button>
-    </div>
-  )
-}
 
 function HeroHeadline() {
   return (

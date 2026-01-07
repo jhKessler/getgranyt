@@ -69,51 +69,21 @@ const mainSections: NavSection[] = [
     ],
   },
   {
+    title: "Automatic Tracking",
+    items: [
+      { title: "Overview", href: getDocsLink("/operators"), icon: Zap },
+      { title: "SQL & Warehouse", href: getDocsLink("/operators/sql"), icon: Database },
+      { title: "Cloud Storage", href: getDocsLink("/operators/storage"), icon: HardDrive },
+      { title: "Transformation", href: getDocsLink("/operators/transformation"), icon: Zap },
+    ],
+  },
+  {
     title: "Dashboard",
     items: [
       { title: "Live Demo", href: "/demo", icon: LayoutDashboard },
       { title: "Error Tracking", href: getDocsLink("/error-tracking"), icon: AlertTriangle },
       { title: "Notifications", href: getDocsLink("/notifications"), icon: Mail },
       { title: "Webhooks", href: getDocsLink("/webhooks"), icon: Webhook },
-    ],
-  },
-]
-
-const operatorSections: NavSection[] = [
-  {
-    title: "Automatic Tracking",
-    items: [
-      { title: "Overview", href: getDocsLink("/operators"), icon: Zap },
-    ],
-  },
-  {
-    title: "SQL & Warehouse",
-    items: [
-      { title: "Overview", href: getDocsLink("/operators/sql"), icon: Database },
-      { title: "Snowflake", href: getDocsLink("/operators/snowflake"), icon: Database },
-      { title: "BigQuery", href: getDocsLink("/operators/bigquery"), icon: Database },
-      { title: "Redshift", href: getDocsLink("/operators/redshift"), icon: Database },
-      { title: "PostgreSQL", href: getDocsLink("/operators/postgres"), icon: Database },
-      { title: "Generic SQL", href: getDocsLink("/operators/generic-sql"), icon: Database },
-    ],
-  },
-  {
-    title: "Cloud Storage",
-    items: [
-      { title: "Overview", href: getDocsLink("/operators/storage"), icon: HardDrive },
-      { title: "AWS S3", href: getDocsLink("/operators/s3"), icon: HardDrive },
-      { title: "Google GCS", href: getDocsLink("/operators/gcs"), icon: HardDrive },
-      { title: "Azure Blob", href: getDocsLink("/operators/azure-blob"), icon: HardDrive },
-    ],
-  },
-  {
-    title: "Transformation",
-    items: [
-      { title: "Overview", href: getDocsLink("/operators/transformation"), icon: Zap },
-      { title: "dbt Cloud", href: getDocsLink("/operators/dbt-cloud"), icon: Zap },
-      { title: "dbt Core", href: getDocsLink("/operators/dbt-core"), icon: Zap },
-      { title: "Apache Spark", href: getDocsLink("/operators/spark"), icon: Zap },
-      { title: "Bash & Scripts", href: getDocsLink("/operators/bash"), icon: Zap },
     ],
   },
 ]
@@ -205,9 +175,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     "SDK Reference": true,
     "Dashboard": true,
     "Automatic Tracking": true,
-    "SQL & Warehouse": false,
-    "Cloud Storage": false,
-    "Transformation": false,
   })
 
   const toggleSection = (title: string) => {
@@ -233,22 +200,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
       <ScrollArea className="flex-1 py-4">
         <nav className="space-y-2 px-2">
           {mainSections.map((section) => (
-            <NavSection
-              key={section.title}
-              section={section}
-              isOpen={openSections[section.title] ?? true}
-              onToggle={() => toggleSection(section.title)}
-              onLinkClick={onLinkClick}
-            />
-          ))}
-
-          <div className="pt-6 pb-2 px-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-              Operators
-            </p>
-          </div>
-
-          {operatorSections.map((section) => (
             <NavSection
               key={section.title}
               section={section}

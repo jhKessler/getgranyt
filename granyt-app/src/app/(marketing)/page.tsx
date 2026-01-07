@@ -4,7 +4,6 @@ import {
   ToolConsolidationSection,
   InstallSection,
   DemoPreviewSection,
-  DataValidationSection,
   OperatorMetricsSection,
   CTASection,
 } from "./_components"

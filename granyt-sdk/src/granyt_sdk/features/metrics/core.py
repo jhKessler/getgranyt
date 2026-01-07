@@ -6,7 +6,6 @@ the `granyt` key in Airflow task return values.
 """
 
 import logging
-import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Protocol, Type, Union, runtime_checkable
@@ -90,7 +89,7 @@ def validate_df_metrics(df_metrics: Any) -> bool:
             for col_name, count in null_counts.items():
                 if not isinstance(col_name, str) or not isinstance(count, (int, type(None))):
                     logger.warning(
-                        f"df_metrics['null_counts'] must have string keys and int/null values. "
+                        "df_metrics['null_counts'] must have string keys and int/null values. "
                         "null_counts will be ignored."
                     )
                     break
@@ -107,7 +106,7 @@ def validate_df_metrics(df_metrics: Any) -> bool:
             for col_name, count in empty_counts.items():
                 if not isinstance(col_name, str) or not isinstance(count, (int, type(None))):
                     logger.warning(
-                        f"df_metrics['empty_string_counts'] must have string keys and int/null values. "
+                        "df_metrics['empty_string_counts'] must have string keys and int/null values. "
                         "empty_string_counts will be ignored."
                     )
                     break

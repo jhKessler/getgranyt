@@ -17,7 +17,7 @@ export const metadata = {
   description: "Automatic metric capture and tracking for dbt Cloud jobs in Airflow.",
 }
 
-const GITHUB_ADAPTER_URL = "https://github.com/granyt-ai/granyt-sdk/blob/main/src/granyt_sdk/integrations/airflow/operator_adapters/transform/dbt_cloud.py"
+const GITHUB_ADAPTER_URL = "https://github.com/jhkessler/getgranyt/blob/main/src/granyt_sdk/integrations/airflow/operator_adapters/transform/dbt_cloud.py"
 
 export default function DbtCloudPage() {
   return (

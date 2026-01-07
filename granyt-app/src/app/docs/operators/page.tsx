@@ -192,7 +192,7 @@ register_adapter(MyCustomAdapter)`}
               </p>
             </div>
             <Button asChild variant="default">
-              <Link href="https://github.com/granyt-ai/granyt-sdk" target="_blank">
+              <Link href="https://github.com/jhkessler/getgranyt" target="_blank">
                 View on GitHub
                 <ExternalLink className="ml-2 h-4 w-4" />
               </Link>

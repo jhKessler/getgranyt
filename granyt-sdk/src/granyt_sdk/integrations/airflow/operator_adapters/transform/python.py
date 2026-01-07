@@ -4,8 +4,6 @@ from typing import Any, Optional
 from granyt_sdk.features.metrics import (
     DF_METRICS_KEY,
     GRANYT_KEY,
-    METRICS_KEYS,
-    SCHEMA_KEYS,
     validate_df_metrics,
 )
 from granyt_sdk.integrations.airflow.operator_adapters.base import (
