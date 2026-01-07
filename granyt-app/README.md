@@ -33,22 +33,9 @@
 - **🌙 Dark Mode** - Beautiful UI with light and dark theme support
 - **🐳 Docker Ready** - One-command deployment with Docker Compose
 
-## 🖼️ Screenshots
 
-<!-- TODO: Add actual screenshots -->
-<details>
-<summary>Click to expand</summary>
-
-### DAG Overview
 ![DAG Overview](../images/demo.png)
 
-### Error Tracking
-![Error Tracking](docs/screenshots/errors-placeholder.png)
-
-### Alerts Configuration
-![Alerts](docs/screenshots/alerts-placeholder.png)
-
-</details>
 
 ---
 
@@ -224,7 +211,13 @@ npm run db:studio    # Open Prisma Studio
 npm run db:migrate   # Run migrations
 ```
 
-## 📄 License
+## � Contact
+
+- **GitHub:** [@jhkessler](https://github.com/jhkessler)
+- **Email:** johnny@granyt.dev
+- **Issues:** [GitHub Issues](https://github.com/jhkessler/getgranyt/issues)
+
+## �📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
 

@@ -15,8 +15,6 @@
 
 ---
 
-## 🖼️ Screenshot
-
 ![Granyt Dashboard](../images/demo.png)
 
 ---
@@ -185,7 +183,15 @@ register_adapter(SparkAdapter)
 
 ---
 
-## 📄 License
+## � Contact
+
+- **GitHub:** [@jhkessler](https://github.com/jhkessler)
+- **Email:** johnny@granyt.dev
+- **Issues:** [GitHub Issues](https://github.com/jhkessler/getgranyt/issues)
+
+---
+
+## �📄 License
 
 MIT License - see [LICENSE](LICENSE) for details.
 

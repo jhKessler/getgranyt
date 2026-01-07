@@ -29,7 +29,7 @@ class OpenLineageAdapter:
     This adapter creates compliant events from Airflow task executions.
     """
 
-    PRODUCER = "https://github.com/granyt/granyt-sdk"
+    PRODUCER = "https://github.com/jhkessler/getgranyt"
     SCHEMA_URL = "https://openlineage.io/spec/1-0-5/OpenLineage.json"
 
     def __init__(self, namespace: str = "airflow"):

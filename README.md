@@ -21,8 +21,6 @@
 
 ---
 
-## 🖼️ Screenshot
-
 ![Granyt Dashboard](images/demo.png)
 
 ---
@@ -245,7 +243,15 @@ We welcome contributions! Please see our [Contributing Guide](./granyt-app/CONTR
 
 ---
 
-## 📄 License
+## � Contact
+
+- **GitHub:** [@jhkessler](https://github.com/jhkessler)
+- **Email:** johnny@granyt.dev
+- **Issues:** [GitHub Issues](https://github.com/jhkessler/getgranyt/issues)
+
+---
+
+## �📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 

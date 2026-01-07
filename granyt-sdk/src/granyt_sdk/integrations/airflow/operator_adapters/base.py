@@ -191,7 +191,7 @@ class OperatorMetrics:
     def to_openlineage_facet(self) -> Dict[str, Any]:
         """Convert to OpenLineage custom facet format."""
         return {
-            "_producer": "https://github.com/granyt/granyt-sdk",
+            "_producer": "https://github.com/jhkessler/getgranyt",
             "_schemaURL": "https://granyt.io/spec/facets/1-0-0/OperatorMetricsFacet.json",
             **self.to_dict(),
         }

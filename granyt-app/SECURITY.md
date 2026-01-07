@@ -14,7 +14,7 @@ We take the security of Granyt seriously. If you believe you've found a security
 
 **Please do NOT report security vulnerabilities through public GitHub issues.**
 
-Instead, please send an email to: **security@granyt.dev** (or create a private security advisory on GitHub)
+Instead, please send an email to: **johnny@granyt.dev** (or create a private security advisory on GitHub)
 
 Include the following information:
 

@@ -9,7 +9,10 @@ description = "Granyt SDK for Apache Airflow - Automatic lineage tracking and er
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Granyt Team", email = "team@granyt.dev"}
+    {name = "Johnny Kessler", email = "johnny@granyt.dev"}
+]
+maintainers = [
+    {name = "Johnny Kessler", email = "johnny@granyt.dev"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -45,9 +48,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/granyt/granyt-sdk"
-Documentation = "https://docs.granyt.dev"
-Repository = "https://github.com/granyt/granyt-sdk"
+Homepage = "https://github.com/jhkessler/getgranyt"
+Documentation = "https://granyt.dev/docs"
+Repository = "https://github.com/jhkessler/getgranyt"
+"Bug Tracker" = "https://github.com/jhkessler/getgranyt/issues"
 
 [project.entry-points."airflow.plugins"]
 granyt_plugin = "granyt_sdk.integrations.airflow.plugin:GranytPlugin"
