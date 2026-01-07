@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHeader, PageSkeleton } from "@/components/shared";
+import { PageHeader, PageSkeleton, GettingStartedChecklist } from "@/components/shared";
 import { useSettingsPage } from "../_hooks";
 import {
   NotificationPreferencesCard,
@@ -29,6 +29,9 @@ export function SettingsContent({
   airflowSettings,
   handleSaveAirflowUrl,
   isSavingAirflowSettings,
+  // Setup status
+  setupStatus,
+  isLoadingSetupStatus,
 }: ReturnType<typeof useSettingsPage>) {
   if (isLoading) {
     return <PageSkeleton rows={3} />;
@@ -42,6 +45,11 @@ export function SettingsContent({
       channel.isEnabled
   ) ?? false;
 
+  // Check if all setup steps are complete
+  const isSetupComplete = setupStatus?.hasDagRuns && 
+    setupStatus?.hasNotificationChannel && 
+    setupStatus?.hasErrors;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -50,6 +58,14 @@ export function SettingsContent({
       />
 
       <div className="grid gap-6">
+        {/* Getting Started Checklist - show if not all complete */}
+        {!isSetupComplete && (
+          <GettingStartedChecklist
+            setupStatus={setupStatus}
+            isLoading={isLoadingSetupStatus}
+          />
+        )}
+
         <AirflowSettingsCard
           airflowUrl={airflowSettings?.airflowUrl}
           onSave={handleSaveAirflowUrl}

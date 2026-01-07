@@ -40,7 +40,7 @@
 <summary>Click to expand</summary>
 
 ### DAG Overview
-![DAG Overview](docs/screenshots/dags-placeholder.png)
+![DAG Overview](../images/demo.png)
 
 ### Error Tracking
 ![Error Tracking](docs/screenshots/errors-placeholder.png)
@@ -76,8 +76,8 @@ curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/do
 
 # Create a .env file with required variables
 cat > .env << EOF
-POSTGRES_PASSWORD=$(openssl rand -base64 24)
-BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+POSTGRES_PASSWORD=$(openssl rand -hex 24)
+BETTER_AUTH_SECRET=$(openssl rand -hex 32)
 BETTER_AUTH_URL=http://localhost:3000
 EOF
 

@@ -103,8 +103,8 @@ networks:
     driver: bridge`
 
 const DOT_ENV_EXAMPLE = `# Required
-POSTGRES_PASSWORD=your-secure-database-password    # Generate with: openssl rand -base64 32
-BETTER_AUTH_SECRET=your-32-char-secret-key-here    # Generate with: openssl rand -base64 32
+POSTGRES_PASSWORD=your-secure-database-password    # Generate with: openssl rand -hex 32
+BETTER_AUTH_SECRET=your-32-char-secret-key-here    # Generate with: openssl rand -hex 32
 BETTER_AUTH_URL=https://your-domain.com            # Or http://localhost:3000 for local dev`
 
 export default function QuickstartPage() {

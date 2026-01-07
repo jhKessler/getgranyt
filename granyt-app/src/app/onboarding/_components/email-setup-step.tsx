@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -9,20 +10,38 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Mail, ArrowRight, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Mail, ArrowRight, ArrowLeft, CheckCircle2, AlertTriangle, ExternalLink, Send, Loader2, SkipForward } from "lucide-react"
 import { getDocsLink } from "@/lib/utils"
+import { SmtpConfigForm, ResendConfigForm } from "@/components/shared"
 
 interface EmailSetupStepProps {
   isEmailConfigured: boolean
+  onBack?: () => void
   onSkip: () => void
   onContinue: () => void
+  onSaveSmtp?: (config: Record<string, unknown>) => void
+  onSaveResend?: (config: Record<string, unknown>) => void
+  onSendTestEmail?: () => void
+  isSavingConfig?: boolean
+  isSendingTest?: boolean
+  userEmail?: string
 }
 
 export function EmailSetupStep({
   isEmailConfigured,
+  onBack,
   onSkip,
   onContinue,
+  onSaveSmtp,
+  onSaveResend,
+  onSendTestEmail,
+  isSavingConfig = false,
+  isSendingTest = false,
+  userEmail,
 }: EmailSetupStepProps) {
+  const [activeTab, setActiveTab] = useState("SMTP")
+
   if (isEmailConfigured) {
     return (
       <Card>
@@ -52,9 +71,37 @@ export function EmailSetupStep({
               </div>
             </div>
           </div>
+          
+          {/* Send test email button */}
+          {onSendTestEmail && (
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={onSendTestEmail}
+              disabled={isSendingTest}
+            >
+              {isSendingTest ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending test email...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Send test email{userEmail ? ` to ${userEmail}` : ''}
+                </>
+              )}
+            </Button>
+          )}
         </CardContent>
-        <CardFooter>
-          <Button className="w-full" onClick={onContinue}>
+        <CardFooter className="flex gap-3">
+          {onBack && (
+            <Button variant="outline" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          )}
+          <Button className="flex-1" onClick={onContinue}>
             Continue <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </CardFooter>
@@ -84,67 +131,82 @@ export function EmailSetupStep({
                 Email not configured
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                Without email notifications, you won&apos;t receive alerts when data quality issues
-                or pipeline errors occur.
+                Configure an email provider below to receive alerts when issues are detected.
               </p>
             </div>
           </div>
         </div>
 
+        {/* Email Configuration Forms */}
         <div className="space-y-4">
-          <h4 className="font-medium text-sm">Why set up email?</h4>
-          <ul className="space-y-3 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              <span>Get instant alerts when data anomalies are detected</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              <span>Receive notifications about pipeline failures and errors</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              <span>Stay informed about schema changes in your datasets</span>
-            </li>
-          </ul>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="SMTP" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                SMTP
+              </TabsTrigger>
+              <TabsTrigger value="RESEND" className="flex items-center gap-2">
+                <Send className="h-4 w-4" />
+                Resend
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="SMTP" className="mt-4">
+              <SmtpConfigForm
+                config={null}
+                onSave={(config) => onSaveSmtp?.(config)}
+                isSaving={isSavingConfig}
+                compact
+              />
+            </TabsContent>
+            
+            <TabsContent value="RESEND" className="mt-4">
+              <ResendConfigForm
+                config={null}
+                onSave={(config) => onSaveResend?.(config)}
+                isSaving={isSavingConfig}
+                compact
+              />
+            </TabsContent>
+          </Tabs>
         </div>
 
-        <div className="p-4 bg-muted rounded-lg space-y-3">
-          <h4 className="font-medium text-sm">How to configure email:</h4>
-          <p className="text-sm text-muted-foreground">
-            Add the following environment variables to your deployment:
-          </p>
-          <div className="space-y-2">
-            <div className="text-xs">
-              <p className="font-medium">Option 1: SMTP</p>
-              <code className="block p-2 bg-background rounded mt-1 text-muted-foreground">
-                SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM_EMAIL
-              </code>
-            </div>
-            <div className="text-xs">
-              <p className="font-medium">Option 2: Resend</p>
-              <code className="block p-2 bg-background rounded mt-1 text-muted-foreground">
-                GRANYT_RESEND_API_KEY, RESEND_FROM_EMAIL
-              </code>
-            </div>
+        {/* Environment Variables Info */}
+        <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+          <p className="text-xs font-medium">Or configure via environment variables:</p>
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p><span className="font-medium">SMTP:</span> SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM_EMAIL</p>
+            <p><span className="font-medium">Resend:</span> GRANYT_RESEND_API_KEY, RESEND_FROM_EMAIL</p>
           </div>
           <a
             href={getDocsLink("/notifications")}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-2"
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
           >
-            View full documentation
+            View documentation
             <ExternalLink className="h-3 w-3" />
           </a>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col gap-3">
-        <Button className="w-full" onClick={onContinue}>
-          Continue <ArrowRight className="ml-2 h-4 w-4" />
+      <CardFooter className="flex gap-3">
+        {onBack && (
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+        )}
+        <Button variant="outline" className="flex-1" onClick={onSkip}>
+          <SkipForward className="mr-2 h-4 w-4" />
+          Skip
         </Button>
-        <Button variant="ghost" className="w-full" onClick={onSkip}>
-          Skip for now
+        <Button 
+          className="flex-1" 
+          onClick={onContinue}
+          disabled={!isEmailConfigured}
+          title={!isEmailConfigured ? "Configure email above to continue" : undefined}
+        >
+          Continue <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
