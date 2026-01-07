@@ -35,14 +35,12 @@ pip install granyt-sdk
 
 ## ✅ Compatibility
 
-| Airflow Version | Status | Notes |
-|-----------------|--------|-------|
-| 2.5.x – 2.6.x | ✅ Fully Supported | Automatic tracking via plugins is stable |
-| 2.7.x – 2.9.x | ✅ Fully Supported | Works great out of the box |
-| 2.10.x | ✅ Fully Supported | SDK handles the new error parameter in failure listeners |
-| 3.0.x+ | 🚧 Coming Soon | Airflow 3 support is in development |
+| Airflow Version | Status |
+|-----------------|--------|
+| 2.5.x – 2.10.x | ✅ Fully Supported |
+| 3.0.x+ | 🚧 Coming Soon |
 
-**Python:** Requires Python 3.9 or later.
+**Python:** Requires Python 3.10 or later.
 
 ---
 
@@ -90,7 +88,6 @@ When a task fails, the SDK automatically captures:
 
 - Full stack trace with local variables
 - Task instance metadata (dag_id, task_id, run_id, try_number, etc.)
-- System information (Python version, Airflow version, hostname, etc.)
 - DAG configuration and task parameters
 - Environment context
 - Previous log entries
@@ -180,7 +177,6 @@ register_adapter(SparkAdapter)
 | `GRANYT_DEBUG` | Enable debug logging | `false` |
 | `GRANYT_DISABLED` | Disable the SDK | `false` |
 
-*Either `GRANYT_ENDPOINT`/`GRANYT_API_KEY` or `GRANYT_ENDPOINTS` must be set.
 ---
 
 ## 📄 License

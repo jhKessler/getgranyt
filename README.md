@@ -55,7 +55,7 @@ BETTER_AUTH_URL=http://localhost:3000
 EOF
 
 # Start with Docker Compose
-docker compose -f docker-compose.yml up -d
+docker compose up -d
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and create your account.
