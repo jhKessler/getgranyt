@@ -56,7 +56,7 @@ The install wizard will:
 
 ### 2. Official Docker Compose
 
-For users who want to use our pre-configured stack including a managed PostgreSQL database. This method uses a `.env` file to configure the entire stack.
+For users who want to use our pre-configured stack including a PostgreSQL database. This method uses a `.env` file to configure the entire stack.
 
 1. **Download the compose file:**
    ```bash
