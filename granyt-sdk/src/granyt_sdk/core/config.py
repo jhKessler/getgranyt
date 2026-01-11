@@ -74,6 +74,8 @@ class GranytConfig:
     - GRANYT_BATCH_SIZE: Batch size for error events (default: 10)
     - GRANYT_FLUSH_INTERVAL: Flush interval in seconds (default: 5.0)
     - GRANYT_TIMEOUT: Request timeout in seconds (default: 30)
+    - GRANYT_PRODUCER: OpenLineage producer URL (default: https://github.com/jhkessler/getgranyt)
+    - GRANYT_FACET_SCHEMA_URL: URL for custom facets (default: https://granyt.io/spec/facets/1-0-0/OperatorMetricsFacet.json)
     """
 
     endpoint: Optional[str] = field(default=None)
@@ -87,6 +89,10 @@ class GranytConfig:
     batch_size: int = field(default=10)
     flush_interval: float = field(default=5.0)
     timeout: float = field(default=30.0)
+    producer: str = field(default="https://github.com/jhkessler/getgranyt")
+    facet_schema_url: str = field(
+        default="https://granyt.io/spec/facets/1-0-0/OperatorMetricsFacet.json"
+    )
 
     @classmethod
     def from_environment(cls) -> "GranytConfig":
@@ -107,6 +113,11 @@ class GranytConfig:
             batch_size=int(os.environ.get("GRANYT_BATCH_SIZE", "10")),
             flush_interval=float(os.environ.get("GRANYT_FLUSH_INTERVAL", "5.0")),
             timeout=float(os.environ.get("GRANYT_TIMEOUT", "30.0")),
+            producer=os.environ.get("GRANYT_PRODUCER", "https://github.com/jhkessler/getgranyt"),
+            facet_schema_url=os.environ.get(
+                "GRANYT_FACET_SCHEMA_URL",
+                "https://granyt.io/spec/facets/1-0-0/OperatorMetricsFacet.json",
+            ),
         )
 
         return config

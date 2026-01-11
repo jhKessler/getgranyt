@@ -45,7 +45,7 @@ pip install granyt-sdk
 
 | Airflow Version | Status |
 |-----------------|--------|
-| 2.5.x – 2.10.x | ✅ Fully Supported |
+| 2.5.x - 2.10.x | ✅ Fully Supported |
 | 3.0.x+ | 🚧 Coming Soon |
 
 **Python:** Requires Python 3.10 or later.
@@ -187,7 +187,7 @@ register_adapter(SparkAdapter)
 
 ---
 
-## � Contact
+## 📧 Contact
 
 - **GitHub:** [@jhkessler](https://github.com/jhkessler)
 - **Email:** johnny@granyt.dev
@@ -195,7 +195,7 @@ register_adapter(SparkAdapter)
 
 ---
 
-## �📄 License
+## ⚖️ License
 
 MIT License - see [LICENSE](LICENSE) for details.
 

@@ -62,12 +62,14 @@ export const env = createEnv({
    * Must be prefixed with NEXT_PUBLIC_ and are exposed to the browser.
    */
   client: {
-    NEXT_PUBLIC_APP_URL: z.string().url().optional().describe("Public app URL for dashboard links"),
+    NEXT_PUBLIC_APP_URL: z.string().url().default("https://granyt.dev").describe("Public app URL for dashboard links"),
+    NEXT_PUBLIC_INSTALL_URL: z.string().url().optional().describe("URL for the installation script"),
     NEXT_PUBLIC_GRANYT_MODE: z.enum(["APP", "DOCS", "DEV", "app", "docs", "dev"]).optional().describe("App mode: APP, DOCS, or DEV"),
     NEXT_PUBLIC_POSTHOG_KEY: z.string().optional().describe("PostHog analytics API key"),
     NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional().describe("PostHog host URL"),
-    NEXT_PUBLIC_GITHUB_URL: z.string().url().optional().describe("GitHub repository URL"),
+    NEXT_PUBLIC_GITHUB_URL: z.string().url().default("https://github.com/jhKessler/getgranyt").describe("GitHub repository URL"),
     NEXT_PUBLIC_DOCS_URL: z.string().default("/docs").describe("Base URL for documentation links (e.g. '/docs' or 'https://granyt.dev/docs')"),
+    NEXT_PUBLIC_CONTACT_EMAIL: z.string().email().default("johnny@granyt.dev").describe("Contact email address"),
   },
 
   /**
@@ -112,11 +114,13 @@ export const env = createEnv({
     
     // Client
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_INSTALL_URL: process.env.NEXT_PUBLIC_INSTALL_URL,
     NEXT_PUBLIC_GRANYT_MODE: process.env.NEXT_PUBLIC_GRANYT_MODE,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_GITHUB_URL: process.env.NEXT_PUBLIC_GITHUB_URL,
     NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
+    NEXT_PUBLIC_CONTACT_EMAIL: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
   },
 
   /**

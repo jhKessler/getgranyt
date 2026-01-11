@@ -188,11 +188,15 @@ class OperatorMetrics:
             "schema": schema_data,
         }
 
-    def to_openlineage_facet(self) -> Dict[str, Any]:
+    def to_openlineage_facet(
+        self,
+        producer: str = "https://github.com/jhkessler/getgranyt",
+        schema_url: str = "https://granyt.io/spec/facets/1-0-0/OperatorMetricsFacet.json",
+    ) -> Dict[str, Any]:
         """Convert to OpenLineage custom facet format."""
         return {
-            "_producer": "https://github.com/jhkessler/getgranyt",
-            "_schemaURL": "https://granyt.io/spec/facets/1-0-0/OperatorMetricsFacet.json",
+            "_producer": producer,
+            "_schemaURL": schema_url,
             **self.to_dict(),
         }
 

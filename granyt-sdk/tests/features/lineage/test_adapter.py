@@ -63,12 +63,14 @@ class TestOpenLineageAdapterInit:
         assert adapter.namespace == "my_namespace"
 
     def test_producer_constant(self):
-        """Test PRODUCER constant is set."""
-        assert OpenLineageAdapter.PRODUCER == "https://github.com/jhkessler/getgranyt"
+        """Test producer is set."""
+        adapter = OpenLineageAdapter()
+        assert adapter.producer == "https://github.com/jhkessler/getgranyt"
 
     def test_schema_url_constant(self):
-        """Test SCHEMA_URL constant is set."""
-        assert "openlineage.io" in OpenLineageAdapter.SCHEMA_URL
+        """Test schema_url is set."""
+        adapter = OpenLineageAdapter()
+        assert "openlineage.io" in adapter.schema_url
 
 
 class TestCreateJob:
@@ -166,8 +168,8 @@ class TestCreateRunEvent:
 
         assert event["eventType"] == "START"
         assert "eventTime" in event
-        assert event["producer"] == OpenLineageAdapter.PRODUCER
-        assert event["schemaURL"] == OpenLineageAdapter.SCHEMA_URL
+        assert event["producer"] == adapter.producer
+        assert event["schemaURL"] == adapter.schema_url
         assert "job" in event
         assert "run" in event
         assert "inputs" in event

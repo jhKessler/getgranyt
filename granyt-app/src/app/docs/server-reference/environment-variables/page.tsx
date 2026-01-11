@@ -1,4 +1,4 @@
-import { Settings, Database, Mail, Webhook, Zap, Lock, Globe } from "lucide-react"
+import { Settings, Database, Mail, Webhook, Zap, Globe } from "lucide-react"
 import {
   PageHeader,
   SectionHeader,

@@ -13,7 +13,7 @@ export function FadeIn({
   children,
   className,
   delay = 0,
-  duration = 0.8,
+  duration = 0.5,
 }: FadeInProps) {
   return (
     <motion.div

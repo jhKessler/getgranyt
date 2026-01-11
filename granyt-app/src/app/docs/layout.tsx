@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn, getDocsLink } from "@/lib/utils"
-import { GITHUB_URL } from "@/lib/constants"
+import { GITHUB_URL, CONTACT_EMAIL } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -78,7 +78,7 @@ const mainSections: NavSection[] = [
     ],
   },
   {
-    title: "Dashboard",
+    title: "Features",
     items: [
       { title: "Live Demo", href: "/demo", icon: LayoutDashboard },
       { title: "Error Tracking", href: getDocsLink("/error-tracking"), icon: AlertTriangle },
@@ -239,7 +239,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
           <Link
-            href="mailto:johnny@granyt.dev"
+            href={`mailto:${CONTACT_EMAIL}`}
             onClick={onLinkClick}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 px-3 py-2"
           >
