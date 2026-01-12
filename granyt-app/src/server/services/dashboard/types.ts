@@ -119,3 +119,15 @@ export interface AllDagRunsItem {
   errorCount: number;
   schedule: string | null;
 }
+
+export interface RunErrorOccurrence {
+  id: string;
+  taskId: string | null;
+  exceptionType: string;
+  message: string;
+  errorId: string;
+  timestamp: Date | string;
+  tryNumber: number | null;
+  operator: string | null;
+  stacktrace: unknown;
+}

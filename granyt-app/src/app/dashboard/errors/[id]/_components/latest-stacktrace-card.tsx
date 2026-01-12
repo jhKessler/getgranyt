@@ -19,7 +19,7 @@ interface Occurrence {
   dagRunId: string | null
   tryNumber: number | null
   timestamp: string | Date
-  stacktrace: StackFrame[] | null
+  stacktrace?: StackFrame[] | unknown
   environment: string | null
 }
 
@@ -33,18 +33,23 @@ const INITIAL_FRAMES_TO_SHOW = 2
 export function LatestStacktraceCard({ occurrences, basePath = "/dashboard" }: LatestStacktraceCardProps) {
   const [showAll, setShowAll] = useState(false)
   
+  // Helper to check if value is a valid stacktrace array
+  const isStacktraceArray = (value: unknown): value is StackFrame[] => {
+    return Array.isArray(value) && value.length > 0
+  }
+
   // Get the most recent occurrence with a stacktrace
   const latestOccurrence = useMemo(() => {
     if (!occurrences || occurrences.length === 0) return null
-    
+
     // Sort by timestamp descending and find the first one with a stacktrace
-    const sorted = [...occurrences].sort((a, b) => 
+    const sorted = [...occurrences].sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     )
-    
+
     // First try to find one with a stacktrace
-    const withStacktrace = sorted.find(o => o.stacktrace && o.stacktrace.length > 0)
-    
+    const withStacktrace = sorted.find(o => isStacktraceArray(o.stacktrace))
+
     // If none have stacktrace, return the most recent anyway
     return withStacktrace || sorted[0]
   }, [occurrences])
@@ -53,8 +58,8 @@ export function LatestStacktraceCard({ occurrences, basePath = "/dashboard" }: L
     return null
   }
 
-  const hasStacktrace = latestOccurrence.stacktrace && latestOccurrence.stacktrace.length > 0
-  const stacktrace = latestOccurrence.stacktrace || []
+  const stacktrace = isStacktraceArray(latestOccurrence.stacktrace) ? latestOccurrence.stacktrace : []
+  const hasStacktrace = stacktrace.length > 0
   const reversedStacktrace = [...stacktrace].reverse()
   const totalFrames = stacktrace.length
   const hasMoreFrames = totalFrames > INITIAL_FRAMES_TO_SHOW

@@ -25,13 +25,17 @@ export function isUserCode(filename: string): boolean {
   return !EXCLUDED_PATTERNS.some((pattern) => filename.includes(pattern));
 }
 
-export function filterUserStacktrace(stacktrace: StackFrame[] | null): StackFrame[] {
-  if (!stacktrace) return [];
+function isStackFrameArray(value: unknown): value is StackFrame[] {
+  return Array.isArray(value);
+}
+
+export function filterUserStacktrace(stacktrace: StackFrame[] | unknown): StackFrame[] {
+  if (!isStackFrameArray(stacktrace)) return [];
   return stacktrace.filter((frame) => isUserCode(frame.filename));
 }
 
-export function getMostRelevantFrame(stacktrace: StackFrame[] | null): StackFrame | null {
-  if (!stacktrace) return null;
+export function getMostRelevantFrame(stacktrace: StackFrame[] | unknown): StackFrame | null {
+  if (!isStackFrameArray(stacktrace)) return null;
   // Stacktraces are usually ordered from oldest to newest (bottom to top)
   // We want the newest frame that is user code.
   const userFrames = filterUserStacktrace(stacktrace);

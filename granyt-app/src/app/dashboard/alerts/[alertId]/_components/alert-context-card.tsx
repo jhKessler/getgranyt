@@ -11,9 +11,10 @@ import { AlertData } from "./types"
 
 interface AlertContextCardProps {
   alert: AlertData
+  basePath?: string
 }
 
-export function AlertContextCard({ alert }: AlertContextCardProps) {
+export function AlertContextCard({ alert, basePath = "/dashboard" }: AlertContextCardProps) {
   const router = useRouter()
 
   return (
@@ -27,7 +28,7 @@ export function AlertContextCard({ alert }: AlertContextCardProps) {
             <Button 
               variant="link" 
               className="h-auto p-0"
-              onClick={() => router.push(`/dashboard/dags/${encodeURIComponent(alert.srcDagId)}`)}
+              onClick={() => router.push(`${basePath}/dags/${encodeURIComponent(alert.srcDagId)}`)}
             >
               {alert.srcDagId}
               <ExternalLink className="h-3 w-3 ml-1" />
@@ -50,7 +51,7 @@ export function AlertContextCard({ alert }: AlertContextCardProps) {
             <Button 
               variant="link" 
               className="h-auto p-0"
-              onClick={() => router.push(`/dashboard/dags/${encodeURIComponent(alert.srcDagId)}/runs/${encodeURIComponent(alert.dagRunId)}`)}
+              onClick={() => router.push(`${basePath}/dags/${encodeURIComponent(alert.srcDagId)}/runs/${encodeURIComponent(alert.dagRunId)}`)}
             >
               <Badge variant="secondary" className="font-semibold text-sm cursor-pointer hover:bg-secondary/80">
                 {alert.srcRunId}
@@ -87,7 +88,7 @@ export function AlertContextCard({ alert }: AlertContextCardProps) {
         <Button 
           variant="outline" 
           className="w-full"
-          onClick={() => router.push(`/dashboard/dags/${encodeURIComponent(alert.srcDagId)}/runs/${encodeURIComponent(alert.dagRunId)}`)}
+          onClick={() => router.push(`${basePath}/dags/${encodeURIComponent(alert.srcDagId)}/runs/${encodeURIComponent(alert.dagRunId)}`)}
         >
           View Run Details
           <ExternalLink className="h-4 w-4 ml-2" />

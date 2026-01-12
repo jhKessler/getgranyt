@@ -1,6 +1,6 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import type { ErrorSummary } from "./types";
+import type { ErrorSummary, RunErrorOccurrence } from "./types";
 import { ErrorStatus } from "./types";
 import { getEnvironmentFilter } from "./helpers";
 
@@ -276,9 +276,9 @@ export async function getRunErrorOccurrences(
   prisma: PrismaClient,
   orgId: string,
   dagRunId: string
-) {
+): Promise<RunErrorOccurrence[]> {
   const occurrences = await prisma.errorOccurrence.findMany({
-    where: { 
+    where: {
       organizationId: orgId,
       taskRun: {
         dagRunId: dagRunId,
@@ -301,7 +301,7 @@ export async function getRunErrorOccurrences(
     orderBy: { timestamp: "desc" },
   });
 
-  return occurrences.map((o) => ({
+  return occurrences.map((o): RunErrorOccurrence => ({
     id: o.id,
     taskId: o.taskRun?.srcTaskId ?? null,
     exceptionType: o.generalError.exceptionType,
