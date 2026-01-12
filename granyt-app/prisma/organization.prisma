@@ -2,7 +2,6 @@ model Organization {
   id         String   @id @default(cuid())
   name       String
   slug       String   @unique
-  airflowUrl String?  // Base URL of the Airflow webserver (e.g., https://airflow.example.com)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   createdBy  String
@@ -43,6 +42,7 @@ model Environment {
   organizationId String
   name           String   // production, development, staging, etc.
   isDefault      Boolean  @default(false) // First environment becomes default for dashboard
+  airflowUrl     String?  // Base URL of the Airflow webserver for this environment
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

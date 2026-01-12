@@ -34,7 +34,6 @@ export function useOnboarding() {
   }, [organizations, isOrgsLoading, router])
   const [organizationId, setOrganizationId] = useState<string | null>(null)
   const [organizationName, setOrganizationName] = useState("")
-  const [airflowUrl, setAirflowUrl] = useState("")
   const [apiKey, setApiKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -112,9 +111,8 @@ export function useOnboarding() {
       toast.error("Please enter an organization name")
       return
     }
-    createOrg.mutate({ 
+    createOrg.mutate({
       name: organizationName.trim(),
-      airflowUrl: airflowUrl.trim() || undefined,
     })
   }
 
@@ -243,8 +241,6 @@ export function useOnboarding() {
     goToStep,
     organizationName,
     setOrganizationName,
-    airflowUrl,
-    setAirflowUrl,
     apiKey,
     copied,
     isLoading,

@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Plus } from "lucide-react"
 
 interface EnvironmentInfo {
   id: string
@@ -26,6 +27,16 @@ interface ApiKeyFormProps {
   onSubmit: (e: React.FormEvent) => void
   onCancel: () => void
   isLoading: boolean
+  // Environment creation props
+  isCreatingEnvironmentMode: boolean
+  onStartCreateEnvironment: () => void
+  onCancelCreateEnvironment: () => void
+  onCreateEnvironment: () => void
+  newEnvironmentName: string
+  onNewEnvironmentNameChange: (name: string) => void
+  newEnvironmentAirflowUrl: string
+  onNewEnvironmentAirflowUrlChange: (url: string) => void
+  isCreatingEnvironment: boolean
 }
 
 export function ApiKeyForm({
@@ -37,6 +48,15 @@ export function ApiKeyForm({
   onSubmit,
   onCancel,
   isLoading,
+  isCreatingEnvironmentMode,
+  onStartCreateEnvironment,
+  onCancelCreateEnvironment,
+  onCreateEnvironment,
+  newEnvironmentName,
+  onNewEnvironmentNameChange,
+  newEnvironmentAirflowUrl,
+  onNewEnvironmentAirflowUrlChange,
+  isCreatingEnvironment,
 }: ApiKeyFormProps) {
   return (
     <form onSubmit={onSubmit} className="p-4 border rounded-lg space-y-4">
@@ -52,32 +72,87 @@ export function ApiKeyForm({
       </div>
       <div className="space-y-2">
         <Label htmlFor="keyEnvironment">Environment (Optional)</Label>
-        <Select
-          value={environmentId || ""}
-          onValueChange={(value) => onEnvironmentIdChange(value || undefined)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select environment..." />
-          </SelectTrigger>
-          <SelectContent>
-            {environments && environments.length > 0 ? (
-              environments.map((env) => (
-                <SelectItem key={env.id} value={env.id}>
-                  <div className="flex items-center gap-2">
-                    <span className="capitalize">{env.name}</span>
-                    {env.isDefault && (
-                      <span className="text-xs text-muted-foreground">(default)</span>
-                    )}
-                  </div>
-                </SelectItem>
-              ))
-            ) : (
-              <div className="p-2 text-sm text-muted-foreground text-center">
-                No environments yet. One will be created automatically.
+        {isCreatingEnvironmentMode ? (
+          <div className="space-y-3">
+            <Input
+              placeholder="Environment name (e.g., staging)"
+              value={newEnvironmentName}
+              onChange={(e) => onNewEnvironmentNameChange(e.target.value)}
+              autoFocus
+            />
+            <div className="space-y-1">
+              <Label htmlFor="newEnvAirflowUrl" className="text-xs text-muted-foreground">
+                Airflow URL (Optional)
+              </Label>
+              <Input
+                id="newEnvAirflowUrl"
+                type="url"
+                placeholder="https://airflow.example.com"
+                value={newEnvironmentAirflowUrl}
+                onChange={(e) => onNewEnvironmentAirflowUrlChange(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={onCreateEnvironment}
+                disabled={isCreatingEnvironment || !newEnvironmentName.trim()}
+              >
+                {isCreatingEnvironment ? "Creating..." : "Create"}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={onCancelCreateEnvironment}
+                disabled={isCreatingEnvironment}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Select
+            value={environmentId || ""}
+            onValueChange={(value) => onEnvironmentIdChange(value || undefined)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select environment..." />
+            </SelectTrigger>
+            <SelectContent>
+              {environments && environments.length > 0 ? (
+                environments.map((env) => (
+                  <SelectItem key={env.id} value={env.id}>
+                    <div className="flex items-center gap-2">
+                      <span className="capitalize">{env.name}</span>
+                      {env.isDefault && (
+                        <span className="text-xs text-muted-foreground">(default)</span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="p-2 text-sm text-muted-foreground text-center">
+                  No environments yet. One will be created automatically.
+                </div>
+              )}
+              <div className="border-t mt-1 pt-1">
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent rounded-sm cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    onStartCreateEnvironment()
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Create new environment
+                </button>
               </div>
-            )}
-          </SelectContent>
-        </Select>
+            </SelectContent>
+          </Select>
+        )}
         <p className="text-xs text-muted-foreground">
           Environment helps organize your DAG runs. A default environment will be created if none exists.
         </p>

@@ -25,10 +25,11 @@ export function SettingsContent({
   isSavingChannelConfig,
   isTestingChannelConnection,
   isSendingTestNotification,
-  // Airflow settings
-  airflowSettings,
-  handleSaveAirflowUrl,
+  // Airflow settings (per environment)
+  airflowEnvironments,
+  handleSaveEnvironmentAirflowUrl,
   isSavingAirflowSettings,
+  savingEnvironmentId,
   // Setup status
   setupStatus,
   isLoadingSetupStatus,
@@ -67,9 +68,10 @@ export function SettingsContent({
         )}
 
         <AirflowSettingsCard
-          airflowUrl={airflowSettings?.airflowUrl}
-          onSave={handleSaveAirflowUrl}
+          environments={airflowEnvironments}
+          onSave={handleSaveEnvironmentAirflowUrl}
           isSaving={isSavingAirflowSettings}
+          savingEnvironmentId={savingEnvironmentId}
         />
 
         <EmailSetupCard

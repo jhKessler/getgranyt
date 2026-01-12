@@ -29,11 +29,16 @@ class OpenLineageAdapter:
     This adapter creates compliant events from Airflow task executions.
     """
 
-    PRODUCER = "https://github.com/jhkessler/getgranyt"
-    SCHEMA_URL = "https://openlineage.io/spec/1-0-5/OpenLineage.json"
-
-    def __init__(self, namespace: str = "airflow"):
+    def __init__(
+        self,
+        namespace: str = "airflow",
+        producer: str = "https://github.com/jhkessler/getgranyt",
+        facet_schema_url: str = "https://granyt.io/spec/facets/1-0-0/OperatorMetricsFacet.json",
+    ):
         self.namespace = namespace
+        self.producer = producer
+        self.facet_schema_url = facet_schema_url
+        self.schema_url = "https://openlineage.io/spec/1-0-5/OpenLineage.json"
 
     def create_job(
         self,
@@ -145,13 +150,15 @@ class OpenLineageAdapter:
         # Add operator metrics as a facet if provided
         operator_metrics = kwargs.get("operator_metrics")
         if operator_metrics and hasattr(operator_metrics, "to_openlineage_facet"):
-            run_facets["operatorMetrics"] = operator_metrics.to_openlineage_facet()
+            run_facets["operatorMetrics"] = operator_metrics.to_openlineage_facet(
+                producer=self.producer, schema_url=self.facet_schema_url
+            )
 
         return {
             "eventType": event_type,
             "eventTime": event_time or get_current_timestamp(),
-            "producer": self.PRODUCER,
-            "schemaURL": self.SCHEMA_URL,
+            "producer": self.producer,
+            "schemaURL": self.schema_url,
             "job": self.create_job(dag_id, task_id, job_facets),
             "run": self.create_run(run_id or generate_run_id(), run_facets),
             "inputs": inputs or [],
@@ -203,8 +210,8 @@ class OpenLineageAdapter:
 
         if error_message:
             run_facets["errorMessage"] = {
-                "_producer": self.PRODUCER,
-                "_schemaURL": f"{self.SCHEMA_URL}#/definitions/ErrorMessageRunFacet",
+                "_producer": self.producer,
+                "_schemaURL": f"{self.schema_url}#/definitions/ErrorMessageRunFacet",
                 "message": error_message,
                 "programmingLanguage": "python",
             }
@@ -249,16 +256,16 @@ class OpenLineageAdapter:
             # Nominal time facet
             if hasattr(task_instance, "execution_date") and task_instance.execution_date:
                 facets["nominalTime"] = {
-                    "_producer": self.PRODUCER,
-                    "_schemaURL": f"{self.SCHEMA_URL}#/definitions/NominalTimeRunFacet",
+                    "_producer": self.producer,
+                    "_schemaURL": f"{self.schema_url}#/definitions/NominalTimeRunFacet",
                     "nominalStartTime": task_instance.execution_date.isoformat(),
                 }
 
             # Parent run facet (DAG run)
             if hasattr(task_instance, "dag_id") and hasattr(task_instance, "run_id"):
                 facets["parent"] = {
-                    "_producer": self.PRODUCER,
-                    "_schemaURL": f"{self.SCHEMA_URL}#/definitions/ParentRunFacet",
+                    "_producer": self.producer,
+                    "_schemaURL": f"{self.schema_url}#/definitions/ParentRunFacet",
                     "run": {"runId": task_instance.run_id},
                     "job": {
                         "namespace": self.namespace,
@@ -268,7 +275,7 @@ class OpenLineageAdapter:
 
             # Airflow-specific facet
             airflow_facet = {
-                "_producer": self.PRODUCER,
+                "_producer": self.producer,
                 "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/AirflowRunFacet.json",
             }
 
@@ -313,14 +320,14 @@ class OpenLineageAdapter:
             # Nominal time facet
             if hasattr(dag_run, "execution_date") and dag_run.execution_date:
                 facets["nominalTime"] = {
-                    "_producer": self.PRODUCER,
-                    "_schemaURL": f"{self.SCHEMA_URL}#/definitions/NominalTimeRunFacet",
+                    "_producer": self.producer,
+                    "_schemaURL": f"{self.schema_url}#/definitions/NominalTimeRunFacet",
                     "nominalStartTime": dag_run.execution_date.isoformat(),
                 }
 
             # Airflow DAG run facet
             airflow_facet: Dict[str, Any] = {
-                "_producer": self.PRODUCER,
+                "_producer": self.producer,
                 "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/AirflowDagRunFacet.json",
             }
 
@@ -364,8 +371,8 @@ class OpenLineageAdapter:
                 # Source code location facet
                 if hasattr(task, "filepath") and task.filepath:
                     facets["sourceCodeLocation"] = {
-                        "_producer": self.PRODUCER,
-                        "_schemaURL": f"{self.SCHEMA_URL}#/definitions/SourceCodeLocationJobFacet",
+                        "_producer": self.producer,
+                        "_schemaURL": f"{self.schema_url}#/definitions/SourceCodeLocationJobFacet",
                         "type": "file",
                         "url": task.filepath,
                     }
@@ -373,16 +380,16 @@ class OpenLineageAdapter:
                 # Documentation facet
                 if hasattr(task, "doc_md") and task.doc_md:
                     facets["documentation"] = {
-                        "_producer": self.PRODUCER,
-                        "_schemaURL": f"{self.SCHEMA_URL}#/definitions/DocumentationJobFacet",
+                        "_producer": self.producer,
+                        "_schemaURL": f"{self.schema_url}#/definitions/DocumentationJobFacet",
                         "description": task.doc_md,
                     }
 
                 # SQL facet (if applicable)
                 if hasattr(task, "sql") and task.sql:
                     facets["sql"] = {
-                        "_producer": self.PRODUCER,
-                        "_schemaURL": f"{self.SCHEMA_URL}#/definitions/SqlJobFacet",
+                        "_producer": self.producer,
+                        "_schemaURL": f"{self.schema_url}#/definitions/SqlJobFacet",
                         "query": task.sql if isinstance(task.sql, str) else str(task.sql),
                     }
 
@@ -390,23 +397,23 @@ class OpenLineageAdapter:
                 # DAG-level documentation
                 if hasattr(dag, "description") and dag.description:
                     facets["documentation"] = {
-                        "_producer": self.PRODUCER,
-                        "_schemaURL": f"{self.SCHEMA_URL}#/definitions/DocumentationJobFacet",
+                        "_producer": self.producer,
+                        "_schemaURL": f"{self.schema_url}#/definitions/DocumentationJobFacet",
                         "description": dag.description,
                     }
 
                 # Ownership facet
                 if hasattr(dag, "owner") and dag.owner:
                     facets["ownership"] = {
-                        "_producer": self.PRODUCER,
-                        "_schemaURL": f"{self.SCHEMA_URL}#/definitions/OwnershipJobFacet",
+                        "_producer": self.producer,
+                        "_schemaURL": f"{self.schema_url}#/definitions/OwnershipJobFacet",
                         "owners": [{"name": dag.owner, "type": "MAINTAINER"}],
                     }
 
                 # Airflow DAG facet (custom)
                 if hasattr(dag, "schedule_interval") and dag.schedule_interval:
                     facets["airflow_dag"] = {
-                        "_producer": self.PRODUCER,
+                        "_producer": self.producer,
                         "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/AirflowDagJobFacet.json",
                         "schedule_interval": str(dag.schedule_interval),
                     }

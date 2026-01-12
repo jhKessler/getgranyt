@@ -11,6 +11,7 @@ import {
   setDefaultEnvironment,
   deleteEnvironment,
   deleteApiKey,
+  updateEnvironmentAirflowUrl,
 } from "../services/organization";
 
 export const organizationRouter = router({
@@ -19,12 +20,11 @@ export const organizationRouter = router({
   }),
 
   create: protectedProcedure
-    .input(z.object({ 
+    .input(z.object({
       name: z.string().min(2).max(100),
-      airflowUrl: z.string().url().optional().or(z.literal("")),
     }))
     .mutation(({ ctx, input }) => {
-      return createOrganization(ctx.prisma, ctx.user.id, input.name, input.airflowUrl || undefined);
+      return createOrganization(ctx.prisma, ctx.user.id, input.name);
     }),
 
   generateApiKey: protectedProcedure
@@ -63,10 +63,11 @@ export const organizationRouter = router({
     .input(z.object({
       organizationId: z.string(),
       name: z.string().min(1).max(50),
+      airflowUrl: z.string().url().optional().or(z.literal("")),
     }))
     .mutation(async ({ ctx, input }) => {
       await checkMembership(ctx.prisma, input.organizationId, ctx.user.id);
-      return createEnvironment(ctx.prisma, input.organizationId, input.name);
+      return createEnvironment(ctx.prisma, input.organizationId, input.name, input.airflowUrl || undefined);
     }),
 
   setDefaultEnvironment: protectedProcedure
@@ -95,6 +96,23 @@ export const organizationRouter = router({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await deleteApiKey(ctx.prisma, input.id, ctx.user.id);
+      return { success: true };
+    }),
+
+  updateEnvironmentAirflowUrl: protectedProcedure
+    .input(z.object({
+      organizationId: z.string(),
+      environmentId: z.string(),
+      airflowUrl: z.string().url().optional().or(z.literal("")),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await checkMembership(ctx.prisma, input.organizationId, ctx.user.id, ["owner", "admin"]);
+      await updateEnvironmentAirflowUrl(
+        ctx.prisma,
+        input.environmentId,
+        input.organizationId,
+        input.airflowUrl || null
+      );
       return { success: true };
     }),
 });

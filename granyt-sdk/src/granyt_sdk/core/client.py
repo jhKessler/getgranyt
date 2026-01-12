@@ -45,7 +45,11 @@ class GranytClient:
 
         self._config = GranytConfig.from_environment()
         self._transport = GranytTransport(self._config)
-        self._lineage_adapter = OpenLineageAdapter(namespace=self._config.namespace)
+        self._lineage_adapter = OpenLineageAdapter(
+            namespace=self._config.namespace,
+            producer=self._config.producer,
+            facet_schema_url=self._config.facet_schema_url,
+        )
         self._error_capture = ErrorCapture()
         self._run_id_cache: Dict[str, str] = {}
 

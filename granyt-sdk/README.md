@@ -26,7 +26,7 @@
 ## ✨ Features
 
 - **Automatic Lineage Tracking** - Captures DAG/task run status using OpenLineage without any manual instrumentation
-- **Rich Error Capture** - Sentry-like error capturing with full stack traces, context variables, and system information
+- **Rich Error Capture** - Sentry-like error capturing with full stack traces and context variables
 - **Zero Configuration** - Just install and set environment variables - no code changes required
 - **Operator Adapters** - Built-in support for popular operators (Snowflake, BigQuery, dbt, S3, and more)
 - **DataFrame Metrics** - Automatic schema and metrics extraction from Pandas/Polars DataFrames
@@ -45,7 +45,7 @@ pip install granyt-sdk
 
 | Airflow Version | Status |
 |-----------------|--------|
-| 2.5.x – 2.10.x | ✅ Fully Supported |
+| 2.5.x - 2.10.x | ✅ Fully Supported |
 | 3.0.x+ | 🚧 Coming Soon |
 
 **Python:** Requires Python 3.10 or later.
@@ -187,7 +187,7 @@ register_adapter(SparkAdapter)
 
 ---
 
-## � Contact
+## 📧 Contact
 
 - **GitHub:** [@jhkessler](https://github.com/jhkessler)
 - **Email:** johnny@granyt.dev
@@ -195,7 +195,7 @@ register_adapter(SparkAdapter)
 
 ---
 
-## �📄 License
+## ⚖️ License
 
 MIT License - see [LICENSE](LICENSE) for details.
 

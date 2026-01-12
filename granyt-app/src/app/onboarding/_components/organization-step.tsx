@@ -16,8 +16,6 @@ import { Building2, ArrowRight } from "lucide-react"
 interface OrganizationStepProps {
   organizationName: string
   onOrganizationNameChange: (name: string) => void
-  airflowUrl: string
-  onAirflowUrlChange: (url: string) => void
   onSubmit: (e: React.FormEvent) => void
   isLoading: boolean
 }
@@ -25,8 +23,6 @@ interface OrganizationStepProps {
 export function OrganizationStep({
   organizationName,
   onOrganizationNameChange,
-  airflowUrl,
-  onAirflowUrlChange,
   onSubmit,
   isLoading,
 }: OrganizationStepProps) {
@@ -56,22 +52,6 @@ export function OrganizationStep({
               required
               disabled={isLoading}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="airflowUrl">
-              Airflow URL <span className="text-muted-foreground text-xs">(optional)</span>
-            </Label>
-            <Input
-              id="airflowUrl"
-              type="url"
-              placeholder="https://airflow.example.com"
-              value={airflowUrl}
-              onChange={(e) => onAirflowUrlChange(e.target.value)}
-              disabled={isLoading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Your Airflow webserver URL. This enables direct links to DAGs and runs in Airflow.
-            </p>
           </div>
         </CardContent>
         <CardFooter>

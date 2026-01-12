@@ -1,10 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 export function useSettingsPage() {
   const utils = trpc.useUtils();
+
+  // Get organization ID for queries
+  const { data: organizations } = trpc.organization.list.useQuery();
+  const organizationId = organizations?.[0]?.id;
   
   // Queries
   const { data: notificationSettings, isLoading: isLoadingNotifications } = trpc.settings.getNotificationSettings.useQuery();
@@ -167,24 +172,37 @@ export function useSettingsPage() {
   };
 
   // ============================================================================
-  // AIRFLOW SETTINGS
+  // AIRFLOW SETTINGS (per environment)
   // ============================================================================
 
-  const { data: airflowSettings, isLoading: isLoadingAirflow } = 
-    trpc.settings.getAirflowSettings.useQuery({});
+  const { data: environments, isLoading: isLoadingEnvironments } =
+    trpc.organization.listEnvironments.useQuery(
+      { organizationId: organizationId! },
+      { enabled: !!organizationId }
+    );
 
-  const updateAirflowSettings = trpc.settings.updateAirflowSettings.useMutation({
+  const [savingEnvironmentId, setSavingEnvironmentId] = useState<string | null>(null);
+
+  const updateEnvironmentAirflowUrl = trpc.organization.updateEnvironmentAirflowUrl.useMutation({
     onSuccess: () => {
-      toast.success("Airflow settings saved");
-      utils.settings.getAirflowSettings.invalidate();
+      toast.success("Airflow URL saved");
+      utils.organization.listEnvironments.invalidate();
+      setSavingEnvironmentId(null);
     },
     onError: (error) => {
-      toast.error(`Failed to save Airflow settings: ${error.message}`);
+      toast.error(`Failed to save Airflow URL: ${error.message}`);
+      setSavingEnvironmentId(null);
     },
   });
 
-  const handleSaveAirflowUrl = (airflowUrl: string) => {
-    updateAirflowSettings.mutate({ airflowUrl: airflowUrl || "" });
+  const handleSaveEnvironmentAirflowUrl = (environmentId: string, airflowUrl: string) => {
+    if (!organizationId) return;
+    setSavingEnvironmentId(environmentId);
+    updateEnvironmentAirflowUrl.mutate({
+      organizationId,
+      environmentId,
+      airflowUrl: airflowUrl || "",
+    });
   };
 
   // ============================================================================
@@ -196,11 +214,11 @@ export function useSettingsPage() {
   
   return {
     // Loading states
-    isLoading: isLoadingNotifications || isLoadingChannels || isLoadingAirflow,
-    
+    isLoading: isLoadingNotifications || isLoadingChannels || isLoadingEnvironments,
+
     // Data
     notificationSettings,
-    
+
     // Handlers
     handleUpdateNotifications,
     handleToggleNotification,
@@ -218,10 +236,15 @@ export function useSettingsPage() {
     isTestingChannelConnection: testChannelConnection.isPending,
     isSendingTestNotification: sendTestNotification.isPending,
 
-    // Airflow Settings
-    airflowSettings,
-    handleSaveAirflowUrl,
-    isSavingAirflowSettings: updateAirflowSettings.isPending,
+    // Airflow Settings (per environment)
+    airflowEnvironments: environments?.map((e) => ({
+      id: e.id,
+      name: e.name,
+      airflowUrl: e.airflowUrl ?? null,
+    })) ?? [],
+    handleSaveEnvironmentAirflowUrl,
+    isSavingAirflowSettings: updateEnvironmentAirflowUrl.isPending,
+    savingEnvironmentId,
 
     // Setup Status
     setupStatus,

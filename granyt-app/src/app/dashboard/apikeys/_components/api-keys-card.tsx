@@ -57,6 +57,16 @@ interface ApiKeysCardProps {
   onDone: () => void
   onDelete: (id: string) => void
   isLoading: boolean
+  // Environment creation props
+  isCreatingEnvironmentMode: boolean
+  onStartCreateEnvironment: () => void
+  onCancelCreateEnvironment: () => void
+  onCreateEnvironment: () => void
+  newEnvironmentName: string
+  onNewEnvironmentNameChange: (name: string) => void
+  newEnvironmentAirflowUrl: string
+  onNewEnvironmentAirflowUrlChange: (url: string) => void
+  isCreatingEnvironment: boolean
 }
 
 function ApiKeyItem({ 
@@ -158,6 +168,15 @@ export function ApiKeysCard({
   onDone,
   onDelete,
   isLoading,
+  isCreatingEnvironmentMode,
+  onStartCreateEnvironment,
+  onCancelCreateEnvironment,
+  onCreateEnvironment,
+  newEnvironmentName,
+  onNewEnvironmentNameChange,
+  newEnvironmentAirflowUrl,
+  onNewEnvironmentAirflowUrlChange,
+  isCreatingEnvironment,
 }: ApiKeysCardProps) {
   const hasKeys = apiKeys && apiKeys.length > 0
   const showAddButton = !showNewKeyForm && !generatedKey
@@ -203,8 +222,18 @@ export function ApiKeysCard({
             onCancel={() => {
               onShowFormChange(false)
               onEnvironmentIdChange(undefined)
+              onCancelCreateEnvironment()
             }}
             isLoading={isLoading}
+            isCreatingEnvironmentMode={isCreatingEnvironmentMode}
+            onStartCreateEnvironment={onStartCreateEnvironment}
+            onCancelCreateEnvironment={onCancelCreateEnvironment}
+            onCreateEnvironment={onCreateEnvironment}
+            newEnvironmentName={newEnvironmentName}
+            onNewEnvironmentNameChange={onNewEnvironmentNameChange}
+            newEnvironmentAirflowUrl={newEnvironmentAirflowUrl}
+            onNewEnvironmentAirflowUrlChange={onNewEnvironmentAirflowUrlChange}
+            isCreatingEnvironment={isCreatingEnvironment}
           />
         )}
 

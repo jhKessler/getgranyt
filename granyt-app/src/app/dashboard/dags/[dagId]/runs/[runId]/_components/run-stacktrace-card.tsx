@@ -157,13 +157,12 @@ function SingleErrorStacktrace({
             {occurrence.message}
           </p>
         </div>
-        <Link 
-          href={`${basePath}/errors/${occurrence.errorId}`}
-          className="text-xs text-primary hover:underline flex items-center gap-1 shrink-0"
-        >
-          View Error
-          <ExternalLink className="h-3 w-3" />
-        </Link>
+        <Button variant="destructive" size="sm" asChild>
+          <Link href={`${basePath}/errors/${occurrence.errorId}`}>
+            View Error
+            <ExternalLink className="h-4 w-4 ml-2" />
+          </Link>
+        </Button>
       </div>
 
       {/* Stacktrace frames */}

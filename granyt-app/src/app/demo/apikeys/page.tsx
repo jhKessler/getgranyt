@@ -11,6 +11,8 @@ export default function DemoApiKeysPage() {
   const [newKeyEnvironmentId, setNewKeyEnvironmentId] = useState<string | undefined>("")
   const [generatedKey, setGeneratedKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [isCreatingEnvironmentMode, setIsCreatingEnvironmentMode] = useState(false)
+  const [newEnvironmentName, setNewEnvironmentName] = useState("")
 
   const apiKeys = mockApiKeys.map(k => ({
     ...k,
@@ -55,6 +57,20 @@ export default function DemoApiKeysPage() {
       handleDismissGeneratedKey={() => {
         setGeneratedKey(null)
         setShowNewKeyForm(false)
+      }}
+      isCreatingEnvironmentMode={isCreatingEnvironmentMode}
+      setIsCreatingEnvironmentMode={setIsCreatingEnvironmentMode}
+      newEnvironmentName={newEnvironmentName}
+      setNewEnvironmentName={setNewEnvironmentName}
+      isCreatingEnvironment={false}
+      handleCreateEnvironment={() => {
+        console.log("Create environment", newEnvironmentName)
+        setNewEnvironmentName("")
+        setIsCreatingEnvironmentMode(false)
+      }}
+      handleCancelCreateEnvironment={() => {
+        setNewEnvironmentName("")
+        setIsCreatingEnvironmentMode(false)
       }}
     />
   )

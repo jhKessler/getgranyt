@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Github, BookOpen, Menu } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Logo } from "@/components/shared/logo"
-import { GITHUB_URL } from "@/lib/constants"
+import { GITHUB_URL, CONTACT_EMAIL } from "@/lib/constants"
 import { getDocsLink } from "@/lib/utils"
 import {
   Sheet,
@@ -129,14 +129,14 @@ function MarketingFooter() {
           <div>
             <h4 className="font-semibold mb-4">Contact</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="mailto:johnny@granyt.dev" className="hover:text-foreground transition-colors">johnny@granyt.dev</Link></li>
+              <li><Link href={`mailto:${CONTACT_EMAIL}`} className="hover:text-foreground transition-colors">{CONTACT_EMAIL}</Link></li>
             </ul>
           </div>
         </div>
         
         <div className="mt-12 pt-8 border-t border-border/40 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Granyt. Open source under Apache 2.0 License.
+            © {new Date().getFullYear()} Granyt. Open source under MIT License.
           </p>
           <div className="flex items-center gap-4">
             <Link 

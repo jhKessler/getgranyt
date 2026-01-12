@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { GITHUB_URL } from "@/lib/constants"
 import Link from "next/link"
 import { getDocsLink } from "@/lib/utils"
 import { 
@@ -19,6 +19,7 @@ import {
   InfoSection,
   InlineCode,
 } from "../_components"
+import { Button } from "@/components/ui/button"
 
 export const metadata = {
   title: "Manual Metric Capture",
@@ -256,7 +257,7 @@ register_adapter(DaskAdapter)`}
             </p>
           </div>
           <Button asChild variant="outline">
-            <Link href="https://github.com/jhkessler/getgranyt" target="_blank">
+            <Link href={GITHUB_URL} target="_blank">
               Open Pull Request
               <ExternalLink className="ml-2 h-4 w-4" />
             </Link>

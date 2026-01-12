@@ -13,6 +13,11 @@ export function useApiKeysPage() {
   const [generatedKey, setGeneratedKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
+  // Environment creation state
+  const [isCreatingEnvironment, setIsCreatingEnvironment] = useState(false)
+  const [newEnvironmentName, setNewEnvironmentName] = useState("")
+  const [newEnvironmentAirflowUrl, setNewEnvironmentAirflowUrl] = useState("")
+
   // Queries
   const { data: organizations, isLoading: orgsLoading } = trpc.organization.list.useQuery()
   const organizationId = organizations?.[0]?.id
@@ -22,7 +27,7 @@ export function useApiKeysPage() {
     { enabled: !!organizationId }
   )
 
-  const { data: environments, isLoading: envsLoading } = trpc.organization.listEnvironments.useQuery(
+  const { data: environments, isLoading: envsLoading, refetch: refetchEnvironments } = trpc.organization.listEnvironments.useQuery(
     { organizationId: organizationId! },
     { enabled: !!organizationId }
   )
@@ -49,6 +54,20 @@ export function useApiKeysPage() {
     },
     onError: (error: { message?: string }) => {
       toast.error(error.message || "Failed to delete API key")
+    },
+  })
+
+  const createEnvironment = trpc.organization.createEnvironment.useMutation({
+    onSuccess: (data: { id: string }) => {
+      setNewKeyEnvironmentId(data.id)
+      setNewEnvironmentName("")
+      setNewEnvironmentAirflowUrl("")
+      setIsCreatingEnvironment(false)
+      refetchEnvironments()
+      toast.success("Environment created!")
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || "Failed to create environment")
     },
   })
 
@@ -86,6 +105,21 @@ export function useApiKeysPage() {
     setNewKeyEnvironmentId(undefined)
   }
 
+  const handleCreateEnvironment = () => {
+    if (!newEnvironmentName.trim() || !organizationId) return
+    createEnvironment.mutate({
+      organizationId,
+      name: newEnvironmentName.trim(),
+      airflowUrl: newEnvironmentAirflowUrl.trim() || undefined,
+    })
+  }
+
+  const handleCancelCreateEnvironment = () => {
+    setIsCreatingEnvironment(false)
+    setNewEnvironmentName("")
+    setNewEnvironmentAirflowUrl("")
+  }
+
   const isLoading = orgsLoading || keysLoading || envsLoading
 
   return {
@@ -108,11 +142,22 @@ export function useApiKeysPage() {
     
     // Loading states
     isGeneratingKey: generateKey.isPending,
-    
+    isCreatingEnvironment: createEnvironment.isPending,
+
+    // Environment creation
+    isCreatingEnvironmentMode: isCreatingEnvironment,
+    setIsCreatingEnvironmentMode: setIsCreatingEnvironment,
+    newEnvironmentName,
+    setNewEnvironmentName,
+    newEnvironmentAirflowUrl,
+    setNewEnvironmentAirflowUrl,
+
     // Handlers
     handleGenerateKey,
     handleCopyKey,
     handleDeleteKey,
     handleDismissGeneratedKey,
+    handleCreateEnvironment,
+    handleCancelCreateEnvironment,
   }
 }

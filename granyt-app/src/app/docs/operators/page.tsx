@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { getDocsLink } from "@/lib/utils"
+import { GITHUB_URL } from "@/lib/constants"
 import { 
   Zap,
   Layers,
@@ -192,7 +193,7 @@ register_adapter(MyCustomAdapter)`}
               </p>
             </div>
             <Button asChild variant="default">
-              <Link href="https://github.com/jhkessler/getgranyt" target="_blank">
+              <Link href={GITHUB_URL} target="_blank">
                 View on GitHub
                 <ExternalLink className="ml-2 h-4 w-4" />
               </Link>

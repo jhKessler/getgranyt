@@ -109,7 +109,6 @@ When a task fails, the SDK automatically captures:
 
 - Full stack trace with local variables
 - Task instance metadata (dag_id, task_id, run_id, try_number, etc.)
-- System information (Python version, Airflow version, hostname, etc.)
 - DAG configuration and task parameters
 - Environment context
 - Previous log entries
@@ -247,7 +246,7 @@ We welcome contributions! Please see our [Contributing Guide](./granyt-app/CONTR
 
 ---
 
-## � Contact
+## 📧 Contact
 
 - **GitHub:** [@jhkessler](https://github.com/jhkessler)
 - **Email:** johnny@granyt.dev
@@ -255,7 +254,7 @@ We welcome contributions! Please see our [Contributing Guide](./granyt-app/CONTR
 
 ---
 
-## �📄 License
+## ⚖️ License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 

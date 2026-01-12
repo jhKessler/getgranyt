@@ -18,8 +18,6 @@ export default function OnboardingPage() {
     goToStep,
     organizationName,
     setOrganizationName,
-    airflowUrl,
-    setAirflowUrl,
     apiKey,
     copied,
     isLoading,
@@ -66,8 +64,6 @@ export default function OnboardingPage() {
           <OrganizationStep
             organizationName={organizationName}
             onOrganizationNameChange={setOrganizationName}
-            airflowUrl={airflowUrl}
-            onAirflowUrlChange={setAirflowUrl}
             onSubmit={handleCreateOrg}
             isLoading={isLoading}
           />

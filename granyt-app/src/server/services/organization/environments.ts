@@ -20,24 +20,28 @@ export async function listEnvironments(
     name: env.name,
     isDefault: env.isDefault,
     apiKeyCount: env._count.apiKeys,
+    airflowUrl: env.airflowUrl,
   }));
 }
 
 export async function createEnvironment(
   prisma: PrismaClient,
   organizationId: string,
-  name: string
-): Promise<{ id: string; name: string; isDefault: boolean }> {
+  name: string,
+  airflowUrl?: string
+): Promise<{ id: string; name: string; isDefault: boolean; airflowUrl: string | null }> {
   const normalizedName = normalizeEnvironment(name);
   const isDefault = await shouldEnvironmentBeDefault(prisma, organizationId);
+  const normalizedUrl = airflowUrl?.trim().replace(/\/$/, "") || null;
 
   const environment = await prisma.environment.create({
     data: {
       organizationId,
       name: normalizedName,
       isDefault,
+      airflowUrl: normalizedUrl,
     },
-    select: { id: true, name: true, isDefault: true },
+    select: { id: true, name: true, isDefault: true, airflowUrl: true },
   });
 
   return environment;
@@ -106,4 +110,20 @@ export async function validateEnvironmentOwnership(
   if (!environment || environment.organizationId !== organizationId) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Environment not found" });
   }
+}
+
+export async function updateEnvironmentAirflowUrl(
+  prisma: PrismaClient,
+  environmentId: string,
+  organizationId: string,
+  airflowUrl: string | null
+): Promise<void> {
+  await validateEnvironmentOwnership(prisma, environmentId, organizationId);
+
+  const normalizedUrl = airflowUrl?.trim().replace(/\/$/, "") || null;
+
+  await prisma.environment.update({
+    where: { id: environmentId },
+    data: { airflowUrl: normalizedUrl },
+  });
 }

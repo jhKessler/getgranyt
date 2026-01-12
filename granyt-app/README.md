@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <img src="public/logo.png" width="40" alt="Granyt Logo" />
 </p>
 
@@ -215,13 +215,13 @@ npm run db:studio    # Open Prisma Studio
 npm run db:migrate   # Run migrations
 ```
 
-## � Contact
+## 📧 Contact
 
 - **GitHub:** [@jhkessler](https://github.com/jhkessler)
 - **Email:** johnny@granyt.dev
 - **Issues:** [GitHub Issues](https://github.com/jhkessler/getgranyt/issues)
 
-## �📄 License
+## ⚖️ License
 
 This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
 
