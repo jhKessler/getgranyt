@@ -16,6 +16,7 @@ export function useApiKeysPage() {
   // Environment creation state
   const [isCreatingEnvironment, setIsCreatingEnvironment] = useState(false)
   const [newEnvironmentName, setNewEnvironmentName] = useState("")
+  const [newEnvironmentAirflowUrl, setNewEnvironmentAirflowUrl] = useState("")
 
   // Queries
   const { data: organizations, isLoading: orgsLoading } = trpc.organization.list.useQuery()
@@ -60,6 +61,7 @@ export function useApiKeysPage() {
     onSuccess: (data: { id: string }) => {
       setNewKeyEnvironmentId(data.id)
       setNewEnvironmentName("")
+      setNewEnvironmentAirflowUrl("")
       setIsCreatingEnvironment(false)
       refetchEnvironments()
       toast.success("Environment created!")
@@ -108,12 +110,14 @@ export function useApiKeysPage() {
     createEnvironment.mutate({
       organizationId,
       name: newEnvironmentName.trim(),
+      airflowUrl: newEnvironmentAirflowUrl.trim() || undefined,
     })
   }
 
   const handleCancelCreateEnvironment = () => {
     setIsCreatingEnvironment(false)
     setNewEnvironmentName("")
+    setNewEnvironmentAirflowUrl("")
   }
 
   const isLoading = orgsLoading || keysLoading || envsLoading
@@ -145,6 +149,8 @@ export function useApiKeysPage() {
     setIsCreatingEnvironmentMode: setIsCreatingEnvironment,
     newEnvironmentName,
     setNewEnvironmentName,
+    newEnvironmentAirflowUrl,
+    setNewEnvironmentAirflowUrl,
 
     // Handlers
     handleGenerateKey,

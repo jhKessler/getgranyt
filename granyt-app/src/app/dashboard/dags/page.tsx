@@ -20,7 +20,7 @@ const urlParamsSchema = z.object({
 function DagsPageContent() {
   useDocumentTitle("DAGs")
   const searchParams = useSearchParams()
-  const { environments, defaultEnvironment, isLoading: envsLoading } = useEnvironment()
+  const { environments, defaultEnvironment, isLoading: envsLoading, getAirflowUrl } = useEnvironment()
   const { filters, setFilter, isHydrated } = useDagsFilters()
   
   // Read filters from URL params on mount
@@ -65,8 +65,8 @@ function DagsPageContent() {
   // Fetch DAGs with open alerts
   const { data: dagAlerts } = trpc.alerts.getDagsWithAlerts.useQuery({})
 
-  // Fetch Airflow settings for linking
-  const { data: airflowSettings } = trpc.settings.getAirflowSettings.useQuery({})
+  // Get Airflow URL for the selected environment
+  const airflowUrl = getAirflowUrl(filters.selectedEnvironment)
 
   const _envLabel = filters.selectedEnvironment 
     ? filters.selectedEnvironment.charAt(0).toUpperCase() + filters.selectedEnvironment.slice(1)
@@ -92,12 +92,12 @@ function DagsPageContent() {
         isEnvsLoading={envsLoading}
       />
 
-      <DagsTable 
-        dags={dags} 
-        isLoading={isLoading || envsLoading || !isHydrated} 
+      <DagsTable
+        dags={dags}
+        isLoading={isLoading || envsLoading || !isHydrated}
         selectedEnvironment={filters.selectedEnvironment}
         dagAlerts={dagAlerts}
-        airflowUrl={airflowSettings?.airflowUrl}
+        airflowUrl={airflowUrl}
       />
     </div>
   )

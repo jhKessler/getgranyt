@@ -24,7 +24,7 @@ export default function DagDetailPage({ params }: { params: Promise<{ dagId: str
   const [timeframe, setTimeframe] = useState<Timeframe>(Timeframe.Week)
   const [selectedEnv, setSelectedEnv] = useState<string | null>(null)
   const [metricsKey, setMetricsKey] = useState(0)
-  const { defaultEnvironment } = useEnvironment()
+  const { defaultEnvironment, getAirflowUrl } = useEnvironment()
 
   // Force re-fetch of metrics when settings change
   const handleMetricsSettingsChange = () => {
@@ -90,6 +90,9 @@ export default function DagDetailPage({ params }: { params: Promise<{ dagId: str
   // Fetch dag runs with open alerts
   const { data: runAlerts } = trpc.alerts.getDagRunsWithAlerts.useQuery({})
 
+  // Get Airflow URL for the selected environment
+  const airflowUrl = getAirflowUrl(selectedEnv)
+
   const _hasMultipleEnvs = (envStatuses?.length ?? 0) > 1
 
   // Map DAG errors to RecentError format
@@ -113,6 +116,7 @@ export default function DagDetailPage({ params }: { params: Promise<{ dagId: str
         timeframe={timeframe}
         onTimeframeChange={setTimeframe}
         onMetricsSettingsChange={handleMetricsSettingsChange}
+        airflowUrl={airflowUrl}
       />
 
       {/* Environment-specific section */}

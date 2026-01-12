@@ -29,19 +29,14 @@ export async function listUserOrganizations(
 export async function createOrganization(
   prisma: PrismaClient,
   userId: string,
-  name: string,
-  airflowUrl?: string
+  name: string
 ) {
   const slug = await resolveUniqueSlug(prisma, name);
-  
-  // Normalize airflow URL - remove trailing slash if present
-  const normalizedAirflowUrl = airflowUrl?.trim().replace(/\/$/, "") || null;
 
   const org = await prisma.organization.create({
     data: {
       name,
       slug,
-      airflowUrl: normalizedAirflowUrl,
       createdBy: userId,
       members: { create: { userId, role: "owner" } },
     },

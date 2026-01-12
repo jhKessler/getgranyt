@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, AlertTriangle, CheckCircle2, XCircle, Loader2, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { EnvironmentBadge, AirflowLink } from "@/components/shared"
-import { trpc } from "@/lib/trpc"
+import { useEnvironment } from "@/lib/environment-context"
 import { formatDistanceToNow } from "date-fns"
 
 interface RunMetadataHeaderProps {
@@ -32,9 +32,10 @@ interface RunMetadataHeaderProps {
 
 export function RunMetadataHeader({ run, dagId }: RunMetadataHeaderProps) {
   const router = useRouter()
-  
-  // Fetch Airflow settings for linking
-  const { data: airflowSettings } = trpc.settings.getAirflowSettings.useQuery({})
+  const { getAirflowUrl } = useEnvironment()
+
+  // Get Airflow URL for the run's environment
+  const airflowUrl = getAirflowUrl(run.environment)
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -72,8 +73,8 @@ export function RunMetadataHeader({ run, dagId }: RunMetadataHeaderProps) {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        <AirflowLink 
-          airflowUrl={airflowSettings?.airflowUrl}
+        <AirflowLink
+          airflowUrl={airflowUrl}
           dagId={run.srcDagId}
           runId={run.srcRunId}
           variant="button"

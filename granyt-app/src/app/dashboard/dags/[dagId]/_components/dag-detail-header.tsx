@@ -13,7 +13,6 @@ import Link from "next/link"
 import { Timeframe } from "@/server/services/dashboard/types"
 import { MetricsSettingsDialog } from "./metrics-settings-dialog"
 import { AirflowLink } from "@/components/shared"
-import { trpc } from "@/lib/trpc"
 
 interface DagDetailHeaderProps {
   dagId: string
@@ -23,19 +22,19 @@ interface DagDetailHeaderProps {
   onMetricsSettingsChange?: () => void
   basePath?: string
   showSettings?: boolean
+  airflowUrl?: string | null
 }
 
-export function DagDetailHeader({ 
-  dagId, 
-  localEnv, 
-  timeframe, 
+export function DagDetailHeader({
+  dagId,
+  localEnv,
+  timeframe,
   onTimeframeChange,
   onMetricsSettingsChange,
   basePath = "/dashboard",
-  showSettings = true
+  showSettings = true,
+  airflowUrl,
 }: DagDetailHeaderProps) {
-  // Fetch Airflow settings for linking
-  const { data: airflowSettings } = trpc.settings.getAirflowSettings.useQuery({})
 
   return (
     <div className="flex items-center justify-between">
@@ -55,8 +54,8 @@ export function DagDetailHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <AirflowLink 
-          airflowUrl={airflowSettings?.airflowUrl}
+        <AirflowLink
+          airflowUrl={airflowUrl}
           dagId={dagId}
           variant="button"
           size="sm"

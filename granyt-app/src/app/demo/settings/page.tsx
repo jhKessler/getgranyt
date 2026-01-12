@@ -22,9 +22,10 @@ export default function DemoSettingsPage() {
       isSavingChannelConfig={false}
       isTestingChannelConnection={false}
       isSendingTestNotification={false}
-      airflowSettings={{ airflowUrl: null }}
-      handleSaveAirflowUrl={() => {}}
+      airflowEnvironments={[]}
+      handleSaveEnvironmentAirflowUrl={() => {}}
       isSavingAirflowSettings={false}
+      savingEnvironmentId={null}
       setupStatus={{ hasDagRuns: true, hasNotificationChannel: true, hasErrors: true }}
       isLoadingSetupStatus={false}
     />

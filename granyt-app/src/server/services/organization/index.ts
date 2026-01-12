@@ -23,6 +23,7 @@ export {
   createEnvironment,
   setDefaultEnvironment,
   deleteEnvironment,
+  updateEnvironmentAirflowUrl,
 } from "./environments";
 
 export { normalizeEnvironment } from "./helpers";

@@ -25,6 +25,8 @@ export function ApiKeysContent({
   setIsCreatingEnvironmentMode,
   newEnvironmentName,
   setNewEnvironmentName,
+  newEnvironmentAirflowUrl,
+  setNewEnvironmentAirflowUrl,
   isCreatingEnvironment,
   handleCreateEnvironment,
   handleCancelCreateEnvironment,
@@ -62,6 +64,8 @@ export function ApiKeysContent({
         onCreateEnvironment={handleCreateEnvironment}
         newEnvironmentName={newEnvironmentName}
         onNewEnvironmentNameChange={setNewEnvironmentName}
+        newEnvironmentAirflowUrl={newEnvironmentAirflowUrl}
+        onNewEnvironmentAirflowUrlChange={setNewEnvironmentAirflowUrl}
         isCreatingEnvironment={isCreatingEnvironment}
       />
     </div>

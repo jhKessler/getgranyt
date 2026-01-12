@@ -64,6 +64,8 @@ interface ApiKeysCardProps {
   onCreateEnvironment: () => void
   newEnvironmentName: string
   onNewEnvironmentNameChange: (name: string) => void
+  newEnvironmentAirflowUrl: string
+  onNewEnvironmentAirflowUrlChange: (url: string) => void
   isCreatingEnvironment: boolean
 }
 
@@ -172,6 +174,8 @@ export function ApiKeysCard({
   onCreateEnvironment,
   newEnvironmentName,
   onNewEnvironmentNameChange,
+  newEnvironmentAirflowUrl,
+  onNewEnvironmentAirflowUrlChange,
   isCreatingEnvironment,
 }: ApiKeysCardProps) {
   const hasKeys = apiKeys && apiKeys.length > 0
@@ -227,6 +231,8 @@ export function ApiKeysCard({
             onCreateEnvironment={onCreateEnvironment}
             newEnvironmentName={newEnvironmentName}
             onNewEnvironmentNameChange={onNewEnvironmentNameChange}
+            newEnvironmentAirflowUrl={newEnvironmentAirflowUrl}
+            onNewEnvironmentAirflowUrlChange={onNewEnvironmentAirflowUrlChange}
             isCreatingEnvironment={isCreatingEnvironment}
           />
         )}

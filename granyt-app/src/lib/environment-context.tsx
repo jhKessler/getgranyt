@@ -10,12 +10,14 @@ interface EnvironmentContextType {
   isLoading: boolean
   defaultEnvironment: string | null
   isProductionEnv: (env: string | null) => boolean
+  getAirflowUrl: (env: string | null) => string | null
 }
 
 interface EnvironmentInfo {
   name: string
   isDefault: boolean
   apiKeyCount: number
+  airflowUrl: string | null
 }
 
 const EnvironmentContext = createContext<EnvironmentContextType | null>(null)
@@ -56,6 +58,12 @@ export function EnvironmentProvider({ children }: { children: React.ReactNode })
     return envInfo?.isDefault ?? false
   }, [environments])
 
+  const getAirflowUrl = useCallback((env: string | null) => {
+    if (!env) return null
+    const envInfo = environments?.find(e => e.name === env)
+    return envInfo?.airflowUrl ?? null
+  }, [environments])
+
   const contextValue: EnvironmentContextType = {
     selectedEnvironment,
     setSelectedEnvironment,
@@ -63,6 +71,7 @@ export function EnvironmentProvider({ children }: { children: React.ReactNode })
     isLoading,
     defaultEnvironment: defaultEnv ?? null,
     isProductionEnv,
+    getAirflowUrl,
   }
 
   return (

@@ -22,7 +22,7 @@ const urlParamsSchema = z.object({
 function RunsPageContent() {
   useDocumentTitle("Runs")
   const searchParams = useSearchParams()
-  const { environments, defaultEnvironment, isLoading: envsLoading } = useEnvironment()
+  const { environments, defaultEnvironment, isLoading: envsLoading, getAirflowUrl } = useEnvironment()
   const { filters, setFilter, isHydrated } = useRunsFilters()
   
   // Read filters from URL params on mount
@@ -87,8 +87,8 @@ function RunsPageContent() {
   // Fetch dag runs with open alerts
   const { data: runAlerts } = trpc.alerts.getDagRunsWithAlerts.useQuery({})
 
-  // Fetch Airflow settings for linking
-  const { data: airflowSettings } = trpc.settings.getAirflowSettings.useQuery({})
+  // Get Airflow URL for the selected environment
+  const airflowUrl = getAirflowUrl(filters.selectedEnvironment)
 
   const _envLabel = filters.selectedEnvironment 
     ? filters.selectedEnvironment.charAt(0).toUpperCase() + filters.selectedEnvironment.slice(1)
@@ -127,11 +127,11 @@ function RunsPageContent() {
         }}
       />
 
-      <RunsTable 
-        runs={runs} 
-        isLoading={isLoading || envsLoading || !isHydrated} 
-        runAlerts={runAlerts} 
-        airflowUrl={airflowSettings?.airflowUrl}
+      <RunsTable
+        runs={runs}
+        isLoading={isLoading || envsLoading || !isHydrated}
+        runAlerts={runAlerts}
+        airflowUrl={airflowUrl}
       />
     </div>
   )

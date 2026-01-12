@@ -24,6 +24,7 @@ export interface EnvironmentInfo {
   name: string;
   isDefault: boolean;
   apiKeyCount: number;
+  airflowUrl: string | null;
 }
 
 export interface OrganizationWithRole {

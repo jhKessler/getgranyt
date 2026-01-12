@@ -34,6 +34,8 @@ interface ApiKeyFormProps {
   onCreateEnvironment: () => void
   newEnvironmentName: string
   onNewEnvironmentNameChange: (name: string) => void
+  newEnvironmentAirflowUrl: string
+  onNewEnvironmentAirflowUrlChange: (url: string) => void
   isCreatingEnvironment: boolean
 }
 
@@ -52,6 +54,8 @@ export function ApiKeyForm({
   onCreateEnvironment,
   newEnvironmentName,
   onNewEnvironmentNameChange,
+  newEnvironmentAirflowUrl,
+  onNewEnvironmentAirflowUrlChange,
   isCreatingEnvironment,
 }: ApiKeyFormProps) {
   return (
@@ -69,30 +73,44 @@ export function ApiKeyForm({
       <div className="space-y-2">
         <Label htmlFor="keyEnvironment">Environment (Optional)</Label>
         {isCreatingEnvironmentMode ? (
-          <div className="flex gap-2">
+          <div className="space-y-3">
             <Input
               placeholder="Environment name (e.g., staging)"
               value={newEnvironmentName}
               onChange={(e) => onNewEnvironmentNameChange(e.target.value)}
               autoFocus
             />
-            <Button
-              type="button"
-              size="sm"
-              onClick={onCreateEnvironment}
-              disabled={isCreatingEnvironment || !newEnvironmentName.trim()}
-            >
-              {isCreatingEnvironment ? "Creating..." : "Create"}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={onCancelCreateEnvironment}
-              disabled={isCreatingEnvironment}
-            >
-              Cancel
-            </Button>
+            <div className="space-y-1">
+              <Label htmlFor="newEnvAirflowUrl" className="text-xs text-muted-foreground">
+                Airflow URL (Optional)
+              </Label>
+              <Input
+                id="newEnvAirflowUrl"
+                type="url"
+                placeholder="https://airflow.example.com"
+                value={newEnvironmentAirflowUrl}
+                onChange={(e) => onNewEnvironmentAirflowUrlChange(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={onCreateEnvironment}
+                disabled={isCreatingEnvironment || !newEnvironmentName.trim()}
+              >
+                {isCreatingEnvironment ? "Creating..." : "Create"}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={onCancelCreateEnvironment}
+                disabled={isCreatingEnvironment}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         ) : (
           <Select
