@@ -21,6 +21,13 @@ export function ApiKeysContent({
   handleCopyKey,
   handleDeleteKey,
   handleDismissGeneratedKey,
+  isCreatingEnvironmentMode,
+  setIsCreatingEnvironmentMode,
+  newEnvironmentName,
+  setNewEnvironmentName,
+  isCreatingEnvironment,
+  handleCreateEnvironment,
+  handleCancelCreateEnvironment,
 }: ReturnType<typeof useApiKeysPage>) {
   if (isLoading) {
     return <PageSkeleton rows={2} />
@@ -49,6 +56,13 @@ export function ApiKeysContent({
         onDone={handleDismissGeneratedKey}
         onDelete={handleDeleteKey}
         isLoading={isGeneratingKey}
+        isCreatingEnvironmentMode={isCreatingEnvironmentMode}
+        onStartCreateEnvironment={() => setIsCreatingEnvironmentMode(true)}
+        onCancelCreateEnvironment={handleCancelCreateEnvironment}
+        onCreateEnvironment={handleCreateEnvironment}
+        newEnvironmentName={newEnvironmentName}
+        onNewEnvironmentNameChange={setNewEnvironmentName}
+        isCreatingEnvironment={isCreatingEnvironment}
       />
     </div>
   )

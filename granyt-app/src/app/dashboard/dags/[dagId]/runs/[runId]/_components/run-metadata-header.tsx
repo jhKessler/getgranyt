@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, AlertTriangle, CheckCircle2, XCircle, Loader2 } from "lucide-react"
+import { ArrowLeft, AlertTriangle, CheckCircle2, XCircle, Loader2, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { EnvironmentBadge, AirflowLink } from "@/components/shared"
 import { trpc } from "@/lib/trpc"
+import { formatDistanceToNow } from "date-fns"
 
 interface RunMetadataHeaderProps {
   run: {
@@ -96,13 +97,17 @@ export function RunMetadataHeader({ run, dagId }: RunMetadataHeaderProps) {
                       {status}
                     </Badge>
                   </div>
-                  <Link 
+                  <Link
                       href={`/dashboard/dags/${encodeURIComponent(dagId)}`}
                       className="hover:underline"
                     >
                   <p className="text-sm mt-1 opacity-80 truncate max-w-[500px]">
                     DAG: {run.srcDagId}
                   </p></Link>
+                  <p className="text-sm mt-1 opacity-80 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatDistanceToNow(new Date(run.startTime), { addSuffix: true })}
+                  </p>
                 </div>
                 
                 <div className="flex items-center gap-3">
