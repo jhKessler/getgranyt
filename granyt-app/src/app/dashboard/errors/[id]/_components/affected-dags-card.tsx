@@ -16,7 +16,7 @@ interface Occurrence {
   dagRunId: string | null
   tryNumber: number | null
   timestamp: string | Date
-  stacktrace: StackFrame[] | null
+  stacktrace?: StackFrame[] | unknown
   environment: string | null
 }
 

@@ -20,6 +20,7 @@ import {
   ErrorEnvironmentBreadcrumb,
   LatestStacktraceCard,
   type ErrorEnvironmentStatus,
+  type Occurrence,
 } from "./_components"
 
 export default function ErrorDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -58,47 +59,45 @@ export default function ErrorDetailPage({ params }: { params: Promise<{ id: stri
 
   const occurrencesByDag = useMemo(() => {
     if (!error?.occurrences) return []
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const grouped = new Map<string, any[]>()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const occurrence of (error.occurrences as any)) {
+
+    const occurrences = error.occurrences as Occurrence[]
+    const grouped = new Map<string, Occurrence[]>()
+    for (const occurrence of occurrences) {
       const dagId = occurrence.dagId || "unknown"
       if (!grouped.has(dagId)) {
         grouped.set(dagId, [])
       }
       grouped.get(dagId)!.push(occurrence)
     }
-    
-    return Array.from(grouped.entries()).map(([dagId, occurrences]) => ({
+
+    return Array.from(grouped.entries()).map(([dagId, occs]) => ({
       dagId,
-      occurrences,
-      occurrenceCount: occurrences.length,
+      occurrences: occs,
+      occurrenceCount: occs.length,
     }))
   }, [error?.occurrences])
 
   // Group occurrences by environment for the environment breadcrumb
   const environmentStatuses = useMemo<ErrorEnvironmentStatus[]>(() => {
     if (!error?.occurrences) return []
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+    const occurrences = error.occurrences as Occurrence[]
     const grouped = new Map<string, { count: number; lastSeenAt: Date }>()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const occurrence of (error.occurrences as any)) {
+    for (const occurrence of occurrences) {
       const env = occurrence.environment || "unknown"
       const timestamp = new Date(occurrence.timestamp)
-      
+
       if (!grouped.has(env)) {
         grouped.set(env, { count: 0, lastSeenAt: timestamp })
       }
-      
+
       const current = grouped.get(env)!
       current.count++
       if (timestamp > current.lastSeenAt) {
         current.lastSeenAt = timestamp
       }
     }
-    
+
     return Array.from(grouped.entries()).map(([environment, data]) => ({
       environment,
       occurrenceCount: data.count,
@@ -107,11 +106,10 @@ export default function ErrorDetailPage({ params }: { params: Promise<{ id: stri
   }, [error?.occurrences])
 
   // Filter occurrences by selected environment
-  const filteredOccurrences = useMemo(() => {
+  const filteredOccurrences = useMemo((): Occurrence[] => {
     if (!error?.occurrences) return []
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const occurrences = error.occurrences as any[]
-    
+
+    const occurrences = error.occurrences as Occurrence[]
     if (selectedEnv === null) return occurrences
     return occurrences.filter(o => o.environment === selectedEnv)
   }, [error?.occurrences, selectedEnv])
@@ -119,16 +117,12 @@ export default function ErrorDetailPage({ params }: { params: Promise<{ id: stri
   // Filter occurrencesByDag by selected environment
   const filteredOccurrencesByDag = useMemo(() => {
     if (selectedEnv === null) return occurrencesByDag
-    
+
     return occurrencesByDag
       .map(dagGroup => ({
         ...dagGroup,
-        occurrences: dagGroup.occurrences.filter(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (o: any) => o.environment === selectedEnv
-        ),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        occurrenceCount: dagGroup.occurrences.filter((o: any) => o.environment === selectedEnv).length,
+        occurrences: dagGroup.occurrences.filter(o => o.environment === selectedEnv),
+        occurrenceCount: dagGroup.occurrences.filter(o => o.environment === selectedEnv).length,
       }))
       .filter(dagGroup => dagGroup.occurrenceCount > 0)
   }, [occurrencesByDag, selectedEnv])

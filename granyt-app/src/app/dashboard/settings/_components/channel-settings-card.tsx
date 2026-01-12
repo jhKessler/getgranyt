@@ -16,6 +16,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { SmtpConfigForm, ResendConfigForm } from "@/components/shared";
+import { useChannelManagement } from "../_context";
 
 import {
   Mail,
@@ -53,39 +54,27 @@ interface ChannelConfig {
   lastTestError: string | null;
 }
 
-interface ChannelSettingsCardProps {
-  channelStatuses: ChannelStatus[] | undefined;
-  onToggleChannel: (channelType: string, enabled: boolean) => void;
-  onSaveConfig: (channelType: string, enabled: boolean, config: Record<string, unknown> | null) => void;
-  onTestConnection: (channelType: string) => void;
-  onSendTest: (channelType: string, recipient: string) => void;
-  onClearConfig: (channelType: string) => void;
-  getChannelConfig: (channelType: string) => ChannelConfig | undefined;
-  isTogglingChannel: boolean;
-  isSavingConfig: boolean;
-  isTestingConnection: boolean;
-  isSendingTest: boolean;
-}
-
 const CHANNEL_ICONS: Record<string, React.ElementType> = {
   SMTP: Mail,
   RESEND: Send,
   WEBHOOK: Webhook,
 };
 
-export function EmailSetupCard({
-  channelStatuses,
-  onToggleChannel,
-  onSaveConfig,
-  onTestConnection,
-  onSendTest,
-  onClearConfig,
-  getChannelConfig,
-  isTogglingChannel,
-  isSavingConfig,
-  isTestingConnection,
-  isSendingTest,
-}: ChannelSettingsCardProps) {
+export function EmailSetupCard() {
+  const {
+    channelStatuses,
+    getChannelConfig,
+    toggleChannel,
+    saveConfig,
+    testConnection,
+    sendTest,
+    clearConfig,
+    isToggling,
+    isSaving,
+    isTesting,
+    isSendingTest,
+  } = useChannelManagement();
+
   const [activeTab, setActiveTab] = useState("SMTP");
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
 
@@ -130,16 +119,16 @@ export function EmailSetupCard({
               <ChannelTab
                 channel={channel}
                 config={getChannelConfig(channel.type)}
-                onToggle={(enabled) => onToggleChannel(channel.type, enabled)}
+                onToggle={(enabled) => toggleChannel(channel.type, enabled)}
                 onSave={(enabled, config) =>
-                  onSaveConfig(channel.type, enabled, config)
+                  saveConfig(channel.type, enabled, config)
                 }
-                onTest={() => onTestConnection(channel.type)}
-                onSendTest={(recipient) => onSendTest(channel.type, recipient)}
-                onClear={() => onClearConfig(channel.type)}
-                isToggling={isTogglingChannel}
-                isSaving={isSavingConfig}
-                isTesting={isTestingConnection}
+                onTest={() => testConnection(channel.type)}
+                onSendTest={(recipient) => sendTest(channel.type, recipient)}
+                onClear={() => clearConfig(channel.type)}
+                isToggling={isToggling}
+                isSaving={isSaving}
+                isTesting={isTesting}
                 isSendingTest={isSendingTest}
                 isExpanded={expandedChannel === channel.type}
                 onExpandToggle={() =>
@@ -156,19 +145,21 @@ export function EmailSetupCard({
   );
 }
 
-export function NotificationSettingsCard({
-  channelStatuses,
-  onToggleChannel,
-  onSaveConfig,
-  onTestConnection,
-  onSendTest,
-  onClearConfig,
-  getChannelConfig,
-  isTogglingChannel,
-  isSavingConfig,
-  isTestingConnection,
-  isSendingTest,
-}: ChannelSettingsCardProps) {
+export function NotificationSettingsCard() {
+  const {
+    channelStatuses,
+    getChannelConfig,
+    toggleChannel,
+    saveConfig,
+    testConnection,
+    sendTest,
+    clearConfig,
+    isToggling,
+    isSaving,
+    isTesting,
+    isSendingTest,
+  } = useChannelManagement();
+
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
 
   const otherChannels = channelStatuses?.filter(
@@ -192,16 +183,16 @@ export function NotificationSettingsCard({
             <ChannelTab
               channel={channel}
               config={getChannelConfig(channel.type)}
-              onToggle={(enabled) => onToggleChannel(channel.type, enabled)}
+              onToggle={(enabled) => toggleChannel(channel.type, enabled)}
               onSave={(enabled, config) =>
-                onSaveConfig(channel.type, enabled, config)
+                saveConfig(channel.type, enabled, config)
               }
-              onTest={() => onTestConnection(channel.type)}
-              onSendTest={(recipient) => onSendTest(channel.type, recipient)}
-              onClear={() => onClearConfig(channel.type)}
-              isToggling={isTogglingChannel}
-              isSaving={isSavingConfig}
-              isTesting={isTestingConnection}
+              onTest={() => testConnection(channel.type)}
+              onSendTest={(recipient) => sendTest(channel.type, recipient)}
+              onClear={() => clearConfig(channel.type)}
+              isToggling={isToggling}
+              isSaving={isSaving}
+              isTesting={isTesting}
               isSendingTest={isSendingTest}
               isExpanded={expandedChannel === channel.type}
               onExpandToggle={() =>
@@ -449,10 +440,6 @@ function ChannelTab({
     </div>
   );
 }
-
-// ============================================================================
-// CONFIG FORMS (Webhook form is local, SMTP/Resend are shared)
-// ============================================================================
 
 interface WebhookConfigFormProps {
   config: Record<string, unknown> | null;

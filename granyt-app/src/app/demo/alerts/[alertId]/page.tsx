@@ -60,7 +60,7 @@ export default function DemoAlertDetailPage({
           alertType={alert.alertType}
           metadata={metadata}
         />
-        <AlertContextCard alert={alert} />
+        <AlertContextCard alert={alert} basePath="/demo" />
       </div>
     </div>
   )

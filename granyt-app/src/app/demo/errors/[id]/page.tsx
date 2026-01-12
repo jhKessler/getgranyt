@@ -16,6 +16,18 @@ import {
   type ErrorEnvironmentStatus,
 } from "@/app/dashboard/errors/[id]/_components"
 
+interface MockOccurrence {
+  id: string
+  dagId: string | null
+  runId: string | null
+  taskId: string | null
+  dagRunId: string | null
+  tryNumber: number | null
+  environment: string | null
+  timestamp: string
+  stacktrace?: unknown
+}
+
 export default function DemoErrorDetailPage({ 
   params 
 }: { 
@@ -43,21 +55,20 @@ export default function DemoErrorDetailPage({
 
   const occurrencesByDag = useMemo(() => {
     if (!error?.occurrences) return []
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const grouped = new Map<string, any[]>()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const occurrence of (error.occurrences as any)) {
+    const occurrences = error.occurrences as MockOccurrence[]
+    const grouped = new Map<string, MockOccurrence[]>()
+    for (const occurrence of occurrences) {
       const dagId = occurrence.dagId || "unknown"
       if (!grouped.has(dagId)) {
         grouped.set(dagId, [])
       }
       grouped.get(dagId)!.push(occurrence)
     }
-    
-    return Array.from(grouped.entries()).map(([dagId, occurrences]) => ({
+
+    return Array.from(grouped.entries()).map(([dagId, occs]) => ({
       dagId,
-      occurrences,
-      occurrenceCount: occurrences.length,
+      occurrences: occs,
+      occurrenceCount: occs.length,
     }))
   }, [error?.occurrences])
 
@@ -66,26 +77,25 @@ export default function DemoErrorDetailPage({
   // Group occurrences by environment for the environment breadcrumb
   const environmentStatuses: ErrorEnvironmentStatus[] = useMemo(() => {
     if (!error?.occurrences) return []
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const occurrences = error.occurrences as any[]
+    const occurrences = error.occurrences as MockOccurrence[]
     if (occurrences.length === 0) return []
-    
+
     const grouped = new Map<string, { count: number; lastSeenAt: Date }>()
     for (const occurrence of occurrences) {
       const env = occurrence.environment || "unknown"
       const timestamp = new Date(occurrence.timestamp)
-      
+
       if (!grouped.has(env)) {
         grouped.set(env, { count: 0, lastSeenAt: timestamp })
       }
-      
+
       const current = grouped.get(env)!
       current.count++
       if (timestamp > current.lastSeenAt) {
         current.lastSeenAt = timestamp
       }
     }
-    
+
     return Array.from(grouped.entries()).map(([environment, data]) => ({
       environment,
       occurrenceCount: data.count,
@@ -96,9 +106,8 @@ export default function DemoErrorDetailPage({
   // Filter occurrences by selected environment
   const filteredOccurrences = useMemo(() => {
     if (!error?.occurrences) return []
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const occurrences = error.occurrences as any[]
-    
+    const occurrences = error.occurrences as MockOccurrence[]
+
     if (selectedEnv === null) return occurrences
     return occurrences.filter(o => o.environment === selectedEnv)
   }, [error?.occurrences, selectedEnv])
@@ -106,16 +115,12 @@ export default function DemoErrorDetailPage({
   // Filter occurrencesByDag by selected environment
   const filteredOccurrencesByDag = useMemo(() => {
     if (selectedEnv === null) return occurrencesByDag
-    
+
     return occurrencesByDag
       .map(dagGroup => ({
         ...dagGroup,
-        occurrences: dagGroup.occurrences.filter(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (o: any) => o.environment === selectedEnv
-        ),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        occurrenceCount: dagGroup.occurrences.filter((o: any) => o.environment === selectedEnv).length,
+        occurrences: dagGroup.occurrences.filter(o => o.environment === selectedEnv),
+        occurrenceCount: dagGroup.occurrences.filter(o => o.environment === selectedEnv).length,
       }))
       .filter(dagGroup => dagGroup.occurrenceCount > 0)
   }, [occurrencesByDag, selectedEnv])

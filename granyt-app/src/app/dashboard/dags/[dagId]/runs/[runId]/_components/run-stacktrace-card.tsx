@@ -24,10 +24,10 @@ interface ErrorOccurrence {
   exceptionType: string
   message: string
   errorId: string
-  timestamp: Date
+  timestamp: Date | string
   tryNumber: number | null
   operator: string | null
-  stacktrace: unknown
+  stacktrace?: unknown
 }
 
 interface RunStacktraceCardProps {

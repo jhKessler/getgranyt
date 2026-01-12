@@ -13,6 +13,7 @@ export default function DemoApiKeysPage() {
   const [copied, setCopied] = useState(false)
   const [isCreatingEnvironmentMode, setIsCreatingEnvironmentMode] = useState(false)
   const [newEnvironmentName, setNewEnvironmentName] = useState("")
+  const [newEnvironmentAirflowUrl, setNewEnvironmentAirflowUrl] = useState("")
 
   const apiKeys = mockApiKeys.map(k => ({
     ...k,
@@ -62,14 +63,18 @@ export default function DemoApiKeysPage() {
       setIsCreatingEnvironmentMode={setIsCreatingEnvironmentMode}
       newEnvironmentName={newEnvironmentName}
       setNewEnvironmentName={setNewEnvironmentName}
+      newEnvironmentAirflowUrl={newEnvironmentAirflowUrl}
+      setNewEnvironmentAirflowUrl={setNewEnvironmentAirflowUrl}
       isCreatingEnvironment={false}
       handleCreateEnvironment={() => {
         console.log("Create environment", newEnvironmentName)
         setNewEnvironmentName("")
+        setNewEnvironmentAirflowUrl("")
         setIsCreatingEnvironmentMode(false)
       }}
       handleCancelCreateEnvironment={() => {
         setNewEnvironmentName("")
+        setNewEnvironmentAirflowUrl("")
         setIsCreatingEnvironmentMode(false)
       }}
     />

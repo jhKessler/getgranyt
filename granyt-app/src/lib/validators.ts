@@ -186,6 +186,33 @@ export const openlineageEventSchema = z.object({
 export type OpenLineageEvent = z.infer<typeof openlineageEventSchema>;
 export type OpenLineageJob = z.infer<typeof openlineageJobSchema>;
 export type OpenLineageRun = z.infer<typeof openlineageRunSchema>;
+export type OpenLineageRunFacets = z.infer<typeof openlineageRunFacetsSchema>;
+
+// ============================================================================
+// FACET EXTRACTION HELPERS
+// ============================================================================
+
+/** Schema for extracting error message from OpenLineage facets */
+const errorMessageFacetSchema = z.object({
+  message: z.string(),
+}).passthrough();
+
+/**
+ * Safely extracts error message from OpenLineage run facets
+ * Returns undefined if the facet is missing or malformed
+ */
+export function extractErrorMessageFromFacets(
+  facets: Record<string, unknown> | undefined
+): string | undefined {
+  if (!facets?.errorMessage) {
+    return undefined;
+  }
+  const result = errorMessageFacetSchema.safeParse(facets.errorMessage);
+  if (!result.success) {
+    return undefined;
+  }
+  return result.data.message;
+}
 
 // ============================================================================
 // HELPER FUNCTIONS

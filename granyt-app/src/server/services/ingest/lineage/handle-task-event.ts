@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { extractErrorMessageFromFacets } from "@/lib/validators";
 import { ensureDagExists, findOrCreateDagRun } from "../../dag-run";
 import { extractParentDagRunId, calculateDuration } from "./helpers";
 import type { TaskLevelEventParams } from "./types";
@@ -107,7 +108,7 @@ async function upsertTaskRun(params: {
   if (eventType === "FAIL" || eventType === "ABORT") {
     const existing = await prisma.taskRun.findUnique({ where: whereClause });
     const duration = calculateDuration(existing?.startTime ?? null, eventTime);
-    const errorFacet = facets?.errorMessage as { message?: string } | undefined;
+    const errorMessage = extractErrorMessageFromFacets(facets);
 
     await prisma.taskRun.upsert({
       where: whereClause,
@@ -116,14 +117,14 @@ async function upsertTaskRun(params: {
         status: "failed",
         startTime: eventTime,
         endTime: eventTime,
-        errorMessage: errorFacet?.message,
+        errorMessage,
       },
       update: {
         srcRunId,
         status: "failed",
         endTime: eventTime,
         duration,
-        errorMessage: errorFacet?.message,
+        errorMessage,
         environment: environment ?? undefined,
       },
     });

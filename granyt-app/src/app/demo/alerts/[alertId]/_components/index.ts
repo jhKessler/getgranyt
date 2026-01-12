@@ -1,7 +1,2 @@
-export * from "./alert-detail-header"
-export * from "./alert-dag-context"
-export * from "./alert-status-banner"
-export * from "./alert-details-card"
-export * from "./alert-context-card"
-export * from "./understanding-alert-card"
-export * from "./types"
+// Re-export all alert components from dashboard
+export * from "@/app/dashboard/alerts/[alertId]/_components"

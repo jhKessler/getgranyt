@@ -44,11 +44,9 @@ export default function RunDetailPage({
   })
 
   // Fetch error occurrences with stacktraces for this run
-  const errorOccurrencesQuery = trpc.dashboard.getRunErrorOccurrences.useQuery({
+  const { data: errorOccurrences } = trpc.dashboard.getRunErrorOccurrences.useQuery({
     dagRunId: runId,
   })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const errorOccurrences = errorOccurrencesQuery.data as any[] | undefined
 
   // Format run ID for display (extract timestamp if it's a scheduled run)
   const displayRunId = runId.includes("__") 

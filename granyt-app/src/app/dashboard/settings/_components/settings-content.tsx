@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader, PageSkeleton, GettingStartedChecklist } from "@/components/shared";
-import { useSettingsPage } from "../_hooks";
+import { useSettings } from "../_context";
 import {
   NotificationPreferencesCard,
   EmailSetupCard,
@@ -9,36 +9,24 @@ import {
   AirflowSettingsCard,
 } from ".";
 
-export function SettingsContent({
-  isLoading,
-  notificationSettings,
-  handleUpdateNotifications,
-  // Channel management
-  channelStatuses,
-  getChannelConfig,
-  handleToggleChannel,
-  handleSaveChannelConfig,
-  handleTestChannelConnection,
-  handleSendTestNotification,
-  handleClearChannelConfig,
-  isTogglingChannel,
-  isSavingChannelConfig,
-  isTestingChannelConnection,
-  isSendingTestNotification,
-  // Airflow settings (per environment)
-  airflowEnvironments,
-  handleSaveEnvironmentAirflowUrl,
-  isSavingAirflowSettings,
-  savingEnvironmentId,
-  // Setup status
-  setupStatus,
-  isLoadingSetupStatus,
-}: ReturnType<typeof useSettingsPage>) {
+export function SettingsContent() {
+  const {
+    isLoading,
+    notificationSettings,
+    handleUpdateNotifications,
+    channelStatuses,
+    airflowEnvironments,
+    handleSaveEnvironmentAirflowUrl,
+    isSavingAirflowSettings,
+    savingEnvironmentId,
+    setupStatus,
+    isLoadingSetupStatus,
+  } = useSettings();
+
   if (isLoading) {
     return <PageSkeleton rows={3} />;
   }
 
-  // Check if any email channel (SMTP or RESEND) is configured and enabled
   const hasEmailConfigured = channelStatuses?.some(
     (channel) =>
       (channel.type === "SMTP" || channel.type === "RESEND") &&
@@ -46,9 +34,8 @@ export function SettingsContent({
       channel.isEnabled
   ) ?? false;
 
-  // Check if all setup steps are complete
-  const isSetupComplete = setupStatus?.hasDagRuns && 
-    setupStatus?.hasNotificationChannel && 
+  const isSetupComplete = setupStatus?.hasDagRuns &&
+    setupStatus?.hasNotificationChannel &&
     setupStatus?.hasErrors;
 
   return (
@@ -59,7 +46,6 @@ export function SettingsContent({
       />
 
       <div className="grid gap-6">
-        {/* Getting Started Checklist - show if not all complete */}
         {!isSetupComplete && (
           <GettingStartedChecklist
             setupStatus={setupStatus}
@@ -74,33 +60,9 @@ export function SettingsContent({
           savingEnvironmentId={savingEnvironmentId}
         />
 
-        <EmailSetupCard
-          channelStatuses={channelStatuses}
-          onToggleChannel={handleToggleChannel}
-          onSaveConfig={handleSaveChannelConfig}
-          onTestConnection={handleTestChannelConnection}
-          onSendTest={handleSendTestNotification}
-          onClearConfig={handleClearChannelConfig}
-          getChannelConfig={getChannelConfig}
-          isTogglingChannel={isTogglingChannel}
-          isSavingConfig={isSavingChannelConfig}
-          isTestingConnection={isTestingChannelConnection}
-          isSendingTest={isSendingTestNotification}
-        />
+        <EmailSetupCard />
 
-        <NotificationSettingsCard
-          channelStatuses={channelStatuses}
-          onToggleChannel={handleToggleChannel}
-          onSaveConfig={handleSaveChannelConfig}
-          onTestConnection={handleTestChannelConnection}
-          onSendTest={handleSendTestNotification}
-          onClearConfig={handleClearChannelConfig}
-          getChannelConfig={getChannelConfig}
-          isTogglingChannel={isTogglingChannel}
-          isSavingConfig={isSavingChannelConfig}
-          isTestingConnection={isTestingChannelConnection}
-          isSendingTest={isSendingTestNotification}
-        />
+        <NotificationSettingsCard />
 
         <NotificationPreferencesCard
           settings={notificationSettings}
