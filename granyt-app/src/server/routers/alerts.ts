@@ -33,6 +33,8 @@ export const alertsRouter = router({
         NULL_OCCURRENCE: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
         SCHEMA_CHANGE: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
         INTEGRATION_ERROR: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
+        CUSTOM_METRIC_DROP: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
+        CUSTOM_METRIC_DEGRADATION: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
       };
       
       for (const setting of settings) {
@@ -334,5 +336,241 @@ export const alertsRouter = router({
       }
       await reopenAlert(input.alertId);
       return { success: true };
+    }),
+
+  // ============================================================================
+  // Custom Metric Monitors
+  // ============================================================================
+
+  /**
+   * Get all custom metric monitors for the organization
+   */
+  getMetricMonitors: protectedProcedure
+    .input(z.object({ organizationId: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+
+      const monitors = await ctx.prisma.customMetricMonitor.findMany({
+        where: { organizationId: org.id },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return monitors;
+    }),
+
+  /**
+   * Create a new custom metric monitor
+   */
+  createMetricMonitor: protectedProcedure
+    .input(z.object({
+      organizationId: z.string().optional(),
+      name: z.string().min(1).max(100),
+      srcDagId: z.string(),
+      metricName: z.string().min(1),
+      alertType: z.enum(["CUSTOM_METRIC_DROP", "CUSTOM_METRIC_DEGRADATION"]),
+      // Sharp drop settings
+      sensitivity: z.nativeEnum(AlertSensitivity).optional().default(AlertSensitivity.MEDIUM),
+      customThreshold: z.number().min(1).max(99).nullable().optional(),
+      // Slow degradation settings
+      windowDays: z.number().min(1).max(90).optional().default(14),
+      minDeclinePercent: z.number().min(1).max(100).optional().default(15),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+
+      // Check if monitor already exists for this DAG + metric combination
+      const existing = await ctx.prisma.customMetricMonitor.findUnique({
+        where: {
+          organizationId_srcDagId_metricName: {
+            organizationId: org.id,
+            srcDagId: input.srcDagId,
+            metricName: input.metricName,
+          },
+        },
+      });
+
+      if (existing) {
+        throw new Error(`A monitor already exists for metric "${input.metricName}" on DAG "${input.srcDagId}"`);
+      }
+
+      const monitor = await ctx.prisma.customMetricMonitor.create({
+        data: {
+          organizationId: org.id,
+          name: input.name,
+          srcDagId: input.srcDagId,
+          metricName: input.metricName,
+          alertType: AlertType[input.alertType],
+          sensitivity: input.sensitivity,
+          customThreshold: input.sensitivity === AlertSensitivity.CUSTOM ? input.customThreshold : null,
+          windowDays: input.windowDays,
+          minDeclinePercent: input.minDeclinePercent,
+        },
+      });
+
+      return monitor;
+    }),
+
+  /**
+   * Update an existing custom metric monitor
+   */
+  updateMetricMonitor: protectedProcedure
+    .input(z.object({
+      organizationId: z.string().optional(),
+      id: z.string(),
+      name: z.string().min(1).max(100).optional(),
+      alertType: z.enum(["CUSTOM_METRIC_DROP", "CUSTOM_METRIC_DEGRADATION"]).optional(),
+      sensitivity: z.nativeEnum(AlertSensitivity).optional(),
+      customThreshold: z.number().min(1).max(99).nullable().optional(),
+      windowDays: z.number().min(1).max(90).optional(),
+      minDeclinePercent: z.number().min(1).max(100).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+
+      // Verify monitor exists and belongs to org
+      const existing = await ctx.prisma.customMetricMonitor.findFirst({
+        where: { id: input.id, organizationId: org.id },
+      });
+
+      if (!existing) {
+        throw new Error("Monitor not found");
+      }
+
+      const monitor = await ctx.prisma.customMetricMonitor.update({
+        where: { id: input.id },
+        data: {
+          ...(input.name !== undefined && { name: input.name }),
+          ...(input.alertType !== undefined && { alertType: AlertType[input.alertType] }),
+          ...(input.sensitivity !== undefined && { sensitivity: input.sensitivity }),
+          ...(input.sensitivity !== undefined && {
+            customThreshold: input.sensitivity === AlertSensitivity.CUSTOM ? input.customThreshold : null,
+          }),
+          ...(input.windowDays !== undefined && { windowDays: input.windowDays }),
+          ...(input.minDeclinePercent !== undefined && { minDeclinePercent: input.minDeclinePercent }),
+        },
+      });
+
+      return monitor;
+    }),
+
+  /**
+   * Delete a custom metric monitor
+   */
+  deleteMetricMonitor: protectedProcedure
+    .input(z.object({
+      organizationId: z.string().optional(),
+      id: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+
+      // Verify monitor exists and belongs to org
+      const existing = await ctx.prisma.customMetricMonitor.findFirst({
+        where: { id: input.id, organizationId: org.id },
+      });
+
+      if (!existing) {
+        throw new Error("Monitor not found");
+      }
+
+      await ctx.prisma.customMetricMonitor.delete({
+        where: { id: input.id },
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Toggle a custom metric monitor's enabled state
+   */
+  toggleMetricMonitor: protectedProcedure
+    .input(z.object({
+      organizationId: z.string().optional(),
+      id: z.string(),
+      enabled: z.boolean(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+
+      // Verify monitor exists and belongs to org
+      const existing = await ctx.prisma.customMetricMonitor.findFirst({
+        where: { id: input.id, organizationId: org.id },
+      });
+
+      if (!existing) {
+        throw new Error("Monitor not found");
+      }
+
+      const monitor = await ctx.prisma.customMetricMonitor.update({
+        where: { id: input.id },
+        data: { enabled: input.enabled },
+      });
+
+      return monitor;
+    }),
+
+  /**
+   * Get available custom metrics for a DAG
+   * Returns metrics that have been captured in the Metric.metrics JSON field
+   */
+  getAvailableCustomMetrics: protectedProcedure
+    .input(z.object({
+      organizationId: z.string().optional(),
+      srcDagId: z.string(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
+
+      // Get recent metrics for this DAG to extract available custom metric keys
+      const recentMetrics = await ctx.prisma.metric.findMany({
+        where: {
+          organizationId: org.id,
+          taskRun: {
+            dagRun: {
+              srcDagId: input.srcDagId,
+            },
+          },
+        },
+        select: {
+          metrics: true,
+          taskRun: {
+            select: {
+              srcTaskId: true,
+            },
+          },
+        },
+        take: 100,
+        orderBy: { capturedAt: "desc" },
+      });
+
+      // Extract unique metric keys (excluding standard DataFrame metrics)
+      const standardKeys = new Set([
+        "row_count", "column_count", "dataframe_type", "memory_bytes", "upstream",
+        "_is_custom_metric", // Internal flag
+      ]);
+
+      const metricKeys = new Map<string, { taskId: string | null; sampleValue: number }>();
+
+      for (const metric of recentMetrics) {
+        const metricsObj = metric.metrics as Record<string, unknown> | null;
+        if (!metricsObj || typeof metricsObj !== "object") continue;
+
+        for (const [key, value] of Object.entries(metricsObj)) {
+          if (standardKeys.has(key)) continue;
+          if (typeof value !== "number") continue;
+          if (metricKeys.has(key)) continue;
+
+          metricKeys.set(key, {
+            taskId: metric.taskRun?.srcTaskId ?? null,
+            sampleValue: value,
+          });
+        }
+      }
+
+      return Array.from(metricKeys.entries()).map(([name, info]) => ({
+        name,
+        taskId: info.taskId,
+        sampleValue: info.sampleValue,
+      }));
     }),
 });

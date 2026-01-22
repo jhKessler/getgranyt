@@ -54,10 +54,11 @@ async function upsertDagRun(params: {
   const { organizationId, srcDagId, namespace, srcRunId, eventType, eventTime, environment } = params;
 
   const whereClause = {
-    organizationId_srcDagId_srcRunId: {
+    organizationId_srcDagId_srcRunId_environment: {
       organizationId,
       srcDagId,
       srcRunId,
+      environment: environment ?? null,
     },
   };
 
@@ -74,10 +75,9 @@ async function upsertDagRun(params: {
     await prisma.dagRun.upsert({
       where: whereClause,
       create: { ...baseData, startTime: eventTime, status: DagRunStatus.RUNNING },
-      update: { 
-        startTime: eventTime, 
-        status: DagRunStatus.RUNNING, 
-        environment: environment ?? undefined,
+      update: {
+        startTime: eventTime,
+        status: DagRunStatus.RUNNING,
         // Update namespace if it was "airflow" and we have a better one
         ...(namespace !== "airflow" && { namespace }),
       },
@@ -95,11 +95,10 @@ async function upsertDagRun(params: {
     const dagRun = await prisma.dagRun.upsert({
       where: whereClause,
       create: { ...baseData, startTime: eventTime, endTime: eventTime, status: DagRunStatus.SUCCESS },
-      update: { 
-        endTime: eventTime, 
-        duration, 
-        status: DagRunStatus.SUCCESS, 
-        environment: environment ?? undefined,
+      update: {
+        endTime: eventTime,
+        duration,
+        status: DagRunStatus.SUCCESS,
         // Update namespace if it was "airflow" and we have a better one
         ...(namespace !== "airflow" && { namespace }),
       },
@@ -137,7 +136,7 @@ async function upsertDagRun(params: {
     const dagRun = await prisma.dagRun.upsert({
       where: whereClause,
       create: { ...baseData, startTime: eventTime, endTime: eventTime, status: DagRunStatus.FAILED },
-      update: { endTime: eventTime, duration, status: DagRunStatus.FAILED, environment: environment ?? undefined },
+      update: { endTime: eventTime, duration, status: DagRunStatus.FAILED },
     });
 
     // Update computed metrics

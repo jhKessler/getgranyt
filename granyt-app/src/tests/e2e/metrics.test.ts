@@ -92,10 +92,11 @@ describe("E2E: Metrics", () => {
     // 4. Verify metrics for specific run
     const dagRun = await prisma.dagRun.findUnique({
       where: {
-        organizationId_srcDagId_srcRunId: {
+        organizationId_srcDagId_srcRunId_environment: {
           organizationId: org.id,
           srcDagId: dagId,
           srcRunId: runId,
+          environment: "production",
         }
       }
     });

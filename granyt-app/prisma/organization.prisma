@@ -18,6 +18,7 @@ model Organization {
   dagRunMetricSnapshots    DagRunMetricSnapshot[]
   alertSettings OrganizationAlertSettings[]
   channelConfigs OrganizationChannelConfig[]
+  customMetricMonitors CustomMetricMonitor[]
 
   @@map("organizations")
 }

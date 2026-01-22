@@ -73,7 +73,7 @@ export interface AlertNotificationPayload extends BaseNotificationPayload {
  */
 export interface BatchAlertItem {
   alertId: string;
-  alertType: "ROW_COUNT_DROP" | "NULL_OCCURRENCE" | "SCHEMA_CHANGE";
+  alertType: "ROW_COUNT_DROP" | "NULL_OCCURRENCE" | "SCHEMA_CHANGE" | "CUSTOM_METRIC_DROP" | "CUSTOM_METRIC_DEGRADATION";
   severity: NotificationSeverity;
   captureId?: string | null;
   metadata: Record<string, unknown>;
