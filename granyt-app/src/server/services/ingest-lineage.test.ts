@@ -10,9 +10,10 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
     },
     dagRun: {
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       create: vi.fn(),
-      upsert: vi.fn(),
+      update: vi.fn(),
     },
     dagRunMetricSnapshot: {
       upsert: vi.fn(),
@@ -105,7 +106,8 @@ describe('Ingest Lineage Service', () => {
   describe('DAG-level events', () => {
     it('should handle START event', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.upsert).mockResolvedValue({ id: 'run-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'run-1' } as any);
       vi.mocked(prisma.lineageEvent.create).mockResolvedValue({} as any);
 
       const event = createDagLevelEvent({ eventType: 'START' });
@@ -117,12 +119,9 @@ describe('Ingest Lineage Service', () => {
       expect(result.eventType).toBe('START');
       expect(result.isTaskLevel).toBe(false);
       expect(result.srcDagId).toBe('test_dag');
-      expect(prisma.dagRun.upsert).toHaveBeenCalledWith(
+      expect(prisma.dagRun.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          create: expect.objectContaining({
-            status: 'RUNNING',
-          }),
-          update: expect.objectContaining({
+          data: expect.objectContaining({
             status: 'RUNNING',
           }),
         })
@@ -131,13 +130,13 @@ describe('Ingest Lineage Service', () => {
 
     it('should handle COMPLETE event', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({
         id: 'run-1',
         organizationId: 'org-123',
         startTime: new Date('2025-01-01T11:00:00Z'),
         taskRuns: [{ id: 'task-run-1', status: 'success' }],
       } as any);
-      vi.mocked(prisma.dagRun.upsert).mockResolvedValue({ id: 'run-1' } as any);
+      vi.mocked(prisma.dagRun.update).mockResolvedValue({ id: 'run-1' } as any);
       vi.mocked(prisma.lineageEvent.create).mockResolvedValue({} as any);
       vi.mocked(prisma.alertEvaluationJob.upsert).mockResolvedValue({ id: 'job-1', status: 'pending' } as any);
 
@@ -148,9 +147,9 @@ describe('Ingest Lineage Service', () => {
       });
 
       expect(result.eventType).toBe('COMPLETE');
-      expect(prisma.dagRun.upsert).toHaveBeenCalledWith(
+      expect(prisma.dagRun.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          update: expect.objectContaining({
+          data: expect.objectContaining({
             endTime: expect.any(Date),
             status: 'SUCCESS',
           }),
@@ -160,13 +159,13 @@ describe('Ingest Lineage Service', () => {
 
     it('should handle FAIL event', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({
         id: 'run-1',
         organizationId: 'org-123',
         startTime: new Date('2025-01-01T11:00:00Z'),
         taskRuns: [{ id: 'task-run-1', status: 'failed' }],
       } as any);
-      vi.mocked(prisma.dagRun.upsert).mockResolvedValue({ id: 'run-1' } as any);
+      vi.mocked(prisma.dagRun.update).mockResolvedValue({ id: 'run-1' } as any);
       vi.mocked(prisma.lineageEvent.create).mockResolvedValue({} as any);
       vi.mocked(prisma.alertEvaluationJob.upsert).mockResolvedValue({ id: 'job-1', status: 'pending' } as any);
 
@@ -177,9 +176,9 @@ describe('Ingest Lineage Service', () => {
       });
 
       expect(result.eventType).toBe('FAIL');
-      expect(prisma.dagRun.upsert).toHaveBeenCalledWith(
+      expect(prisma.dagRun.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          update: expect.objectContaining({
+          data: expect.objectContaining({
             status: 'FAILED',
           }),
         })
@@ -190,7 +189,7 @@ describe('Ingest Lineage Service', () => {
   describe('Task-level events', () => {
     it('should identify task-level events correctly', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({} as any);
       vi.mocked(prisma.lineageEvent.create).mockResolvedValue({} as any);
@@ -207,7 +206,7 @@ describe('Ingest Lineage Service', () => {
 
     it('should handle task START event', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({} as any);
       vi.mocked(prisma.lineageEvent.create).mockResolvedValue({} as any);
@@ -229,7 +228,7 @@ describe('Ingest Lineage Service', () => {
 
     it('should handle task COMPLETE event', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.findUnique).mockResolvedValue({
         startTime: new Date('2025-01-01T11:00:00Z'),
@@ -256,7 +255,8 @@ describe('Ingest Lineage Service', () => {
   describe('Raw event storage', () => {
     it('should store raw lineage event', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.upsert).mockResolvedValue({} as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.create).mockResolvedValue({} as any);
       vi.mocked(prisma.lineageEvent.create).mockResolvedValue({} as any);
 
       const event = createDagLevelEvent();
@@ -280,7 +280,8 @@ describe('Ingest Lineage Service', () => {
 
   it('should extract and store DAG schedule from job facets', async () => {
     vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-    vi.mocked(prisma.dagRun.upsert).mockResolvedValue({ id: 'run-1' } as any);
+    vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'run-1' } as any);
     vi.mocked(prisma.lineageEvent.create).mockResolvedValue({} as any);
 
     const event = createDagLevelEvent({

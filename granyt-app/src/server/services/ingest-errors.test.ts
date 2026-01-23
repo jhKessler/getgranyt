@@ -22,8 +22,9 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
     },
     dagRun: {
-      findUnique: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
     taskRun: {
       upsert: vi.fn(),
@@ -73,7 +74,7 @@ describe('Ingest Errors Service', () => {
   describe('ingestError', () => {
     it('should ingest error successfully', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
       vi.mocked(prisma.generalError.upsert).mockResolvedValue({ id: 'error-1' } as any);
       vi.mocked(prisma.errorOccurrence.create).mockResolvedValue({} as any);
@@ -102,7 +103,7 @@ describe('Ingest Errors Service', () => {
 
     it('should generate consistent fingerprint for same error type and message', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
       vi.mocked(prisma.generalError.upsert).mockResolvedValue({ id: 'error-1' } as any);
       vi.mocked(prisma.errorOccurrence.create).mockResolvedValue({} as any);
@@ -127,7 +128,7 @@ describe('Ingest Errors Service', () => {
 
     it('should normalize variable parts in fingerprint', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
       vi.mocked(prisma.generalError.upsert).mockResolvedValue({ id: 'error-1' } as any);
       vi.mocked(prisma.errorOccurrence.create).mockResolvedValue({} as any);
@@ -156,7 +157,7 @@ describe('Ingest Errors Service', () => {
 
     it('should store stacktrace in error occurrence', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
       vi.mocked(prisma.generalError.upsert).mockResolvedValue({ id: 'error-1' } as any);
       vi.mocked(prisma.errorOccurrence.create).mockResolvedValue({} as any);
@@ -193,7 +194,7 @@ describe('Ingest Errors Service', () => {
   describe('ingestErrors', () => {
     it('should ingest multiple errors', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
       vi.mocked(prisma.generalError.upsert).mockResolvedValue({ id: 'error-1' } as any);
       vi.mocked(prisma.errorOccurrence.create).mockResolvedValue({} as any);
