@@ -1,14 +1,14 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import type { NextConfig } from 'next';
 
 // Validate environment variables at build time
-import "./src/env.ts";
+import "./src/env";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Enable standalone output for Docker deployment
   output: 'standalone',
