@@ -13,7 +13,8 @@ export function useSettingsPage() {
   
   // Queries
   const { data: notificationSettings, isLoading: isLoadingNotifications } = trpc.settings.getNotificationSettings.useQuery();
-  
+  const { data: notificationFilters, isLoading: isLoadingFilters } = trpc.settings.getNotificationFilters.useQuery();
+
   // Mutations
   const updateNotifications = trpc.settings.updateNotificationSettings.useMutation({
     onSuccess: () => {
@@ -24,7 +25,17 @@ export function useSettingsPage() {
       toast.error(`Failed to update: ${error.message}`);
     },
   });
-  
+
+  const updateFilters = trpc.settings.updateNotificationFilters.useMutation({
+    onSuccess: () => {
+      toast.success("Notification filters updated");
+      utils.settings.getNotificationFilters.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update filters: ${error.message}`);
+    },
+  });
+
   // Handlers
   const handleUpdateNotifications = (updates: Array<{ type: string; enabled: boolean }>) => {
     updateNotifications.mutate(
@@ -38,7 +49,14 @@ export function useSettingsPage() {
   const handleToggleNotification = (type: string, enabled: boolean) => {
     handleUpdateNotifications([{ type, enabled }]);
   };
-  
+
+  const handleUpdateFilters = (updates: {
+    environmentFilter?: "all" | "default_only";
+    includeManualRuns?: boolean;
+  }) => {
+    updateFilters.mutate(updates);
+  };
+
   // ============================================================================
   // CHANNEL MANAGEMENT
   // ============================================================================
@@ -212,16 +230,23 @@ export function useSettingsPage() {
   const { data: setupStatus, isLoading: isLoadingSetupStatus } = 
     trpc.dashboard.getSetupStatus.useQuery({});
   
+  // Get default environment name for display in filters UI
+  const defaultEnvironmentName = environments?.find((e) => e.isDefault)?.name;
+
   return {
     // Loading states
-    isLoading: isLoadingNotifications || isLoadingChannels || isLoadingEnvironments,
+    isLoading: isLoadingNotifications || isLoadingChannels || isLoadingEnvironments || isLoadingFilters,
 
     // Data
     notificationSettings,
+    notificationFilters,
+    defaultEnvironmentName,
 
     // Handlers
     handleUpdateNotifications,
     handleToggleNotification,
+    handleUpdateFilters,
+    isUpdatingFilters: updateFilters.isPending,
 
     // Channel Management
     channelStatuses,

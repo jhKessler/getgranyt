@@ -5,9 +5,8 @@ This guide covers deploying Granyt in production environments.
 ## Table of Contents
 
 - [Installation Paths](#installation-paths)
-  - [1. Install Script](#1-install-script)
-  - [2. Official Docker Compose](#2-official-docker-compose)
-  - [3. Custom Deployment](#3-custom-deployment)
+  - [1. Docker Compose](#1-docker-compose)
+  - [2. Custom Deployment](#2-custom-deployment)
 - [Environment Variable Reference](#environment-variable-reference)
   - [Official Docker Compose (.env file)](#official-docker-compose-env-file)
   - [Container Environment (Direct)](#container-environment-direct)
@@ -23,38 +22,7 @@ This guide covers deploying Granyt in production environments.
 
 ## Installation Paths
 
-### 1. Install Script
-
-The easiest way to deploy Granyt is using our interactive installation wizard:
-
-```bash
-curl -fsSL https://granyt.dev/install.sh | sh
-```
-
-Or download and run manually:
-
-```bash
-curl -O https://granyt.dev/install.sh
-chmod +x install.sh
-./install.sh
-```
-
-📜 **[View the install script source](scripts/install.sh)**
-
-The install wizard will:
-1. ✅ Check for Docker (and optionally install it)
-2. ✅ Download the required Docker Compose files
-3. ✅ Help you set required environment variables
-4. ✅ Automatically generate secure secrets
-5. ✅ Start Granyt containers
-
-**Options:**
-- `--help` - Show help message
-- `--dry-run` - Preview what would be done without making changes
-
----
-
-### 2. Official Docker Compose
+### 1. Docker Compose
 
 For users who want to use our pre-configured stack including a PostgreSQL database. This method uses a `.env` file to configure the entire stack.
 
@@ -101,7 +69,7 @@ For users who want to use our pre-configured stack including a PostgreSQL databa
 
 ---
 
-### 3. Custom Deployment (Kubernetes & Docker)
+### 2. Custom Deployment (Kubernetes & Docker)
 
 For advanced users deploying to Kubernetes, ECS, or using an external database (RDS, Supabase). You must provide the following variables directly to the both the app and migrations container environment:
 
@@ -138,44 +106,54 @@ For advanced users deploying to Kubernetes, ECS, or using an external database (
 ---
 ## Kubernetes Guide
 
-For Kubernetes deployments, use the Docker images directly with your preferred orchestration method.
+### 1. PostgreSQL Database
 
-> 📋 Make sure to configure all [Required Variables](#3-custom-deployment-kubernetes--docker) in your Kubernetes secrets.
+Deploy PostgreSQL however you prefer. Popular options:
+- CloudNativePG (operator-based)
+- Bitnami Helm Chart
+- Managed service (RDS, Cloud SQL, Azure Database)
 
-### Docker Images
+### 2. Application Deployment
 
-| Image | Purpose |
-|-------|---------|
-| `ghcr.io/jhkessler/granyt-app:latest` | Main application |
-| `ghcr.io/jhkessler/granyt-app:latest-migrations` | Database migrations (init container) |
+#### Environment Variables
 
-### Example Deployment
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string: `postgresql://<user>:<password>@<host>:5432/<database>` |
+| `BETTER_AUTH_SECRET` | Session encryption key, 32+ chars. Generate with `openssl rand -hex 32` |
+| `BETTER_AUTH_URL` | Public URL where Granyt is accessible (must match your ingress) |
+| `NEXT_PUBLIC_APP_URL` | Same as `BETTER_AUTH_URL` |
+
+#### Secret
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: granyt
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://USER:PASSWORD@DB_HOST:5432/DATABASE"
+  BETTER_AUTH_SECRET: "YOUR_32_CHAR_SECRET"
+```
+
+#### ConfigMap
 
 ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: granyt-config
+  name: granyt
 data:
-  NODE_ENV: "production"
-  NEXT_PUBLIC_APP_URL: "https://granyt.example.com"
-  # Add other non-secret environment variables here
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: granyt-secrets
-type: Opaque
-stringData:
-  # Required - see Custom Deployment section above
-  database-url: "postgresql://granyt:YOUR_PASSWORD@postgres:5432/granyt?schema=public"
-  better-auth-secret: "your-32-char-secret-key-here"
-  better-auth-url: "https://granyt.example.com"
-  # Optional - SMTP settings for email alerts
-  smtp-host: ""
-  smtp-user: ""
-  smtp-password: ""
----
+  BETTER_AUTH_URL: "https://YOUR_INGRESS_URL"
+  NEXT_PUBLIC_APP_URL: "https://YOUR_INGRESS_URL"
+```
+
+#### Deployment
+
+The app requires a migrations init container that runs before the main app starts.
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -191,48 +169,23 @@ spec:
         app: granyt
     spec:
       initContainers:
-        # Run migrations before starting the app
         - name: migrations
           image: ghcr.io/jhkessler/granyt-app:latest-migrations
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: granyt-secrets
-                  key: database-url
+          envFrom:
+            - configMapRef:
+                name: granyt
+            - secretRef:
+                name: granyt
       containers:
         - name: app
           image: ghcr.io/jhkessler/granyt-app:latest
           ports:
             - containerPort: 3000
-          env:
-            # From Secrets
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: granyt-secrets
-                  key: database-url
-            - name: BETTER_AUTH_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: granyt-secrets
-                  key: better-auth-secret
-            - name: BETTER_AUTH_URL
-              valueFrom:
-                secretKeyRef:
-                  name: granyt-secrets
-                  key: better-auth-url
-            # From ConfigMap
-            - name: NODE_ENV
-              valueFrom:
-                configMapKeyRef:
-                  name: granyt-config
-                  key: NODE_ENV
-            - name: NEXT_PUBLIC_APP_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: granyt-config
-                  key: NEXT_PUBLIC_APP_URL
+          envFrom:
+            - configMapRef:
+                name: granyt
+            - secretRef:
+                name: granyt
           livenessProbe:
             httpGet:
               path: /api/health
@@ -245,19 +198,29 @@ spec:
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
----
+```
+
+### 3. Service
+
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: granyt-service
+  name: granyt-app
 spec:
-  selector:
-    app: granyt
+  type: ClusterIP
   ports:
     - port: 80
       targetPort: 3000
-  type: ClusterIP
+  selector:
+    app: granyt
 ```
+
+### 4. Ingress
+
+Configure ingress using whatever method you use (Nginx, Traefik, Kong, cloud load balancer, etc.). Point it to the `granyt-app` service on port 80.
+
+> ⚠️ **Important**: The URL you expose via ingress must exactly match the values in `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL`. Authentication will fail if these don't match your actual public URL.
 
 ---
 

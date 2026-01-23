@@ -53,7 +53,8 @@ function RunsPageContent() {
     }
 
     if (parsed.data.environment) {
-      setFilter("selectedEnvironment", parsed.data.environment)
+      // "all" means All Environments (null)
+      setFilter("selectedEnvironment", parsed.data.environment === "all" ? null : parsed.data.environment)
       setFilter("_envInitialized", true)
     }
     // Handle custom date range

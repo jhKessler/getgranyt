@@ -130,7 +130,7 @@ export default function DashboardPage() {
           const params = new URLSearchParams()
           params.set("startTime", startTime.toISOString())
           params.set("endTime", endTime.toISOString())
-          if (selectedEnvironment) params.set("environment", selectedEnvironment)
+          params.set("environment", selectedEnvironment ?? "all")
           params.set("status", status)
           router.push(`/dashboard/runs?${params.toString()}`)
         }}

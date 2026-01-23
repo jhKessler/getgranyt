@@ -281,3 +281,39 @@ export const ALERT_TYPE_TO_NOTIFICATION_TYPE: Record<string, NotificationTypeVal
   NULL_OCCURRENCE: "NULL_OCCURRENCE_ALERT",
   SCHEMA_CHANGE: "SCHEMA_CHANGE_ALERT",
 };
+
+// ============================================================================
+// NOTIFICATION FILTER SETTINGS
+// ============================================================================
+
+/**
+ * Environment filter options
+ */
+export type EnvironmentFilterValue = "all" | "default_only";
+
+export interface EnvironmentFilterOption {
+  value: EnvironmentFilterValue;
+  label: string;
+  description: string;
+}
+
+export const ENVIRONMENT_FILTER_OPTIONS: EnvironmentFilterOption[] = [
+  {
+    value: "all",
+    label: "All Environments",
+    description: "Receive notifications for all environments",
+  },
+  {
+    value: "default_only",
+    label: "Default Environment Only",
+    description: "Only receive notifications for your default (production) environment",
+  },
+];
+
+/**
+ * Default notification filter settings
+ */
+export const DEFAULT_NOTIFICATION_FILTERS = {
+  environmentFilter: "all" as EnvironmentFilterValue,
+  includeManualRuns: true,
+};

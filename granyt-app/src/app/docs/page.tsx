@@ -1,6 +1,6 @@
 import { Shield, Zap, BarChart3, Mail, AlertTriangle } from "lucide-react"
 import Link from "next/link"
-import { INSTALL_COMMAND, GITHUB_URL } from "@/lib/constants"
+import { GITHUB_URL } from "@/lib/constants"
 import { getDocsLink } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -107,6 +107,80 @@ POSTGRES_PASSWORD=your-secure-database-password    # Generate with: openssl rand
 BETTER_AUTH_SECRET=your-32-char-secret-key-here    # Generate with: openssl rand -hex 32
 BETTER_AUTH_URL=https://your-domain.com            # Or http://localhost:3000 for local dev`
 
+const K8S_SECRET = `apiVersion: v1
+kind: Secret
+metadata:
+  name: granyt
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://USER:PASSWORD@DB_HOST:5432/DATABASE"
+  BETTER_AUTH_SECRET: "YOUR_32_CHAR_SECRET"`
+
+const K8S_CONFIGMAP = `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: granyt
+data:
+  BETTER_AUTH_URL: "https://YOUR_INGRESS_URL"
+  NEXT_PUBLIC_APP_URL: "https://YOUR_INGRESS_URL"`
+
+const K8S_DEPLOYMENT = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: granyt-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: granyt
+  template:
+    metadata:
+      labels:
+        app: granyt
+    spec:
+      initContainers:
+        - name: migrations
+          image: ghcr.io/jhkessler/granyt-app:latest-migrations
+          envFrom:
+            - configMapRef:
+                name: granyt
+            - secretRef:
+                name: granyt
+      containers:
+        - name: app
+          image: ghcr.io/jhkessler/granyt-app:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: granyt
+            - secretRef:
+                name: granyt
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 40
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10`
+
+const K8S_SERVICE = `apiVersion: v1
+kind: Service
+metadata:
+  name: granyt-app
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+  selector:
+    app: granyt`
+
 export default function QuickstartPage() {
   return (
     <div className="space-y-12">
@@ -136,50 +210,18 @@ export default function QuickstartPage() {
             </Link>.
           </p>
 
-          <Tabs defaultValue="shell" className="w-full">
-            <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-              <TabsTrigger value="shell">CLI</TabsTrigger>
-              <TabsTrigger value="docker">Docker Deployment</TabsTrigger>
+          <Tabs defaultValue="docker" className="w-full">
+            <TabsList className="grid w-full max-w-100 grid-cols-2">
+              <TabsTrigger value="docker">Docker (Recommended)</TabsTrigger>
+              <TabsTrigger value="kubernetes">Kubernetes</TabsTrigger>
             </TabsList>
-            <TabsContent value="shell" className="mt-4 space-y-4">
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  The Granyt installer will walk you through the entire setup process.
-                </p>
-                <CodeBlock 
-                  code={INSTALL_COMMAND}
-                  language="bash"
-                  title="Terminal"
-                />
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">This script will:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Check for Docker (optionally install it)</li>
-                    <li>
-                      Download{" "}
-                      <Link 
-                        href={`${GITHUB_URL}/blob/main/granyt-app/docker-compose.yml`}
-                        target="_blank"
-                        className="text-primary hover:underline"
-                      >
-                        <InlineCode>docker-compose.yml</InlineCode>
-                      </Link>{" "}
-                      from GitHub
-                    </li>
-                    <li>Generate secure secrets for your installation</li>
-                    <li>Create a <InlineCode>.env</InlineCode> file with your configuration</li>
-                    <li>Start Granyt containers</li>
-                  </ul>
-                </div>
-              </div>
-            </TabsContent>
             <TabsContent value="docker" className="mt-4 space-y-4">
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
                   Create a <InlineCode>docker-compose.yml</InlineCode> file and a <InlineCode>.env</InlineCode> file, then run <InlineCode>docker compose up -d</InlineCode>.
                 </p>
                 <div className="space-y-4">
-                  <CodeBlock 
+                  <CodeBlock
                     code={DOCKER_COMPOSE_YAML}
                     language="yaml"
                     title="docker-compose.yml"
@@ -187,7 +229,7 @@ export default function QuickstartPage() {
                   <p className="text-sm text-muted-foreground">
                     Next, create a <InlineCode>.env</InlineCode> file in the same directory to store your secrets:
                   </p>
-                  <CodeBlock 
+                  <CodeBlock
                     code={DOT_ENV_EXAMPLE}
                     language="bash"
                     title=".env"
@@ -195,7 +237,7 @@ export default function QuickstartPage() {
                   <p className="text-sm text-muted-foreground">
                     Finally, start the Granyt server:
                   </p>
-                  <CodeBlock 
+                  <CodeBlock
                     code="docker compose up -d"
                     language="bash"
                     title="Terminal"
@@ -203,6 +245,44 @@ export default function QuickstartPage() {
                   <p className="text-sm text-muted-foreground">
                     The Granyt server will now be available on your system at port <InlineCode>3000</InlineCode>.
                   </p>
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="kubernetes" className="mt-4 space-y-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium">1. PostgreSQL Database</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Deploy PostgreSQL using your preferred method: CloudNativePG, Bitnami Helm Chart, or a managed service (RDS, Cloud SQL, Azure Database).
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium">2. Create Secret</h4>
+                  <CodeBlock code={K8S_SECRET} language="yaml" title="secret.yaml" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium">3. Create ConfigMap</h4>
+                  <CodeBlock code={K8S_CONFIGMAP} language="yaml" title="configmap.yaml" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium">4. Deploy Application</h4>
+                  <p className="text-sm text-muted-foreground">
+                    The app requires a migrations init container that runs before the main app starts.
+                  </p>
+                  <CodeBlock code={K8S_DEPLOYMENT} language="yaml" title="deployment.yaml" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium">5. Create Service</h4>
+                  <CodeBlock code={K8S_SERVICE} language="yaml" title="service.yaml" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium">6. Configure Ingress</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Configure ingress using your preferred method (Nginx, Traefik, Kong, cloud load balancer). Point it to the <InlineCode>granyt-app</InlineCode> service on port 80.
+                  </p>
+                  <Callout variant="warning">
+                    The URL you expose via ingress must exactly match the values in <InlineCode>BETTER_AUTH_URL</InlineCode> and <InlineCode>NEXT_PUBLIC_APP_URL</InlineCode>. Authentication will fail if these don&apos;t match.
+                  </Callout>
                 </div>
               </div>
             </TabsContent>

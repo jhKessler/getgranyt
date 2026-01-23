@@ -199,7 +199,7 @@ async function runAlertDetection(dagRunId: string): Promise<Alert[]> {
  * Sends a single notification summarizing all alerts from a DAG run
  */
 async function sendBatchAlertNotification(
-  dagRun: { id: string; organizationId: string; srcDagId: string; srcRunId: string; environment: string | null },
+  dagRun: { id: string; organizationId: string; srcDagId: string; srcRunId: string; environment: string | null; runType: string | null },
   alerts: Alert[]
 ): Promise<void> {
   // Convert alerts to batch alert items
@@ -229,6 +229,7 @@ async function sendBatchAlertNotification(
     dagRunId: dagRun.id,
     srcRunId: dagRun.srcRunId,
     environment: dagRun.environment,
+    runType: dagRun.runType,
     alerts: batchAlerts,
     dashboardUrl,
   }).catch((err) => {

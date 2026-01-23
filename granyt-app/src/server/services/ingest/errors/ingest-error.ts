@@ -1,4 +1,4 @@
-import { resolveDagContext } from "../../dag-run";
+import { resolveDagContext, inferRunType } from "../../dag-run";
 import { generateErrorFingerprint } from "./fingerprint";
 import { upsertGeneralError } from "./upsert-general-error";
 import { createErrorOccurrence } from "./create-error-occurrence";
@@ -63,11 +63,14 @@ export async function ingestError(
     ?.map((frame) => `  File "${frame.filename}", line ${frame.lineno}, in ${frame.function}`)
     .join("\n");
 
+  // Infer run type from the run ID for notification filtering
+  const runType = inferRunType(srcRunId);
+
   // Send notification asynchronously (don't block error ingestion)
   notify({
     organizationId,
-    type: isNewError 
-      ? NotificationEventType.NEW_PIPELINE_ERROR 
+    type: isNewError
+      ? NotificationEventType.NEW_PIPELINE_ERROR
       : NotificationEventType.PIPELINE_ERROR,
     severity: "critical",
     errorType: event.exception.type,
@@ -77,6 +80,8 @@ export async function ingestError(
     runId: srcRunId,
     stackTrace: formattedStackTrace,
     isNewError,
+    environment,
+    runType,
     dashboardUrl: env.NEXT_PUBLIC_APP_URL
       ? `${env.NEXT_PUBLIC_APP_URL}/dashboard/errors`
       : undefined,

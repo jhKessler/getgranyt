@@ -83,4 +83,101 @@ describe("E2E: Notification Flow", () => {
     // Note: It might still fail if the webhook call fails, but 'sent' usually means it passed the filters
     expect(resultEnabled.channels.length).toBeGreaterThan(0);
   });
+
+  it("should manage notification filters for environment and run type", async () => {
+    const { ctx, org, user } = testData;
+    const caller = settingsRouter.createCaller(ctx as any);
+
+    // 1. Get initial filters (should be defaults)
+    const initialFilters = await caller.getNotificationFilters();
+    expect(initialFilters.environmentFilter).toBe("all");
+    expect(initialFilters.includeManualRuns).toBe(true);
+
+    // 2. Update environment filter to default_only
+    await caller.updateNotificationFilters({
+      environmentFilter: "default_only",
+    });
+
+    const updatedFilters = await caller.getNotificationFilters();
+    expect(updatedFilters.environmentFilter).toBe("default_only");
+    expect(updatedFilters.includeManualRuns).toBe(true); // Should remain unchanged
+
+    // 3. Update manual runs filter
+    await caller.updateNotificationFilters({
+      includeManualRuns: false,
+    });
+
+    const updatedFilters2 = await caller.getNotificationFilters();
+    expect(updatedFilters2.environmentFilter).toBe("default_only"); // Should remain unchanged
+    expect(updatedFilters2.includeManualRuns).toBe(false);
+
+    // 4. Create a default environment for the org
+    await prisma.environment.create({
+      data: {
+        organizationId: org.id,
+        name: "production",
+        isDefault: true,
+      },
+    });
+
+    // 5. Ensure ALL_ALERTS is enabled for notify tests
+    await caller.updateNotificationSetting({
+      notificationType: NotificationTypes.ALL_ALERTS,
+      enabled: true,
+    });
+
+    // 6. Test notification filtering with environment (staging env should be filtered out)
+    const resultStagingEnv = await notify({
+      organizationId: org.id,
+      type: NotificationEventType.DAG_RUN_ALERTS_SUMMARY,
+      severity: "warning",
+      dagId: "test_dag",
+      dagRunId: "run-1",
+      srcRunId: "scheduled__2025-01-01",
+      environment: "staging", // Non-default environment
+      alerts: [],
+    });
+
+    // Should be false because user has environmentFilter set to "default_only"
+    // and this is a staging environment notification
+    expect(resultStagingEnv.sent).toBe(false);
+
+    // 7. Test notification filtering with manual run type
+    const resultManualRun = await notify({
+      organizationId: org.id,
+      type: NotificationEventType.DAG_RUN_ALERTS_SUMMARY,
+      severity: "warning",
+      dagId: "test_dag",
+      dagRunId: "run-2",
+      srcRunId: "manual__2025-01-01",
+      environment: "production", // Default environment
+      runType: "manual", // Manual run
+      alerts: [],
+    });
+
+    // Should be false because user has includeManualRuns set to false
+    expect(resultManualRun.sent).toBe(false);
+
+    // 8. Test that notification passes when matching filters
+    // Reset filters to allow the notification
+    await caller.updateNotificationFilters({
+      environmentFilter: "all",
+      includeManualRuns: true,
+    });
+
+    const resultAllowed = await notify({
+      organizationId: org.id,
+      type: NotificationEventType.DAG_RUN_ALERTS_SUMMARY,
+      severity: "warning",
+      dagId: "test_dag",
+      dagRunId: "run-3",
+      srcRunId: "scheduled__2025-01-01",
+      environment: "production",
+      runType: "scheduled",
+      alerts: [],
+    });
+
+    // Should attempt to send (channels.length > 0) because filters allow it
+    expect(resultAllowed.channels.length).toBeGreaterThan(0);
+  });
 });
