@@ -54,12 +54,10 @@ async function upsertDagRun(params: {
   const { organizationId, srcDagId, namespace, srcRunId, eventType, eventTime, environment } = params;
 
   const whereClause = {
-    organizationId_srcDagId_srcRunId_environment: {
-      organizationId,
-      srcDagId,
-      srcRunId,
-      environment: environment ?? null,
-    },
+    organizationId,
+    srcDagId,
+    srcRunId,
+    environment: environment ?? null,
   };
 
   const baseData = {
@@ -72,37 +70,47 @@ async function upsertDagRun(params: {
   };
 
   if (eventType === "START") {
-    await prisma.dagRun.upsert({
-      where: whereClause,
-      create: { ...baseData, startTime: eventTime, status: DagRunStatus.RUNNING },
-      update: {
-        startTime: eventTime,
-        status: DagRunStatus.RUNNING,
-        // Update namespace if it was "airflow" and we have a better one
-        ...(namespace !== "airflow" && { namespace }),
-      },
-    });
+    const existing = await prisma.dagRun.findFirst({ where: whereClause });
+    if (existing) {
+      await prisma.dagRun.update({
+        where: { id: existing.id },
+        data: {
+          startTime: eventTime,
+          status: DagRunStatus.RUNNING,
+          ...(namespace !== "airflow" && { namespace }),
+        },
+      });
+    } else {
+      await prisma.dagRun.create({
+        data: { ...baseData, startTime: eventTime, status: DagRunStatus.RUNNING },
+      });
+    }
     return;
   }
 
   if (eventType === "COMPLETE") {
-    const existing = await prisma.dagRun.findUnique({
+    const existing = await prisma.dagRun.findFirst({
       where: whereClause,
       select: { id: true, startTime: true },
     });
     const duration = calculateDuration(existing?.startTime ?? null, eventTime);
 
-    const dagRun = await prisma.dagRun.upsert({
-      where: whereClause,
-      create: { ...baseData, startTime: eventTime, endTime: eventTime, status: DagRunStatus.SUCCESS },
-      update: {
-        endTime: eventTime,
-        duration,
-        status: DagRunStatus.SUCCESS,
-        // Update namespace if it was "airflow" and we have a better one
-        ...(namespace !== "airflow" && { namespace }),
-      },
-    });
+    let dagRun;
+    if (existing) {
+      dagRun = await prisma.dagRun.update({
+        where: { id: existing.id },
+        data: {
+          endTime: eventTime,
+          duration,
+          status: DagRunStatus.SUCCESS,
+          ...(namespace !== "airflow" && { namespace }),
+        },
+      });
+    } else {
+      dagRun = await prisma.dagRun.create({
+        data: { ...baseData, startTime: eventTime, endTime: eventTime, status: DagRunStatus.SUCCESS },
+      });
+    }
 
     // Update computed metrics
     await updateComputedMetricsOnRunComplete({
@@ -127,17 +135,23 @@ async function upsertDagRun(params: {
   }
 
   if (eventType === "FAIL" || eventType === "ABORT") {
-    const existing = await prisma.dagRun.findUnique({
+    const existing = await prisma.dagRun.findFirst({
       where: whereClause,
       select: { id: true, startTime: true },
     });
     const duration = calculateDuration(existing?.startTime ?? null, eventTime);
 
-    const dagRun = await prisma.dagRun.upsert({
-      where: whereClause,
-      create: { ...baseData, startTime: eventTime, endTime: eventTime, status: DagRunStatus.FAILED },
-      update: { endTime: eventTime, duration, status: DagRunStatus.FAILED },
-    });
+    let dagRun;
+    if (existing) {
+      dagRun = await prisma.dagRun.update({
+        where: { id: existing.id },
+        data: { endTime: eventTime, duration, status: DagRunStatus.FAILED },
+      });
+    } else {
+      dagRun = await prisma.dagRun.create({
+        data: { ...baseData, startTime: eventTime, endTime: eventTime, status: DagRunStatus.FAILED },
+      });
+    }
 
     // Update computed metrics
     await updateComputedMetricsOnRunComplete({

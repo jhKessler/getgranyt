@@ -12,14 +12,12 @@ export async function findOrCreateDagRun(
   const { organizationId, srcDagId, srcRunId, timestamp, environment } = params;
   const namespace = params.namespace ?? "airflow";
 
-  const existingRun = await prisma.dagRun.findUnique({
+  const existingRun = await prisma.dagRun.findFirst({
     where: {
-      organizationId_srcDagId_srcRunId_environment: {
-        organizationId,
-        srcDagId,
-        srcRunId,
-        environment: environment ?? null,
-      },
+      organizationId,
+      srcDagId,
+      srcRunId,
+      environment: environment ?? null,
     },
   });
 
