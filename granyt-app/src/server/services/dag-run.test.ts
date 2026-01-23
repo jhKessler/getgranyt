@@ -9,8 +9,9 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
     },
     dagRun: {
-      findUnique: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
     taskRun: {
       upsert: vi.fn(),
@@ -58,7 +59,7 @@ describe('DAG Run Service', () => {
 
   describe('findOrCreateDagRun', () => {
     it('should return existing DagRun if found', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({
         id: 'dagrun-123',
       } as any);
 
@@ -74,7 +75,7 @@ describe('DAG Run Service', () => {
     });
 
     it('should create DagRun if not found', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({
         id: 'new-dagrun-123',
       } as any);
@@ -91,7 +92,7 @@ describe('DAG Run Service', () => {
     });
 
     it('should set runType to manual for manual runs', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'run-1' } as any);
 
       await findOrCreateDagRun({
@@ -111,7 +112,7 @@ describe('DAG Run Service', () => {
     });
 
     it('should set runType to scheduled for scheduled runs', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'run-1' } as any);
 
       await findOrCreateDagRun({
@@ -198,7 +199,7 @@ describe('DAG Run Service', () => {
 
     it('should return taskRunId when all context is provided', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
 
       const result = await resolveDagContext({

@@ -5,7 +5,7 @@ import { findOrCreateDagRun } from '../dag-run';
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     dagRun: {
-      findUnique: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
     },
   },
@@ -20,7 +20,7 @@ describe('Edge Cases: DAG Run Lifecycle', () => {
 
   it('should handle concurrent run creation attempts', async () => {
     // First call returns null (not found)
-    vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
 
     // But create might fail due to concurrent insert (unique constraint)
     // In real scenario, this would be handled by upsert or retry logic
@@ -43,7 +43,7 @@ describe('Edge Cases: DAG Run Lifecycle', () => {
   it('should handle run with very long run_id', async () => {
     const longRunId = 'scheduled__' + '2025-01-01T12:00:00.123456789+00:00';
 
-    vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.dagRun.create).mockResolvedValue({
       id: 'dagrun-1',
       srcRunId: longRunId,
@@ -67,7 +67,7 @@ describe('Edge Cases: DAG Run Lifecycle', () => {
   });
 
   it('should handle backfill run type', async () => {
-    vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'dagrun-1' } as any);
 
     await findOrCreateDagRun({
@@ -87,7 +87,7 @@ describe('Edge Cases: DAG Run Lifecycle', () => {
   });
 
   it('should default to unknown run type for unrecognized prefixes', async () => {
-    vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'dagrun-1' } as any);
 
     await findOrCreateDagRun({
