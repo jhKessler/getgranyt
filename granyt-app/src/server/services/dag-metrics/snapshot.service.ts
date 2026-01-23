@@ -94,6 +94,7 @@ export async function updateDagRunMetricSnapshot(
       customMetrics: customMetrics ?? undefined,
     },
     update: {
+      environment: dagRun.environment,
       duration: dagRun.duration,
       rowsProcessed,
       taskCount,

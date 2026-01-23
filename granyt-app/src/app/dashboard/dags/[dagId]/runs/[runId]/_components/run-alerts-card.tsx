@@ -32,6 +32,8 @@ const _ALERT_TYPE_LABELS: Record<AlertType, string> = {
   NULL_OCCURRENCE: "Null Occurrence",
   SCHEMA_CHANGE: "Schema Change",
   INTEGRATION_ERROR: "Integration Error",
+  CUSTOM_METRIC_DROP: "Custom Metric Drop",
+  CUSTOM_METRIC_DEGRADATION: "Custom Metric Degradation",
 }
 
 function getSeverityVariant(severity: string): "destructive" | "secondary" {

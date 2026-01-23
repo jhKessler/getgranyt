@@ -401,11 +401,9 @@ describe('Edge Cases: DAG Run Service', () => {
 
     it('should pass through environment when provided', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ 
-        id: 'dagrun-1',
-        environment: null // No environment set yet
-      } as any);
-      vi.mocked(prisma.dagRun.update).mockResolvedValue({} as any);
+      // With environment in unique key, findUnique returns null if no run exists with that environment
+      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
 
       await resolveDagContext({
@@ -417,10 +415,12 @@ describe('Edge Cases: DAG Run Service', () => {
         environment: 'staging',
       });
 
-      // Should update dagRun with environment since it wasn't set
-      expect(prisma.dagRun.update).toHaveBeenCalledWith(
+      // Should create dagRun with the specified environment
+      expect(prisma.dagRun.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: { environment: 'staging' },
+          data: expect.objectContaining({
+            environment: 'staging',
+          }),
         })
       );
     });

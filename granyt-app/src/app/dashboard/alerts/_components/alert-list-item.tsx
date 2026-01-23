@@ -1,10 +1,12 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { 
-  TrendingDown, 
-  AlertTriangle, 
+import {
+  TrendingDown,
+  AlertTriangle,
   Columns,
+  Activity,
+  Gauge,
 } from "lucide-react"
 import { format, formatDistanceToNow } from "date-fns"
 import { cn } from "@/lib/utils"
@@ -102,6 +104,12 @@ function AlertIcon({ alertType, status, isCritical }: AlertIconProps) {
   }
   if (alertType === "INTEGRATION_ERROR") {
     return <AlertTriangle className={cn(iconClassName, "text-red-500")} />
+  }
+  if (alertType === "CUSTOM_METRIC_DROP") {
+    return <Gauge className={iconClassName} />
+  }
+  if (alertType === "CUSTOM_METRIC_DEGRADATION") {
+    return <Activity className={cn(iconClassName, status === "OPEN" ? "text-purple-500" : "")} />
   }
   return <AlertTriangle className={iconClassName} />
 }

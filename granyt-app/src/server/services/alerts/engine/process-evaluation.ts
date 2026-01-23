@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { Alert, DagRunStatus } from "@prisma/client";
-import { 
-  getNumericMetric, 
+import { Alert, DagRunStatus, AlertType as PrismaAlertType } from "@prisma/client";
+import {
+  getNumericMetric,
   parseMetricsJson,
-  parseColumnsFromSchema 
+  parseColumnsFromSchema
 } from "@/lib/json-schemas";
 import { detectorRegistry } from "../detectors";
 import { getEffectiveSettings } from "./get-effective-settings";
@@ -16,6 +16,8 @@ import {
 import { notify, NotificationEventType, type BatchAlertItem } from "../../notifications";
 import { createLogger } from "@/lib/logger";
 import { env } from "@/env";
+import { detectCustomMetricDrop } from "../detectors/custom-metric-drop";
+import { detectCustomMetricDegradation } from "../detectors/custom-metric-degradation";
 
 const logger = createLogger("AlertEngine");
 
@@ -176,12 +178,16 @@ async function runAlertDetection(dagRunId: string): Promise<Alert[]> {
   const dagAlerts = await evaluateDetectors(dagCtx);
   createdAlerts.push(...dagAlerts);
 
+  // 5. Evaluate custom metric monitors for this DAG
+  const customMetricAlerts = await evaluateCustomMetricMonitors(dagRun);
+  createdAlerts.push(...customMetricAlerts);
+
   // Note: No need to update status to WARNING anymore!
   // The display status is now computed dynamically based on open alerts count.
   // When alerts are created, querying the dagRun with _count of open alerts
   // will automatically show WARNING for successful runs with alerts.
 
-  // 5. Send a single batch notification if any alerts were created
+  // 6. Send a single batch notification if any alerts were created
   if (createdAlerts.length > 0) {
     await sendBatchAlertNotification(dagRun, createdAlerts);
   }
@@ -199,7 +205,7 @@ async function sendBatchAlertNotification(
   // Convert alerts to batch alert items
   const batchAlerts: BatchAlertItem[] = alerts.map(alert => ({
     alertId: alert.id,
-    alertType: alert.alertType as "ROW_COUNT_DROP" | "NULL_OCCURRENCE" | "SCHEMA_CHANGE",
+    alertType: alert.alertType as "ROW_COUNT_DROP" | "NULL_OCCURRENCE" | "SCHEMA_CHANGE" | "CUSTOM_METRIC_DROP" | "CUSTOM_METRIC_DEGRADATION",
     severity: alert.severity as "info" | "warning" | "critical",
     captureId: alert.captureId,
     metadata: alert.metadata as Record<string, unknown>,
@@ -327,4 +333,157 @@ async function createAlert(input: CreateAlertInput): Promise<Alert> {
   });
 
   return alert;
+}
+
+// ============================================================================
+// Custom Metric Monitor Evaluation
+// ============================================================================
+
+/**
+ * Evaluates all enabled custom metric monitors for a DAG run
+ */
+async function evaluateCustomMetricMonitors(
+  dagRun: {
+    id: string;
+    organizationId: string;
+    srcDagId: string;
+    taskRuns: Array<{
+      id: string;
+      metrics: Array<{
+        metrics: unknown;
+        captureId: string | null;
+      }>;
+    }>;
+  }
+): Promise<Alert[]> {
+  const createdAlerts: Alert[] = [];
+
+  // 1. Get all enabled monitors for this DAG
+  const monitors = await prisma.customMetricMonitor.findMany({
+    where: {
+      organizationId: dagRun.organizationId,
+      srcDagId: dagRun.srcDagId,
+      enabled: true,
+    },
+  });
+
+  if (monitors.length === 0) {
+    return [];
+  }
+
+  // 2. Collect all custom metric values from this run's metrics
+  const metricValues = new Map<string, number>();
+
+  for (const taskRun of dagRun.taskRuns) {
+    for (const metric of taskRun.metrics) {
+      const metricsObj = parseMetricsJson(metric.metrics);
+      if (!metricsObj) continue;
+
+      // Extract all numeric values (potential custom metrics)
+      for (const [key, value] of Object.entries(metricsObj)) {
+        if (typeof value === "number" && !isStandardMetricKey(key)) {
+          metricValues.set(key, value);
+        }
+      }
+    }
+  }
+
+  // 3. Evaluate each monitor
+  for (const monitor of monitors) {
+    const currentValue = metricValues.get(monitor.metricName);
+
+    // Skip if this metric wasn't reported in this run
+    if (currentValue === undefined) {
+      continue;
+    }
+
+    // Check for existing open alert to avoid duplicates
+    const existingAlert = await findOpenCustomMetricAlert(
+      dagRun.organizationId,
+      dagRun.srcDagId,
+      monitor.metricName,
+      monitor.alertType
+    );
+
+    if (existingAlert) {
+      continue;
+    }
+
+    // Run the appropriate detector based on alert type
+    let result: { shouldAlert: boolean; severity: "warning" | "critical"; metadata: Record<string, unknown> } | null = null;
+
+    if (monitor.alertType === PrismaAlertType.CUSTOM_METRIC_DROP) {
+      result = await detectCustomMetricDrop(
+        dagRun.organizationId,
+        dagRun.srcDagId,
+        monitor.metricName,
+        currentValue,
+        monitor
+      );
+    } else if (monitor.alertType === PrismaAlertType.CUSTOM_METRIC_DEGRADATION) {
+      result = await detectCustomMetricDegradation(
+        dagRun.organizationId,
+        dagRun.srcDagId,
+        monitor.metricName,
+        currentValue,
+        monitor
+      );
+    }
+
+    if (result?.shouldAlert) {
+      const alert = await createAlert({
+        organizationId: dagRun.organizationId,
+        alertType: monitor.alertType,
+        severity: result.severity,
+        srcDagId: dagRun.srcDagId,
+        captureId: `custom-metric:${monitor.metricName}`,
+        dagRunId: dagRun.id,
+        taskRunId: null,
+        metadata: {
+          ...result.metadata,
+          monitorId: monitor.id,
+          monitorName: monitor.name,
+        },
+      });
+
+      createdAlerts.push(alert);
+    }
+  }
+
+  return createdAlerts;
+}
+
+/**
+ * Check if a key is a standard DataFrame metric (not a custom metric)
+ */
+function isStandardMetricKey(key: string): boolean {
+  const standardKeys = new Set([
+    "row_count",
+    "column_count",
+    "dataframe_type",
+    "memory_bytes",
+    "upstream",
+    "_is_custom_metric",
+  ]);
+  return standardKeys.has(key);
+}
+
+/**
+ * Find an existing open alert for a custom metric
+ */
+async function findOpenCustomMetricAlert(
+  organizationId: string,
+  srcDagId: string,
+  metricName: string,
+  alertType: PrismaAlertType
+): Promise<Alert | null> {
+  return prisma.alert.findFirst({
+    where: {
+      organizationId,
+      srcDagId,
+      captureId: `custom-metric:${metricName}`,
+      alertType,
+      status: AlertStatus.OPEN,
+    },
+  });
 }
