@@ -9,6 +9,7 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
     },
     dagRun: {
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       findMany: vi.fn(),
       create: vi.fn(),
@@ -52,7 +53,7 @@ describe('Edge Cases: API Key Deletion and Data Persistence', () => {
     it('should store environment string directly on DagRun, surviving API key deletion', async () => {
       // Setup: API key exists with environment
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({
         id: 'dagrun-1',
         environment: 'production', // Environment stored directly
@@ -121,20 +122,15 @@ describe('Edge Cases: API Key Deletion and Data Persistence', () => {
       );
     });
 
-    it('should update environment on existing run if missing and new environment provided', async () => {
-      // Existing run without environment
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({
-        id: 'dagrun-1',
-        organizationId: 'org-123',
-        environment: null, // Old record without environment
-        taskRuns: [{ id: 'taskrun-1', status: 'success' }],
-      } as any);
-      vi.mocked(prisma.dagRun.update).mockResolvedValue({
-        id: 'dagrun-1',
+    it('should create new run when searching with specific environment that does not exist', async () => {
+      // With environment in unique key, searching for environment='production' won't find a run with environment=null
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.create).mockResolvedValue({
+        id: 'dagrun-new',
         environment: 'production',
       } as any);
 
-      await findOrCreateDagRun({
+      const result = await findOrCreateDagRun({
         organizationId: 'org-123',
         srcDagId: 'test_dag',
         srcRunId: 'manual__2025-01-01',
@@ -142,31 +138,38 @@ describe('Edge Cases: API Key Deletion and Data Persistence', () => {
         environment: 'production',
       });
 
-      expect(prisma.dagRun.update).toHaveBeenCalledWith({
-        where: { id: 'dagrun-1' },
-        data: { environment: 'production' },
-      });
+      // Should create a new run with the specified environment
+      expect(prisma.dagRun.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            environment: 'production',
+          }),
+        })
+      );
+      expect(result.id).toBe('dagrun-new');
     });
 
-    it('should not overwrite existing environment on run', async () => {
-      // Existing run already has environment set
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({
+    it('should return existing run when environment matches', async () => {
+      // Existing run with matching environment
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({
         id: 'dagrun-1',
         organizationId: 'org-123',
-        environment: 'production', // Already set
+        environment: 'production',
+        namespace: 'airflow',
         taskRuns: [{ id: 'taskrun-1', status: 'success' }],
       } as any);
 
-      await findOrCreateDagRun({
+      const result = await findOrCreateDagRun({
         organizationId: 'org-123',
         srcDagId: 'test_dag',
         srcRunId: 'manual__2025-01-01',
         timestamp: new Date(),
-        environment: 'development', // Different environment attempted
+        environment: 'production', // Same environment
       });
 
-      // Should not update since environment is already set
-      expect(prisma.dagRun.update).not.toHaveBeenCalled();
+      // Should return existing run without creating new one
+      expect(prisma.dagRun.create).not.toHaveBeenCalled();
+      expect(result.id).toBe('dagrun-1');
     });
   });
 });
@@ -180,7 +183,7 @@ describe('Edge Cases: Multi-Environment Data Scenarios', () => {
     vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
 
     // First run in production
-    vi.mocked(prisma.dagRun.findUnique).mockResolvedValueOnce(null);
+    vi.mocked(prisma.dagRun.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.dagRun.create).mockResolvedValueOnce({
       id: 'dagrun-prod',
       environment: 'production',
@@ -215,7 +218,7 @@ describe('Edge Cases: Multi-Environment Data Scenarios', () => {
     });
 
     // Second run in development (different run_id)
-    vi.mocked(prisma.dagRun.findUnique).mockResolvedValueOnce(null);
+    vi.mocked(prisma.dagRun.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.dagRun.create).mockResolvedValueOnce({
       id: 'dagrun-dev',
       environment: 'development',

@@ -12,29 +12,21 @@ export async function findOrCreateDagRun(
   const { organizationId, srcDagId, srcRunId, timestamp, environment } = params;
   const namespace = params.namespace ?? "airflow";
 
-  const existingRun = await prisma.dagRun.findUnique({
+  const existingRun = await prisma.dagRun.findFirst({
     where: {
-      organizationId_srcDagId_srcRunId: {
-        organizationId,
-        srcDagId,
-        srcRunId,
-      },
+      organizationId,
+      srcDagId,
+      srcRunId,
+      environment: environment ?? null,
     },
   });
 
   if (existingRun) {
-    // Update environment or namespace if they were default/missing and we have better info now
-    const needsUpdate = 
-      (!existingRun.environment && environment) || 
-      (existingRun.namespace === "airflow" && namespace !== "airflow");
-
-    if (needsUpdate) {
+    // Update namespace if it was default and we have better info now
+    if (existingRun.namespace === "airflow" && namespace !== "airflow") {
       await prisma.dagRun.update({
         where: { id: existingRun.id },
-        data: { 
-          ...(environment && { environment }),
-          ...(namespace !== "airflow" && { namespace }),
-        },
+        data: { namespace },
       });
     }
     return { id: existingRun.id };

@@ -10,9 +10,10 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
     },
     dagRun: {
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
-      upsert: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
     dagRunMetricSnapshot: {
       upsert: vi.fn(),
@@ -51,13 +52,20 @@ import { prisma } from '@/lib/prisma';
 const setupStandardMocks = () => {
   vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
   vi.mocked(prisma.dag.findFirst).mockResolvedValue(null);
-  vi.mocked(prisma.dagRun.upsert).mockResolvedValue({ id: 'run-1' } as any);
+  vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({
+    id: 'run-1',
+    organizationId: 'org-123',
+    startTime: new Date('2025-01-01T11:00:00Z'),
+    taskRuns: [{ id: 'task-run-1', status: 'success' }],
+  } as any);
   vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({
     id: 'run-1',
     organizationId: 'org-123',
     startTime: new Date('2025-01-01T11:00:00Z'),
     taskRuns: [{ id: 'task-run-1', status: 'success' }],
   } as any);
+  vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'run-1' } as any);
+  vi.mocked(prisma.dagRun.update).mockResolvedValue({ id: 'run-1' } as any);
   vi.mocked(prisma.lineageEvent.create).mockResolvedValue({} as any);
   vi.mocked(prisma.metric.findMany).mockResolvedValue([]);
   vi.mocked(prisma.metric.aggregate).mockResolvedValue({ _sum: { rowCount: 0 } } as any);
@@ -154,9 +162,9 @@ describe('Edge Cases: Lineage Events', () => {
       });
 
       expect(result.eventType).toBe('ABORT');
-      expect(prisma.dagRun.upsert).toHaveBeenCalledWith(
+      expect(prisma.dagRun.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          update: expect.objectContaining({
+          data: expect.objectContaining({
             status: 'FAILED',
           }),
         })
@@ -188,6 +196,7 @@ describe('Edge Cases: Lineage Events', () => {
 
   describe('Environment Handling', () => {
     it('should store environment on lineage event handling', async () => {
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       const event = createDagLevelEvent();
 
       await ingestLineage({
@@ -196,9 +205,9 @@ describe('Edge Cases: Lineage Events', () => {
         event,
       });
 
-      expect(prisma.dagRun.upsert).toHaveBeenCalledWith(
+      expect(prisma.dagRun.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          create: expect.objectContaining({
+          data: expect.objectContaining({
             environment: 'staging',
           }),
         })
@@ -206,6 +215,7 @@ describe('Edge Cases: Lineage Events', () => {
     });
 
     it('should handle undefined environment', async () => {
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       const event = createDagLevelEvent();
 
       await ingestLineage({
@@ -214,10 +224,11 @@ describe('Edge Cases: Lineage Events', () => {
         event,
       });
 
-      expect(prisma.dagRun.upsert).toHaveBeenCalled();
+      expect(prisma.dagRun.create).toHaveBeenCalled();
     });
 
     it('should handle empty string environment', async () => {
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       const event = createDagLevelEvent();
 
       await ingestLineage({
@@ -226,13 +237,13 @@ describe('Edge Cases: Lineage Events', () => {
         event,
       });
 
-      expect(prisma.dagRun.upsert).toHaveBeenCalled();
+      expect(prisma.dagRun.create).toHaveBeenCalled();
     });
   });
 
   describe('Out of Order Events', () => {
     it('should handle COMPLETE event when no prior START recorded', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null); // No existing run
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null); // No existing run
 
       const event = createDagLevelEvent({ eventType: 'COMPLETE' });
 
@@ -242,12 +253,12 @@ describe('Edge Cases: Lineage Events', () => {
       });
 
       expect(result.eventType).toBe('COMPLETE');
-      // Should still create/update the dag run
-      expect(prisma.dagRun.upsert).toHaveBeenCalled();
+      // Should create the dag run since no existing run found
+      expect(prisma.dagRun.create).toHaveBeenCalled();
     });
 
     it('should handle FAIL event when no prior START recorded', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
 
       const event = createDagLevelEvent({ eventType: 'FAIL' });
 
@@ -453,8 +464,8 @@ describe('Edge Cases: Lineage Events', () => {
       ).rejects.toThrow('DAG upsert failed');
     });
 
-    it('should propagate DagRun upsert errors', async () => {
-      vi.mocked(prisma.dagRun.upsert).mockRejectedValue(new Error('Connection timeout'));
+    it('should propagate DagRun update errors', async () => {
+      vi.mocked(prisma.dagRun.update).mockRejectedValue(new Error('Connection timeout'));
 
       const event = createDagLevelEvent();
 

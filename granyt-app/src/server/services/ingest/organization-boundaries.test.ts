@@ -10,8 +10,10 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
     },
     dagRun: {
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
     },
     taskRun: {
       upsert: vi.fn(),
@@ -20,9 +22,16 @@ vi.mock('@/lib/prisma', () => ({
     metric: {
       create: vi.fn(),
       aggregate: vi.fn(),
+      findMany: vi.fn(),
     },
     dagComputedMetrics: {
       upsert: vi.fn(),
+    },
+    dagRunMetricSnapshot: {
+      upsert: vi.fn(),
+    },
+    errorOccurrence: {
+      count: vi.fn(),
     },
     userNotificationSettings: {
       findMany: vi.fn(),
@@ -46,7 +55,8 @@ describe('Edge Cases: Organization Boundaries', () => {
 
   it('should isolate data between organizations', async () => {
     vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-    vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1', organizationId: 'org-1', taskRuns: [{ id: 'taskrun-1', status: 'success' }] } as any);
     vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'dagrun-1' } as any);
     vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
     vi.mocked(prisma.taskRun.findUnique).mockResolvedValue({
@@ -54,7 +64,10 @@ describe('Edge Cases: Organization Boundaries', () => {
     } as any);
     vi.mocked(prisma.metric.create).mockResolvedValue({} as any);
     vi.mocked(prisma.metric.aggregate).mockResolvedValue({ _sum: { rowCount: 100 }, _count: 1 } as any);
+    vi.mocked(prisma.metric.findMany).mockResolvedValue([]);
     vi.mocked(prisma.dagComputedMetrics.upsert).mockResolvedValue({} as any);
+    vi.mocked(prisma.dagRunMetricSnapshot.upsert).mockResolvedValue({} as any);
+    vi.mocked(prisma.errorOccurrence.count).mockResolvedValue(0);
 
     const metrics: MetricsPayload = {
       captured_at: '2025-01-01T12:00:00.000Z',

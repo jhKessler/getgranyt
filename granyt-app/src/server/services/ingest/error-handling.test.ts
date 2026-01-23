@@ -22,7 +22,7 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
     },
     dagRun: {
-      findUnique: vi.fn(),
+      findFirst: vi.fn(),
       update: vi.fn(),
       create: vi.fn(),
     },
@@ -69,7 +69,7 @@ const createValidErrorEvent = (overrides?: Partial<ErrorEvent>): ErrorEvent => (
 const setupStandardMocks = () => {
   vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
   vi.mocked(prisma.dag.findFirst).mockResolvedValue(null);
-  vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1', environment: 'production' } as any);
+  vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1', environment: 'production' } as any);
   vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
   vi.mocked(prisma.generalError.upsert).mockResolvedValue({ id: 'error-1' } as any);
   vi.mocked(prisma.errorOccurrence.create).mockResolvedValue({} as any);
@@ -355,7 +355,7 @@ describe('Edge Cases: Error Handling', () => {
 
     it('should propagate DagRun findUnique errors', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockRejectedValue(new Error('Connection timeout'));
+      vi.mocked(prisma.dagRun.findFirst).mockRejectedValue(new Error('Connection timeout'));
 
       const event = createValidErrorEvent();
 
@@ -366,7 +366,7 @@ describe('Edge Cases: Error Handling', () => {
 
     it('should propagate generalError upsert errors', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
       vi.mocked(prisma.generalError.upsert).mockRejectedValue(
         new Error('Unique constraint violation')
@@ -381,7 +381,7 @@ describe('Edge Cases: Error Handling', () => {
 
     it('should propagate errorOccurrence create errors', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ id: 'dagrun-1' } as any);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
       vi.mocked(prisma.generalError.upsert).mockResolvedValue({ id: 'error-1' } as any);
       vi.mocked(prisma.errorOccurrence.create).mockRejectedValue(

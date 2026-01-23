@@ -42,7 +42,21 @@ export interface AlertMetadata {
   addedColumns?: Array<{ name: string; type?: string }>
   removedColumns?: Array<{ name: string; type?: string }>
   typeChangedColumns?: Array<{ name: string; previousType?: string; currentType?: string }>
-  
+
+  // CUSTOM_METRIC_DROP
+  metricName?: string
+
+  // CUSTOM_METRIC_DEGRADATION
+  startValue?: number
+  endValue?: number
+  declinePercentage?: number
+  windowDays?: number
+  dataPointsAnalyzed?: number
+  slopePerDay?: number
+  rSquared?: number
+  trendConfidence?: string
+  monitorName?: string
+
   // Generic fields that might be used by multiple alert types
   [key: string]: unknown
 }
@@ -127,6 +141,66 @@ const ALERT_PREVIEW_GENERATORS: Record<AlertType, AlertPreviewGenerator> = {
     }
     return `Integration failure: ${metadata.channel} connection is faulty. ${metadata.error || ""}`
   },
+
+  CUSTOM_METRIC_DROP: (metadata) => {
+    if (!metadata) {
+      return "Custom metric dropped significantly"
+    }
+
+    const metricName = metadata.metricName ?? "metric"
+    const drop = metadata.dropPercentage !== undefined ? Math.round(metadata.dropPercentage) : undefined
+    const current = metadata.current
+    const baseline = metadata.baseline
+
+    if (drop !== undefined && current !== undefined && baseline !== undefined) {
+      return `${metricName} dropped ${drop}% (${formatMetricValue(current)} → was ${formatMetricValue(baseline)})`
+    }
+
+    if (drop !== undefined) {
+      return `${metricName} dropped ${drop}%`
+    }
+
+    return `${metricName} dropped significantly`
+  },
+
+  CUSTOM_METRIC_DEGRADATION: (metadata) => {
+    if (!metadata) {
+      return "Custom metric shows declining trend"
+    }
+
+    const metricName = metadata.metricName ?? "metric"
+    const decline = metadata.declinePercentage !== undefined ? Math.round(metadata.declinePercentage) : undefined
+    const windowDays = metadata.windowDays
+    const startValue = metadata.startValue
+    const endValue = metadata.endValue
+
+    if (decline !== undefined && windowDays !== undefined && startValue !== undefined && endValue !== undefined) {
+      return `${metricName} declined ${decline}% over ${windowDays} days (${formatMetricValue(startValue)} → ${formatMetricValue(endValue)})`
+    }
+
+    if (decline !== undefined && windowDays !== undefined) {
+      return `${metricName} declined ${decline}% over ${windowDays} days`
+    }
+
+    return `${metricName} shows declining trend`
+  },
+}
+
+/**
+ * Format a metric value for display
+ * Handles both large numbers and small decimals
+ */
+function formatMetricValue(value: number): string {
+  if (value >= 1000) {
+    return value.toLocaleString()
+  }
+  if (value < 0.01 && value > 0) {
+    return value.toExponential(2)
+  }
+  if (Number.isInteger(value)) {
+    return value.toString()
+  }
+  return value.toFixed(2)
 }
 
 /**

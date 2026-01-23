@@ -9,7 +9,7 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
     },
     dagRun: {
-      findUnique: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
     },
@@ -28,7 +28,7 @@ describe('Edge Cases: DAG Run Service', () => {
 
   describe('Run Type Detection', () => {
     it('should detect backfill run type', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'run-1' } as any);
 
       await findOrCreateDagRun({
@@ -48,7 +48,7 @@ describe('Edge Cases: DAG Run Service', () => {
     });
 
     it('should handle unknown run type prefixes as unknown', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'run-1' } as any);
 
       await findOrCreateDagRun({
@@ -68,7 +68,7 @@ describe('Edge Cases: DAG Run Service', () => {
     });
 
     it('should handle run ID without prefix separator', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'run-1' } as any);
 
       await findOrCreateDagRun({
@@ -88,7 +88,7 @@ describe('Edge Cases: DAG Run Service', () => {
     });
 
     it('should handle triggered run type as unknown', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'run-1' } as any);
 
       await findOrCreateDagRun({
@@ -303,7 +303,7 @@ describe('Edge Cases: DAG Run Service', () => {
     });
 
     it('should propagate database errors from dagRun create', async () => {
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
       vi.mocked(prisma.dagRun.create).mockRejectedValue(
         new Error('Foreign key constraint failed')
       );
@@ -401,11 +401,9 @@ describe('Edge Cases: DAG Run Service', () => {
 
     it('should pass through environment when provided', async () => {
       vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
-      vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ 
-        id: 'dagrun-1',
-        environment: null // No environment set yet
-      } as any);
-      vi.mocked(prisma.dagRun.update).mockResolvedValue({} as any);
+      // With environment in unique key, findUnique returns null if no run exists with that environment
+      vi.mocked(prisma.dagRun.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.dagRun.create).mockResolvedValue({ id: 'dagrun-1' } as any);
       vi.mocked(prisma.taskRun.upsert).mockResolvedValue({ id: 'taskrun-1' } as any);
 
       await resolveDagContext({
@@ -417,10 +415,12 @@ describe('Edge Cases: DAG Run Service', () => {
         environment: 'staging',
       });
 
-      // Should update dagRun with environment since it wasn't set
-      expect(prisma.dagRun.update).toHaveBeenCalledWith(
+      // Should create dagRun with the specified environment
+      expect(prisma.dagRun.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: { environment: 'staging' },
+          data: expect.objectContaining({
+            environment: 'staging',
+          }),
         })
       );
     });

@@ -4,9 +4,8 @@ enum AlertType {
   NULL_OCCURRENCE // Alerts when a column that never had nulls suddenly has them
   SCHEMA_CHANGE   // Alerts when columns are added, removed, or have their type changed
   INTEGRATION_ERROR // Alerts when a notification channel (SMTP, Resend, etc.) fails
-  // Future alert types:
-  // SLOW_DEGRADATION
-  // ERROR_SPIKE
+  CUSTOM_METRIC_DROP        // Alerts when a custom metric drops significantly from baseline
+  CUSTOM_METRIC_DEGRADATION // Alerts when a custom metric shows consistent decline over time
 }
 
 enum AlertStatus {
@@ -110,4 +109,36 @@ model AlertEvaluationJob {
   @@index([status, scheduledFor])
   @@index([organizationId])
   @@map("alert_evaluation_jobs")
+}
+
+// User-defined custom metric monitors
+// Allows users to set up monitoring for specific metrics within their DAGs
+model CustomMetricMonitor {
+  id              String           @id @default(cuid())
+  organizationId  String
+  name            String           // User-friendly display name
+  srcDagId        String           // Which DAG to monitor
+  metricName      String           // The metric key to track (e.g., "percentage_logged_in")
+
+  // Detection type - determines which detector runs
+  alertType       AlertType        // CUSTOM_METRIC_DROP or CUSTOM_METRIC_DEGRADATION
+
+  // Sharp drop settings (used when alertType = CUSTOM_METRIC_DROP)
+  sensitivity     AlertSensitivity @default(MEDIUM)
+  customThreshold Int?             // Custom percentage threshold (1-100)
+
+  // Slow degradation settings (used when alertType = CUSTOM_METRIC_DEGRADATION)
+  windowDays      Int              @default(14)   // Look-back window in days
+  minDeclinePercent Float          @default(15)   // Minimum decline percentage to trigger alert
+
+  enabled         Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, srcDagId, metricName])
+  @@index([organizationId, enabled])
+  @@index([organizationId, srcDagId])
+  @@map("custom_metric_monitors")
 }

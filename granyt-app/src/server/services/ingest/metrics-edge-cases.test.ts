@@ -10,6 +10,7 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
     },
     dagRun: {
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
@@ -53,7 +54,12 @@ describe('Edge Cases: Data Metrics', () => {
     // Setup standard mocks
     vi.mocked(prisma.dag.upsert).mockResolvedValue({} as any);
     vi.mocked(prisma.dag.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({ 
+    vi.mocked(prisma.dagRun.findFirst).mockResolvedValue({
+      id: 'dagrun-1',
+      organizationId: 'org-123',
+      taskRuns: [{ id: 'taskrun-1', status: 'success' }],
+    } as any);
+    vi.mocked(prisma.dagRun.findUnique).mockResolvedValue({
       id: 'dagrun-1',
       organizationId: 'org-123',
       taskRuns: [{ id: 'taskrun-1', status: 'success' }],
