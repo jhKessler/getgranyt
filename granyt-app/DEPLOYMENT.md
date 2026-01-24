@@ -241,7 +241,8 @@ Granyt publishes multiple image tags:
 
 ### Pinning Versions (Recommended for Production)
 
-In your `.env` file (see [Official Docker Compose variables](#official-docker-compose-env-file)):
+In your `.env` file (see [Official Docker Compose variables](#official-docker-compose-env-file)). See [available versions](https://github.com/jhkessler/getgranyt/pkgs/container/granyt-app) on GitHub Container Registry:
+
 
 ```bash
 # Pin to a specific version
