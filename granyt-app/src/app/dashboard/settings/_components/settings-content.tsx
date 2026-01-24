@@ -3,11 +3,9 @@
 import { PageHeader, PageSkeleton, GettingStartedChecklist } from "@/components/shared";
 import { useSettings } from "../_context";
 import {
-  NotificationPreferencesCard,
-  NotificationFiltersCard,
   EmailSetupCard,
-  NotificationSettingsCard,
   AirflowSettingsCard,
+  EmailNotificationsCard,
 } from ".";
 
 export function SettingsContent() {
@@ -67,20 +65,14 @@ export function SettingsContent() {
 
         <EmailSetupCard />
 
-        <NotificationSettingsCard />
-
-        <NotificationPreferencesCard
-          settings={notificationSettings}
-          onUpdate={handleUpdateNotifications}
-          hasEmailConfigured={hasEmailConfigured}
-        />
-
-        <NotificationFiltersCard
+        <EmailNotificationsCard
+          notificationSettings={notificationSettings}
+          onUpdateNotifications={handleUpdateNotifications}
           filters={notificationFilters}
-          onUpdate={handleUpdateFilters}
+          onUpdateFilters={handleUpdateFilters}
           hasEmailConfigured={hasEmailConfigured}
           defaultEnvironmentName={defaultEnvironmentName}
-          isUpdating={isUpdatingFilters}
+          isUpdatingFilters={isUpdatingFilters}
         />
       </div>
     </div>

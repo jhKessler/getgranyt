@@ -49,12 +49,15 @@ describe("E2E: Notification Flow", () => {
     });
 
     // 4. Try to notify when setting is DISABLED
+    // Using DAG_RUN_ALERTS_SUMMARY which is what the system actually uses for batch notifications
     const resultDisabled = await notify({
       organizationId: org.id,
-      type: NotificationEventType.ROW_COUNT_DROP_ALERT,
+      type: NotificationEventType.DAG_RUN_ALERTS_SUMMARY,
       severity: "warning",
       dagId: "test_dag",
-      metadata: { dropPercentage: 50 },
+      dagRunId: "test_run",
+      srcRunId: "src_run",
+      alerts: [{ alertId: "alert1", alertType: "ROW_COUNT_DROP", severity: "warning", captureId: null, metadata: {} }],
     });
 
     // Should be false because ALL_ALERTS is disabled for the only user in org
@@ -73,10 +76,12 @@ describe("E2E: Notification Flow", () => {
 
     const resultEnabled = await notify({
       organizationId: org.id,
-      type: NotificationEventType.ROW_COUNT_DROP_ALERT,
+      type: NotificationEventType.DAG_RUN_ALERTS_SUMMARY,
       severity: "warning",
       dagId: "test_dag",
-      metadata: { dropPercentage: 50 },
+      dagRunId: "test_run",
+      srcRunId: "src_run",
+      alerts: [{ alertId: "alert1", alertType: "ROW_COUNT_DROP", severity: "warning", captureId: null, metadata: {} }],
     });
 
     // Should be true (or at least attempt to send) because setting is enabled

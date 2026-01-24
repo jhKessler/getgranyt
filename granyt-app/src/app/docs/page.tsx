@@ -212,7 +212,7 @@ export default function QuickstartPage() {
 
           <Tabs defaultValue="docker" className="w-full">
             <TabsList className="grid w-full max-w-100 grid-cols-2">
-              <TabsTrigger value="docker">Docker (Recommended)</TabsTrigger>
+              <TabsTrigger value="docker">Docker</TabsTrigger>
               <TabsTrigger value="kubernetes">Kubernetes</TabsTrigger>
             </TabsList>
             <TabsContent value="docker" className="mt-4 space-y-4">

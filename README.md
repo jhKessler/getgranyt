@@ -34,7 +34,6 @@
 - **📊 DAG Monitoring** - Real-time visibility into your data pipelines with run history, duration trends, and success rates
 - **🚨 Smart Alerts** - Configurable alerts for failures and data anomalies with email, Slack, and webhook notifications
 - **🐛 Error Tracking** - Sentry-like error aggregation with fingerprinting and stack trace analysis
-- **🔗 Lineage Tracking** - Automatic data lineage capture via OpenLineage integration
 - **📈 Metrics Collection** - Automatic capture of metrics from popular operators (Snowflake, BigQuery, dbt, S3, and more)
 - **🌐 Multi-Environment** - Unified monitoring across dev, staging and production environments
 - **🔓 100% Open Source & Self-Hostable** - Complete control over your data with flexible, self-hosted deployment
@@ -65,7 +64,7 @@ Open [http://localhost:3000](http://localhost:3000) and create your account.
 
 ### 2. Install the SDK in Airflow
 
-The Granyt SDK is a Python listener that must be installed where your Airflow workers and scheduler run. It automatically captures DAG and task execution events and sends them to your Granyt dashboard.
+The Granyt SDK is a lightweight Python listener that must be installed where your Airflow workers and scheduler run. It automatically captures DAG and task execution events and sends them to your Granyt dashboard.
 
 Install the SDK in your Airflow environment's Python (e.g., add to your `requirements.txt` or install directly in your Airflow container/virtualenv):
 
@@ -82,7 +81,7 @@ export GRANYT_ENDPOINT="https://granyt.yourdomain.com"
 export GRANYT_API_KEY="your-api-key"  # Get this from the Granyt dashboard
 ```
 
-That's it! The SDK automatically captures lineage and errors from your DAGs.
+That's it! The SDK automatically captures task events and errors from your DAGs.
 
 ---
 
@@ -98,6 +97,7 @@ Supported Operators include:
 | **Transformation** | dbt Cloud, dbt Core, Spark, Bash |
 
 Need support for a custom operator? You can easily build and register your own adapters to extract any metadata you need. [Learn more in our docs](https://granyt.dev/docs/operators).
+---
 
 ### Custom Metrics in Python Tasks
 You can emit custom metrics in your python tasks by returning a `granyt` key in your task's return value. 
@@ -137,18 +137,6 @@ def transform_data():
 ```
 ---
 
-### Rich Error Capture
-
-When a task fails, the SDK automatically captures:
-
-- Full stack trace with local variables
-- Task instance metadata (dag_id, task_id, run_id, try_number, etc.)
-- DAG configuration and task parameters
-- Environment context
-- Previous log entries
-
----
-
 ### Proactive Data Alerts
 
 Granyt automatically monitors your pipelines and alerts you when data anomalies occur.
@@ -168,17 +156,6 @@ You can also set up custom alerts for your own metrics in the dashboard.
 ## 🚀 Usage
 
 Once installed and configured, the SDK works automatically. No code changes are required in your DAGs.
-
----
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](./granyt-app/CONTRIBUTING.md) for details.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ---
 

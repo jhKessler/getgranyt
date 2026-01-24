@@ -22,7 +22,6 @@ import {
   Mail,
   Send,
   Webhook,
-  Bell,
   CheckCircle2,
   XCircle,
   ChevronDown,
@@ -140,69 +139,6 @@ export function EmailSetupCard() {
             </TabsContent>
           ))}
         </Tabs>
-      </CardContent>
-    </Card>
-  );
-}
-
-export function NotificationSettingsCard() {
-  const {
-    channelStatuses,
-    getChannelConfig,
-    toggleChannel,
-    saveConfig,
-    testConnection,
-    sendTest,
-    clearConfig,
-    isToggling,
-    isSaving,
-    isTesting,
-    isSendingTest,
-  } = useChannelManagement();
-
-  const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
-
-  const otherChannels = channelStatuses?.filter(
-    (c) => c.type !== "SMTP" && c.type !== "RESEND"
-  );
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Bell className="h-5 w-5" />
-          <CardTitle>Notification Settings</CardTitle>
-        </div>
-        <CardDescription>
-          Configure additional notification channels like webhooks.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {otherChannels?.map((channel) => (
-          <div key={channel.type} className="space-y-4">
-            <ChannelTab
-              channel={channel}
-              config={getChannelConfig(channel.type)}
-              onToggle={(enabled) => toggleChannel(channel.type, enabled)}
-              onSave={(enabled, config) =>
-                saveConfig(channel.type, enabled, config)
-              }
-              onTest={() => testConnection(channel.type)}
-              onSendTest={(recipient) => sendTest(channel.type, recipient)}
-              onClear={() => clearConfig(channel.type)}
-              isToggling={isToggling}
-              isSaving={isSaving}
-              isTesting={isTesting}
-              isSendingTest={isSendingTest}
-              isExpanded={expandedChannel === channel.type}
-              onExpandToggle={() =>
-                setExpandedChannel(
-                  expandedChannel === channel.type ? null : channel.type
-                )
-              }
-            />
-          </div>
-        ))}
       </CardContent>
     </Card>
   );

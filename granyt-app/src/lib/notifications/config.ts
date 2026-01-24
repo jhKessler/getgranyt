@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Bell, AlertTriangle, Database, Columns, LayoutList } from "lucide-react";
+import { Bell, AlertTriangle } from "lucide-react";
 
 // ============================================================================
 // NOTIFICATION TYPE - Must match Prisma NotificationType enum
@@ -103,42 +103,17 @@ export interface NotificationCategory {
 
 /**
  * Alert notification settings
+ * Note: Fine-grained alert type controls (ROW_COUNT_DROP, NULL_OCCURRENCE, SCHEMA_CHANGE)
+ * are now managed on the Alerts page via AlertSensitivitySettings.
+ * This config only controls email notifications.
  */
 export const ALERT_NOTIFICATIONS: NotificationSettingConfig[] = [
   {
     type: "ALL_ALERTS",
-    label: "All Alerts",
-    description: "Master toggle for all alert notifications",
+    label: "Alert Emails",
+    description: "Receive emails when data quality alerts occur",
     icon: Bell,
     inputType: "switch",
-    isParent: true,
-    defaultEnabled: true,
-  },
-  {
-    type: "ROW_COUNT_DROP_ALERT",
-    label: "Row Count Drop Alerts",
-    description: "When data row counts drop significantly",
-    icon: Database,
-    inputType: "switch",
-    parentType: "ALL_ALERTS",
-    defaultEnabled: true,
-  },
-  {
-    type: "NULL_OCCURRENCE_ALERT",
-    label: "Null Column Alerts",
-    description: "When columns that previously had no nulls start having them",
-    icon: Columns,
-    inputType: "switch",
-    parentType: "ALL_ALERTS",
-    defaultEnabled: true,
-  },
-  {
-    type: "SCHEMA_CHANGE_ALERT",
-    label: "Schema Change Alerts",
-    description: "When columns are added, removed, or have type changes",
-    icon: LayoutList,
-    inputType: "switch",
-    parentType: "ALL_ALERTS",
     defaultEnabled: true,
   },
 ];

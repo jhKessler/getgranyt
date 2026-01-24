@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Bell, CheckCircle, AlertCircle, ExternalLink } from "lucide-react"
 import Link from "next/link"
-import { AlertType, AlertStatus } from "@prisma/client"
+import { type AlertType, AlertStatus } from "@prisma/client"
 import { getAlertPreviewText, getAlertTypeLabel } from "@/lib/alert-preview"
 import { formatDistanceToNow } from "date-fns"
 
@@ -25,15 +25,6 @@ interface RunAlertsCardProps {
   alerts: AlertData[]
   isLoading: boolean
   errorId?: string | null
-}
-
-const _ALERT_TYPE_LABELS: Record<AlertType, string> = {
-  ROW_COUNT_DROP: "Row Count Drop",
-  NULL_OCCURRENCE: "Null Occurrence",
-  SCHEMA_CHANGE: "Schema Change",
-  INTEGRATION_ERROR: "Integration Error",
-  CUSTOM_METRIC_DROP: "Custom Metric Drop",
-  CUSTOM_METRIC_DEGRADATION: "Custom Metric Degradation",
 }
 
 function getSeverityVariant(severity: string): "destructive" | "secondary" {
