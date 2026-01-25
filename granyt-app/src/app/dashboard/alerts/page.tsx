@@ -2,11 +2,12 @@
 
 import { trpc } from "@/lib/trpc"
 import { useDocumentTitle } from "@/lib/use-document-title"
+import { toast } from "sonner"
 import { PageHeader } from "@/components/shared"
 import { GroupedAlertsList, MetricMonitorsList, AlertSensitivitySettings } from "./_components"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Bell, Gauge, Settings } from "lucide-react"
-import { AlertType, AlertSensitivity } from "@prisma/client"
+import { AlertType } from "@prisma/client"
 
 export default function AlertsPage() {
   useDocumentTitle("Alerts")
@@ -15,8 +16,25 @@ export default function AlertsPage() {
     limit: 100,
   })
 
+  // Fetch organizations and environments for the environment selector
+  const { data: organizations } = trpc.organization.list.useQuery()
+  const organizationId = organizations?.[0]?.id
+  const { data: environments } = trpc.organization.listEnvironments.useQuery(
+    { organizationId: organizationId! },
+    { enabled: !!organizationId }
+  )
+
+  const utils = trpc.useUtils()
   const { data: alertSettings, isLoading: settingsLoading } = trpc.alerts.getSettings.useQuery({})
-  const updateSettings = trpc.alerts.updateSettings.useMutation()
+  const updateSettings = trpc.alerts.updateSettings.useMutation({
+    onSuccess: () => {
+      utils.alerts.getSettings.invalidate()
+      toast.success("Alert settings updated")
+    },
+    onError: (error) => {
+      toast.error(`Failed to update settings: ${error.message}`)
+    }
+  })
 
   return (
     <div className="space-y-6">
@@ -57,14 +75,15 @@ export default function AlertsPage() {
             settings={alertSettings}
             isLoading={settingsLoading}
             isPending={updateSettings.isPending}
-            onSensitivityChange={(alertType: AlertType, sensitivity: string, customThreshold?: number) =>
-              updateSettings.mutate({ alertType, sensitivity: sensitivity as AlertSensitivity, customThreshold })
-            }
+            environments={environments}
             onEnabledChange={(alertType: AlertType, enabled: boolean) =>
               updateSettings.mutate({ alertType, enabled })
             }
             onCustomThresholdSave={(customThreshold: number) =>
               updateSettings.mutate({ alertType: "ROW_COUNT_DROP", sensitivity: "CUSTOM", customThreshold })
+            }
+            onEnvironmentsChange={(alertType: AlertType, enabledEnvironments: string[]) =>
+              updateSettings.mutate({ alertType, enabledEnvironments })
             }
           />
         </TabsContent>

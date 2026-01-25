@@ -82,7 +82,7 @@ function RunsPageContent() {
     startTime: filters.startTime ?? undefined,
     endTime: filters.endTime ?? undefined,
   }, {
-    enabled: !!filters.selectedEnvironment,
+    enabled: filters._envInitialized,
   })
 
   // Fetch dag runs with open alerts

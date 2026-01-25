@@ -226,3 +226,87 @@ describe("Reduce DAG Sensitivity", () => {
     );
   });
 });
+
+describe("enabledEnvironments", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should return empty array (all envs) by default when no settings exist", async () => {
+    vi.mocked(prisma.dagAlertSettings.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.organizationAlertSettings.findUnique).mockResolvedValue(null);
+
+    const result = await getEffectiveSettings(
+      "org-1",
+      "test_dag",
+      "capture_1",
+      AlertType.ROW_COUNT_DROP
+    );
+
+    expect(result.enabledEnvironments).toEqual([]);
+  });
+
+  it("should return org-level enabledEnvironments when set", async () => {
+    vi.mocked(prisma.dagAlertSettings.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.organizationAlertSettings.findUnique).mockResolvedValue({
+      id: "org-settings-1",
+      organizationId: "org-1",
+      alertType: AlertType.ROW_COUNT_DROP,
+      enabled: true,
+      sensitivity: AlertSensitivity.MEDIUM,
+      customThreshold: null,
+      enabledEnvironments: ["production", "staging"],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await getEffectiveSettings(
+      "org-1",
+      "test_dag",
+      "capture_1",
+      AlertType.ROW_COUNT_DROP
+    );
+
+    expect(result.enabledEnvironments).toEqual(["production", "staging"]);
+  });
+
+  it("should use org enabledEnvironments even when DAG settings exist", async () => {
+    vi.mocked(prisma.organizationAlertSettings.findUnique).mockResolvedValue({
+      id: "org-settings-1",
+      organizationId: "org-1",
+      alertType: AlertType.ROW_COUNT_DROP,
+      enabled: true,
+      sensitivity: AlertSensitivity.MEDIUM,
+      customThreshold: null,
+      enabledEnvironments: ["production"],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    // DAG settings exist but don't have enabledEnvironments (org-level only)
+    vi.mocked(prisma.dagAlertSettings.findUnique).mockResolvedValue({
+      id: "dag-settings-1",
+      organizationId: "org-1",
+      srcDagId: "test_dag",
+      captureId: "capture_1",
+      alertType: AlertType.ROW_COUNT_DROP,
+      enabled: true,
+      sensitivity: AlertSensitivity.HIGH, // DAG overrides sensitivity
+      customThreshold: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await getEffectiveSettings(
+      "org-1",
+      "test_dag",
+      "capture_1",
+      AlertType.ROW_COUNT_DROP
+    );
+
+    // enabledEnvironments comes from org (not overridden by DAG)
+    expect(result.enabledEnvironments).toEqual(["production"]);
+    // But sensitivity is overridden by DAG
+    expect(result.sensitivity).toBe(AlertSensitivity.HIGH);
+  });
+});

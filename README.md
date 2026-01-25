@@ -85,9 +85,10 @@ That's it! The SDK automatically captures task events and errors from your DAGs.
 
 ---
 
-### Deep Visibility into Every Operator
+### Capture metrics from Popular Operators
 
-Granyt works with the Airflow lifecycle to automatically capture metrics from Snowflake, BigQuery, S3, dbt, and more.
+Granyt works with the Airflow lifecycle to automatically capture metrics from popular operators.
+Need support for a custom operator? You can easily build and register your own adapters to extract any metadata you need. [Learn more in our docs](https://granyt.dev/docs/operators).
 
 Supported Operators include:
 | Category | Operators |
@@ -96,7 +97,7 @@ Supported Operators include:
 | **Cloud Storage** | AWS S3, Google Cloud Storage, Azure Blob |
 | **Transformation** | dbt Cloud, dbt Core, Spark, Bash |
 
-Need support for a custom operator? You can easily build and register your own adapters to extract any metadata you need. [Learn more in our docs](https://granyt.dev/docs/operators).
+
 ---
 
 ### Custom Metrics in Python Tasks
@@ -145,17 +146,11 @@ Granyt automatically monitors your pipelines and alerts you when data anomalies 
 
 | Alert Type | What It Detects |
 |------------|-----------------|
-| **Schema Change** | Columns added, removed, or data types changed |
-| **Row Count Drop** | Sudden drops in row count compared to historical baseline |
-| **Null Occurrence** | Columns that historically never had nulls now contain null values |
+| **Schema Change** | Columns added, removed, or data types changed (requires `df_metrics` key) |
+| **Row Count Drop** | Sudden drops in row count compared to historical baseline (requires `row_count` or `df_metrics` key) |
+| **Null Occurrence** | Columns that historically never had nulls now contain null values (requires `df_metrics` key) |
 
 You can also set up custom alerts for your own metrics in the dashboard.
-
----
-
-## 🚀 Usage
-
-Once installed and configured, the SDK works automatically. No code changes are required in your DAGs.
 
 ---
 

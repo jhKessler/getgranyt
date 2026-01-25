@@ -241,6 +241,27 @@ async function sendBatchAlertNotification(
 }
 
 /**
+ * Checks if the current environment should trigger alerts based on settings
+ * @param environment - The environment of the current DAG run (e.g., "production", "dev")
+ * @param enabledEnvironments - List of environments that should trigger alerts (empty = all)
+ * @returns true if alerts should be evaluated for this environment
+ */
+export function isEnvironmentEnabled(
+  environment: string | null,
+  enabledEnvironments: string[]
+): boolean {
+  // Empty array = all environments enabled
+  if (enabledEnvironments.length === 0) {
+    return true;
+  }
+  // Null environment with a filter = skip (legacy data or misconfigured)
+  if (!environment) {
+    return false;
+  }
+  return enabledEnvironments.includes(environment);
+}
+
+/**
  * Runs all registered detectors against the given context
  */
 async function evaluateDetectors(ctx: DetectorContext): Promise<Alert[]> {
@@ -257,6 +278,11 @@ async function evaluateDetectors(ctx: DetectorContext): Promise<Alert[]> {
 
     // Skip if disabled
     if (!settings.enabled) {
+      continue;
+    }
+
+    // Skip if environment is not in the allowed list
+    if (!isEnvironmentEnabled(ctx.environment, settings.enabledEnvironments)) {
       continue;
     }
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { isEnvironmentEnabled } from "./process-evaluation";
 
 // Mock prisma
 vi.mock("@/lib/prisma", () => ({
@@ -119,5 +120,37 @@ describe("Process Alert Evaluation", () => {
 
     // Should have been called to update status to processing first
     expect(prisma.alertEvaluationJob.update).toHaveBeenCalled();
+  });
+});
+
+describe("isEnvironmentEnabled", () => {
+  it("should return true when enabledEnvironments is empty (all environments allowed)", () => {
+    expect(isEnvironmentEnabled("production", [])).toBe(true);
+    expect(isEnvironmentEnabled("dev", [])).toBe(true);
+    expect(isEnvironmentEnabled("staging", [])).toBe(true);
+  });
+
+  it("should return true for null environment when enabledEnvironments is empty", () => {
+    expect(isEnvironmentEnabled(null, [])).toBe(true);
+  });
+
+  it("should return true when environment is in the allowed list", () => {
+    expect(isEnvironmentEnabled("production", ["production", "staging"])).toBe(true);
+    expect(isEnvironmentEnabled("staging", ["production", "staging"])).toBe(true);
+  });
+
+  it("should return false when environment is not in the allowed list", () => {
+    expect(isEnvironmentEnabled("dev", ["production", "staging"])).toBe(false);
+    expect(isEnvironmentEnabled("qa", ["production"])).toBe(false);
+  });
+
+  it("should return false when environment is null but filter is set", () => {
+    expect(isEnvironmentEnabled(null, ["production"])).toBe(false);
+    expect(isEnvironmentEnabled(null, ["production", "staging"])).toBe(false);
+  });
+
+  it("should handle single environment in filter", () => {
+    expect(isEnvironmentEnabled("production", ["production"])).toBe(true);
+    expect(isEnvironmentEnabled("dev", ["production"])).toBe(false);
   });
 });

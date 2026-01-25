@@ -91,7 +91,7 @@ export default function DashboardPage() {
           tooltip="Total number of DAG executions across all DAGs in the selected timeframe"
           icon={BarChart3}
           isLoading={metricsLoading}
-          href={`/dashboard/runs?status=${RunStatusFilter.All}&timeframe=${timeframe}${selectedEnvironment ? `&environment=${selectedEnvironment}` : ""}`}
+          href={`/dashboard/runs?status=${RunStatusFilter.All}&timeframe=${timeframe}&environment=${selectedEnvironment ?? "all"}`}
         />
         <MetricCard
           title="Unique DAGs"
@@ -100,7 +100,7 @@ export default function DashboardPage() {
           tooltip="Count of unique DAGs that have executed at least one run in the selected timeframe"
           icon={Activity}
           isLoading={metricsLoading}
-          href={`/dashboard/dags?timeframe=${timeframe}${selectedEnvironment ? `&environment=${selectedEnvironment}` : ""}`}
+          href={`/dashboard/dags?timeframe=${timeframe}&environment=${selectedEnvironment ?? "all"}`}
         />
         <MetricCard
           title="Failed Runs"
@@ -110,7 +110,7 @@ export default function DashboardPage() {
           icon={AlertTriangle}
           isLoading={metricsLoading}
           variant={(metrics?.failedRuns ?? 0) > 0 ? "destructive" : "default"}
-          href={`/dashboard/runs?status=${RunStatusFilter.Failed}&timeframe=${timeframe}${selectedEnvironment ? `&environment=${selectedEnvironment}` : ""}`}
+          href={`/dashboard/runs?status=${RunStatusFilter.Failed}&timeframe=${timeframe}&environment=${selectedEnvironment ?? "all"}`}
         />
         <MetricCard
           title="Total Run Time"

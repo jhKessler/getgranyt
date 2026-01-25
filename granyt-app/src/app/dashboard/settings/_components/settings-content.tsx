@@ -3,9 +3,8 @@
 import { PageHeader, PageSkeleton, GettingStartedChecklist } from "@/components/shared";
 import { useSettings } from "../_context";
 import {
-  EmailSetupCard,
+  EmailSettingsCard,
   AirflowSettingsCard,
-  EmailNotificationsCard,
 } from ".";
 
 export function SettingsContent() {
@@ -63,9 +62,7 @@ export function SettingsContent() {
           savingEnvironmentId={savingEnvironmentId}
         />
 
-        <EmailSetupCard />
-
-        <EmailNotificationsCard
+        <EmailSettingsCard
           notificationSettings={notificationSettings}
           onUpdateNotifications={handleUpdateNotifications}
           filters={notificationFilters}
