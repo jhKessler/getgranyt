@@ -42,13 +42,13 @@ model OrganizationChannelConfig {
   @@map("organization_channel_config")
 }
 
-// Notification preferences per user
+// Notification preferences per user (per notification type)
 model UserNotificationSettings {
   id                String           @id @default(cuid())
   userId            String
   notificationType  NotificationType
   enabled           Boolean          @default(true)
-  
+
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
@@ -56,4 +56,25 @@ model UserNotificationSettings {
 
   @@unique([userId, notificationType])
   @@map("user_notification_settings")
+}
+
+// User-level email notification filters (applies across all notification types)
+model UserNotificationFilters {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+
+  // "all" = receive emails for all environments
+  // "default_only" = only receive emails for the org's default environment
+  environmentFilter  String   @default("all")
+
+  // true = receive emails for manual runs
+  // false = suppress emails for manual runs
+  includeManualRuns  Boolean  @default(true)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_notification_filters")
 }

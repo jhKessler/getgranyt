@@ -92,6 +92,19 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
       return
     }
 
+    if (alertType === "CUSTOM_METRIC_DEGRADATION") {
+      const percent = parseInt(declinePercent)
+      const days = parseInt(windowDays)
+      if (isNaN(percent) || percent < 1 || percent > 100) {
+        toast.error("Percentage must be between 1 and 100")
+        return
+      }
+      if (isNaN(days) || days < 1 || days > 90) {
+        toast.error("Days must be between 1 and 90")
+        return
+      }
+    }
+
     createMutation.mutate({
       name: monitorName,
       srcDagId: selectedDag,
@@ -210,36 +223,31 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
               <Label htmlFor="degradation" className="flex-1 cursor-pointer">
                 <span className="flex flex-wrap items-center gap-1">
                   consistently declines by{" "}
-                  <Select
-                    value={declinePercent}
-                    onValueChange={setDeclinePercent}
-                    disabled={alertType !== "CUSTOM_METRIC_DEGRADATION"}
-                  >
-                    <SelectTrigger className="inline-flex w-20 h-7">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10%</SelectItem>
-                      <SelectItem value="15">15%</SelectItem>
-                      <SelectItem value="20">20%</SelectItem>
-                      <SelectItem value="25">25%</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <span className="inline-flex items-center">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={declinePercent}
+                      onChange={(e) => setDeclinePercent(e.target.value)}
+                      disabled={alertType !== "CUSTOM_METRIC_DEGRADATION"}
+                      className="w-16 h-7 text-center"
+                    />
+                    <span className="ml-1">%</span>
+                  </span>
                   {" "}over{" "}
-                  <Select
-                    value={windowDays}
-                    onValueChange={setWindowDays}
-                    disabled={alertType !== "CUSTOM_METRIC_DEGRADATION"}
-                  >
-                    <SelectTrigger className="inline-flex w-24 h-7">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7">7 days</SelectItem>
-                      <SelectItem value="14">14 days</SelectItem>
-                      <SelectItem value="30">30 days</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <span className="inline-flex items-center">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={90}
+                      value={windowDays}
+                      onChange={(e) => setWindowDays(e.target.value)}
+                      disabled={alertType !== "CUSTOM_METRIC_DEGRADATION"}
+                      className="w-16 h-7 text-center"
+                    />
+                    <span className="ml-1">days</span>
+                  </span>
                 </span>
               </Label>
             </div>

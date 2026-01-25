@@ -88,6 +88,7 @@ export interface BatchAlertNotificationPayload extends BaseNotificationPayload {
   dagRunId: string;
   srcRunId?: string;
   environment?: string | null;
+  runType?: string | null;
   alerts: BatchAlertItem[];
 }
 
@@ -103,6 +104,8 @@ export interface ErrorNotificationPayload extends BaseNotificationPayload {
   runId?: string;
   stackTrace?: string;
   isNewError?: boolean;
+  environment?: string | null;
+  runType?: string | null;
 }
 
 /**

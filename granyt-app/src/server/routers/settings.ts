@@ -147,6 +147,52 @@ export const settingsRouter = router({
     }),
 
   // ============================================================================
+  // NOTIFICATION FILTERS (environment and run type filters)
+  // ============================================================================
+
+  /**
+   * Get notification filter settings for the current user
+   */
+  getNotificationFilters: protectedProcedure.query(async ({ ctx }) => {
+    const filters = await ctx.prisma.userNotificationFilters.findUnique({
+      where: { userId: ctx.user.id },
+    });
+
+    // Return with defaults if no filters set
+    return {
+      environmentFilter: (filters?.environmentFilter ?? "all") as "all" | "default_only",
+      includeManualRuns: filters?.includeManualRuns ?? true,
+    };
+  }),
+
+  /**
+   * Update notification filter settings for the current user
+   */
+  updateNotificationFilters: protectedProcedure
+    .input(
+      z.object({
+        environmentFilter: z.enum(["all", "default_only"]).optional(),
+        includeManualRuns: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.userNotificationFilters.upsert({
+        where: { userId: ctx.user.id },
+        create: {
+          userId: ctx.user.id,
+          environmentFilter: input.environmentFilter ?? "all",
+          includeManualRuns: input.includeManualRuns ?? true,
+        },
+        update: {
+          ...(input.environmentFilter !== undefined && { environmentFilter: input.environmentFilter }),
+          ...(input.includeManualRuns !== undefined && { includeManualRuns: input.includeManualRuns }),
+        },
+      });
+
+      return { success: true };
+    }),
+
+  // ============================================================================
   // CHANNEL MANAGEMENT
   // ============================================================================
 

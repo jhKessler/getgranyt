@@ -28,20 +28,21 @@ export const alertsRouter = router({
       });
       
       // Return settings map with defaults for missing types
-      const result: Record<AlertType, { enabled: boolean; sensitivity: AlertSensitivity; customThreshold: number | null }> = {
-        ROW_COUNT_DROP: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
-        NULL_OCCURRENCE: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
-        SCHEMA_CHANGE: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
-        INTEGRATION_ERROR: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
-        CUSTOM_METRIC_DROP: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
-        CUSTOM_METRIC_DEGRADATION: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null },
+      const result: Record<AlertType, { enabled: boolean; sensitivity: AlertSensitivity; customThreshold: number | null; enabledEnvironments: string[] }> = {
+        ROW_COUNT_DROP: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
+        NULL_OCCURRENCE: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
+        SCHEMA_CHANGE: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
+        INTEGRATION_ERROR: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
+        CUSTOM_METRIC_DROP: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
+        CUSTOM_METRIC_DEGRADATION: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
       };
-      
+
       for (const setting of settings) {
         result[setting.alertType] = {
           enabled: setting.enabled,
           sensitivity: setting.sensitivity,
           customThreshold: setting.customThreshold,
+          enabledEnvironments: setting.enabledEnvironments,
         };
       }
       
@@ -58,10 +59,11 @@ export const alertsRouter = router({
       enabled: z.boolean().optional(),
       sensitivity: z.nativeEnum(AlertSensitivity).optional(),
       customThreshold: z.number().min(1).max(99).nullable().optional(),
+      enabledEnvironments: z.array(z.string()).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
-      
+
       await ctx.prisma.organizationAlertSettings.upsert({
         where: {
           organizationId_alertType: {
@@ -75,16 +77,18 @@ export const alertsRouter = router({
           enabled: input.enabled ?? true,
           sensitivity: input.sensitivity ?? AlertSensitivity.MEDIUM,
           customThreshold: input.sensitivity === AlertSensitivity.CUSTOM ? input.customThreshold : null,
+          enabledEnvironments: input.enabledEnvironments ?? [],
         },
         update: {
           ...(input.enabled !== undefined && { enabled: input.enabled }),
           ...(input.sensitivity !== undefined && { sensitivity: input.sensitivity }),
-          ...(input.sensitivity !== undefined && { 
-            customThreshold: input.sensitivity === AlertSensitivity.CUSTOM ? input.customThreshold : null 
+          ...(input.sensitivity !== undefined && {
+            customThreshold: input.sensitivity === AlertSensitivity.CUSTOM ? input.customThreshold : null,
           }),
+          ...(input.enabledEnvironments !== undefined && { enabledEnvironments: input.enabledEnvironments }),
         },
       });
-      
+
       return { success: true };
     }),
 

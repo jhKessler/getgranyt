@@ -3,9 +3,7 @@
 import { PageHeader, PageSkeleton, GettingStartedChecklist } from "@/components/shared";
 import { useSettings } from "../_context";
 import {
-  NotificationPreferencesCard,
-  EmailSetupCard,
-  NotificationSettingsCard,
+  EmailSettingsCard,
   AirflowSettingsCard,
 } from ".";
 
@@ -14,6 +12,10 @@ export function SettingsContent() {
     isLoading,
     notificationSettings,
     handleUpdateNotifications,
+    notificationFilters,
+    handleUpdateFilters,
+    isUpdatingFilters,
+    defaultEnvironmentName,
     channelStatuses,
     airflowEnvironments,
     handleSaveEnvironmentAirflowUrl,
@@ -60,14 +62,14 @@ export function SettingsContent() {
           savingEnvironmentId={savingEnvironmentId}
         />
 
-        <EmailSetupCard />
-
-        <NotificationSettingsCard />
-
-        <NotificationPreferencesCard
-          settings={notificationSettings}
-          onUpdate={handleUpdateNotifications}
+        <EmailSettingsCard
+          notificationSettings={notificationSettings}
+          onUpdateNotifications={handleUpdateNotifications}
+          filters={notificationFilters}
+          onUpdateFilters={handleUpdateFilters}
           hasEmailConfigured={hasEmailConfigured}
+          defaultEnvironmentName={defaultEnvironmentName}
+          isUpdatingFilters={isUpdatingFilters}
         />
       </div>
     </div>

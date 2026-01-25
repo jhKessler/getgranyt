@@ -6,9 +6,10 @@
  */
 
 import type { NotificationPayload, NotifyResult } from "./types";
-import { ChannelType } from "./types";
+import { ChannelType, isBatchAlertPayload, isErrorPayload } from "./types";
 import { getActiveChannels } from "./channels";
 import { getUsersWithNotificationEnabled } from "./config";
+import { filterRecipientsByPreferences } from "./filters";
 import { renderNotification } from "./templates";
 import { createLogger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
@@ -39,13 +40,31 @@ export async function notify(payload: NotificationPayload): Promise<NotifyResult
   const { organizationId, type } = payload;
 
   // Step 1: Get recipients who have this notification type enabled
-  const recipients = await getUsersWithNotificationEnabled(organizationId, type);
+  let recipients = await getUsersWithNotificationEnabled(organizationId, type);
   if (recipients.length === 0) {
     logger.debug(
       { type, organizationId },
       "No users have notification enabled"
     );
     return { sent: false, channels: [] };
+  }
+
+  // Step 1.5: Filter recipients based on their environment and run type preferences
+  const filterContext = extractFilterContext(payload);
+  if (filterContext.environment || filterContext.runType) {
+    recipients = await filterRecipientsByPreferences(
+      organizationId,
+      recipients,
+      filterContext
+    );
+
+    if (recipients.length === 0) {
+      logger.debug(
+        { type, organizationId, filterContext },
+        "All recipients filtered out by notification preferences"
+      );
+      return { sent: false, channels: [] };
+    }
   }
 
   // Step 2: Get all active (configured + enabled) channels
@@ -254,4 +273,29 @@ export async function notifyForced(payload: NotificationPayload): Promise<Notify
     sent: results.some((r) => r.success),
     channels: results,
   };
+}
+
+/**
+ * Extract environment and runType from a notification payload for filtering
+ */
+function extractFilterContext(payload: NotificationPayload): {
+  environment?: string | null;
+  runType?: string | null;
+} {
+  if (isBatchAlertPayload(payload)) {
+    return {
+      environment: payload.environment,
+      runType: payload.runType,
+    };
+  }
+
+  if (isErrorPayload(payload)) {
+    return {
+      environment: payload.environment,
+      runType: payload.runType,
+    };
+  }
+
+  // For individual alert payloads, no environment/runType info yet
+  return {};
 }

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Bell, AlertTriangle, Database, Columns, LayoutList } from "lucide-react";
+import { Bell, AlertTriangle } from "lucide-react";
 
 // ============================================================================
 // NOTIFICATION TYPE - Must match Prisma NotificationType enum
@@ -103,42 +103,17 @@ export interface NotificationCategory {
 
 /**
  * Alert notification settings
+ * Note: Fine-grained alert type controls (ROW_COUNT_DROP, NULL_OCCURRENCE, SCHEMA_CHANGE)
+ * are now managed on the Alerts page via AlertSensitivitySettings.
+ * This config only controls email notifications.
  */
 export const ALERT_NOTIFICATIONS: NotificationSettingConfig[] = [
   {
     type: "ALL_ALERTS",
-    label: "All Alerts",
-    description: "Master toggle for all alert notifications",
+    label: "Alert Emails",
+    description: "Receive emails when data quality alerts occur",
     icon: Bell,
     inputType: "switch",
-    isParent: true,
-    defaultEnabled: true,
-  },
-  {
-    type: "ROW_COUNT_DROP_ALERT",
-    label: "Row Count Drop Alerts",
-    description: "When data row counts drop significantly",
-    icon: Database,
-    inputType: "switch",
-    parentType: "ALL_ALERTS",
-    defaultEnabled: true,
-  },
-  {
-    type: "NULL_OCCURRENCE_ALERT",
-    label: "Null Column Alerts",
-    description: "When columns that previously had no nulls start having them",
-    icon: Columns,
-    inputType: "switch",
-    parentType: "ALL_ALERTS",
-    defaultEnabled: true,
-  },
-  {
-    type: "SCHEMA_CHANGE_ALERT",
-    label: "Schema Change Alerts",
-    description: "When columns are added, removed, or have type changes",
-    icon: LayoutList,
-    inputType: "switch",
-    parentType: "ALL_ALERTS",
     defaultEnabled: true,
   },
 ];
@@ -280,4 +255,40 @@ export const ALERT_TYPE_TO_NOTIFICATION_TYPE: Record<string, NotificationTypeVal
   ROW_COUNT_DROP: "ROW_COUNT_DROP_ALERT",
   NULL_OCCURRENCE: "NULL_OCCURRENCE_ALERT",
   SCHEMA_CHANGE: "SCHEMA_CHANGE_ALERT",
+};
+
+// ============================================================================
+// NOTIFICATION FILTER SETTINGS
+// ============================================================================
+
+/**
+ * Environment filter options
+ */
+export type EnvironmentFilterValue = "all" | "default_only";
+
+export interface EnvironmentFilterOption {
+  value: EnvironmentFilterValue;
+  label: string;
+  description: string;
+}
+
+export const ENVIRONMENT_FILTER_OPTIONS: EnvironmentFilterOption[] = [
+  {
+    value: "all",
+    label: "All Environments",
+    description: "Receive notifications for all environments",
+  },
+  {
+    value: "default_only",
+    label: "Default Environment Only",
+    description: "Only receive notifications for your default (production) environment",
+  },
+];
+
+/**
+ * Default notification filter settings
+ */
+export const DEFAULT_NOTIFICATION_FILTERS = {
+  environmentFilter: "all" as EnvironmentFilterValue,
+  includeManualRuns: true,
 };

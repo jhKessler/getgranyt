@@ -15,7 +15,6 @@ const DOCS_ROUTES = [
   "/docs", // Documentation
   "/demo", // Demo page
   "/sitemap.xml",
-  "/install.sh",
 ];
 
 const APP_ROUTES = [

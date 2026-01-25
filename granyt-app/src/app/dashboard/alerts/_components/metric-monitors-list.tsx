@@ -82,7 +82,7 @@ export function MetricMonitorsList() {
             <EmptyState onCreateClick={() => setShowCreateDialog(true)} />
           ) : (
             <div className="space-y-3">
-              {monitors.map((monitor) => (
+              {monitors.map((monitor: MetricMonitor) => (
                 <MonitorCard
                   key={monitor.id}
                   monitor={monitor}
@@ -108,19 +108,21 @@ export function MetricMonitorsList() {
   )
 }
 
+type MetricMonitor = {
+  id: string
+  name: string
+  srcDagId: string
+  metricName: string
+  alertType: string
+  sensitivity: string
+  customThreshold: number | null
+  windowDays: number
+  minDeclinePercent: number
+  enabled: boolean
+}
+
 interface MonitorCardProps {
-  monitor: {
-    id: string
-    name: string
-    srcDagId: string
-    metricName: string
-    alertType: string
-    sensitivity: string
-    customThreshold: number | null
-    windowDays: number
-    minDeclinePercent: number
-    enabled: boolean
-  }
+  monitor: MetricMonitor
   onToggle: (enabled: boolean) => void
   onDelete: () => void
   isToggling: boolean

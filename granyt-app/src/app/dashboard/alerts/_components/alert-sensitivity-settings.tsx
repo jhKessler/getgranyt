@@ -7,78 +7,69 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Settings, TrendingDown, Info, AlertTriangle, Columns } from "lucide-react"
-import { SENSITIVITY_CONFIG, SensitivityLevel } from "./types"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Settings, TrendingDown, Info, AlertTriangle, Columns, Globe } from "lucide-react"
+import { SensitivityLevel } from "./types"
 import { AlertType } from "@prisma/client"
 
+interface EnvironmentInfo {
+  id: string
+  name: string
+  isDefault: boolean
+}
+
+interface AlertSettingValue {
+  sensitivity: SensitivityLevel
+  enabled: boolean
+  customThreshold?: number | null
+  enabledEnvironments?: string[]
+}
+
 interface AlertSettings {
-  ROW_COUNT_DROP?: {
-    sensitivity: SensitivityLevel
-    enabled: boolean
-    customThreshold?: number | null
-  }
-  NULL_OCCURRENCE?: {
-    sensitivity: SensitivityLevel
-    enabled: boolean
-    customThreshold?: number | null
-  }
-  SCHEMA_CHANGE?: {
-    sensitivity: SensitivityLevel
-    enabled: boolean
-    customThreshold?: number | null
-  }
+  ROW_COUNT_DROP?: AlertSettingValue
+  NULL_OCCURRENCE?: AlertSettingValue
+  SCHEMA_CHANGE?: AlertSettingValue
 }
 
 interface AlertSensitivitySettingsProps {
   settings?: AlertSettings
   isLoading: boolean
   isPending: boolean
-  onSensitivityChange: (alertType: AlertType, sensitivity: string, customThreshold?: number) => void
+  environments?: EnvironmentInfo[]
   onEnabledChange: (alertType: AlertType, enabled: boolean) => void
   onCustomThresholdSave: (threshold: number) => void
+  onEnvironmentsChange?: (alertType: AlertType, environments: string[]) => void
 }
 
 export function AlertSensitivitySettings({
   settings,
   isLoading,
   isPending,
-  onSensitivityChange,
+  environments = [],
   onEnabledChange,
   onCustomThresholdSave,
+  onEnvironmentsChange,
 }: AlertSensitivitySettingsProps) {
   const [customThresholdInput, setCustomThresholdInput] = useState<string>("95")
-  const [showCustomInput, setShowCustomInput] = useState(false)
 
   useEffect(() => {
-    if (settings?.ROW_COUNT_DROP?.sensitivity === "CUSTOM" && settings.ROW_COUNT_DROP.customThreshold) {
+    if (settings?.ROW_COUNT_DROP?.customThreshold) {
       setCustomThresholdInput(settings.ROW_COUNT_DROP.customThreshold.toString())
-      setShowCustomInput(true)
-    } else if (settings?.ROW_COUNT_DROP?.sensitivity && settings.ROW_COUNT_DROP.sensitivity !== "CUSTOM") {
-      setShowCustomInput(false)
     }
-  }, [settings?.ROW_COUNT_DROP?.sensitivity, settings?.ROW_COUNT_DROP?.customThreshold])
-
-  const handleSensitivityChange = (value: string) => {
-    if (value === "CUSTOM") {
-      setShowCustomInput(true)
-      return
-    }
-    setShowCustomInput(false)
-    onSensitivityChange("ROW_COUNT_DROP", value)
-  }
+  }, [settings?.ROW_COUNT_DROP?.customThreshold])
 
   const handleCustomThresholdSave = () => {
     const threshold = parseInt(customThresholdInput, 10)
@@ -88,24 +79,15 @@ export function AlertSensitivitySettings({
     onCustomThresholdSave(threshold)
   }
 
-  const currentSensitivity = settings?.ROW_COUNT_DROP?.sensitivity ?? "MEDIUM"
-  const currentDescription = currentSensitivity === "CUSTOM" 
-    ? `Custom threshold: ${settings?.ROW_COUNT_DROP?.customThreshold ?? customThresholdInput}%`
-    : SENSITIVITY_CONFIG[currentSensitivity]?.description
-
-  const currentThreshold = currentSensitivity === "CUSTOM"
-    ? `${settings?.ROW_COUNT_DROP?.customThreshold ?? customThresholdInput}%`
-    : (SENSITIVITY_CONFIG[currentSensitivity]?.threshold || "95%")
-
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
           <Settings className="h-5 w-5 text-muted-foreground" />
-          <CardTitle>Alert Sensitivity</CardTitle>
+          <CardTitle>Alert Settings</CardTitle>
         </div>
         <CardDescription>
-          Configure when alerts are triggered. Higher sensitivity means alerts trigger on smaller drops.
+          Configure when alerts are triggered for your DAGs.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -116,32 +98,28 @@ export function AlertSensitivitySettings({
             <RowCountDropSetting
               settings={settings}
               isPending={isPending}
-              currentDescription={currentDescription}
-              currentThreshold={currentThreshold}
               customThresholdInput={customThresholdInput}
-              onSensitivityChange={handleSensitivityChange}
+              environments={environments}
+              onCustomThresholdChange={setCustomThresholdInput}
+              onCustomThresholdSave={handleCustomThresholdSave}
               onEnabledChange={onEnabledChange}
+              onEnvironmentsChange={onEnvironmentsChange}
             />
-            
-            {showCustomInput && (
-              <CustomThresholdInput
-                value={customThresholdInput}
-                onChange={setCustomThresholdInput}
-                onSave={handleCustomThresholdSave}
-                isPending={isPending}
-              />
-            )}
 
             <NullOccurrenceSetting
               settings={settings}
               isPending={isPending}
+              environments={environments}
               onEnabledChange={onEnabledChange}
+              onEnvironmentsChange={onEnvironmentsChange}
             />
 
             <SchemaChangeSetting
               settings={settings}
               isPending={isPending}
+              environments={environments}
               onEnabledChange={onEnabledChange}
+              onEnvironmentsChange={onEnvironmentsChange}
             />
           </div>
         )}
@@ -153,24 +131,27 @@ export function AlertSensitivitySettings({
 interface RowCountDropSettingProps {
   settings?: AlertSettings
   isPending: boolean
-  currentDescription?: string
-  currentThreshold: string
   customThresholdInput: string
-  onSensitivityChange: (value: string) => void
+  environments: EnvironmentInfo[]
+  onCustomThresholdChange: (value: string) => void
+  onCustomThresholdSave: () => void
   onEnabledChange: (alertType: "ROW_COUNT_DROP", enabled: boolean) => void
+  onEnvironmentsChange?: (alertType: AlertType, environments: string[]) => void
 }
 
 function RowCountDropSetting({
   settings,
   isPending,
-  currentDescription,
-  currentThreshold,
-  customThresholdInput: _customThresholdInput,
-  onSensitivityChange,
+  customThresholdInput,
+  environments,
+  onCustomThresholdChange,
+  onCustomThresholdSave,
   onEnabledChange,
+  onEnvironmentsChange,
 }: RowCountDropSettingProps) {
-  const currentSensitivity = settings?.ROW_COUNT_DROP?.sensitivity ?? "MEDIUM"
   const isEnabled = settings?.ROW_COUNT_DROP?.enabled ?? true
+  const savedThreshold = settings?.ROW_COUNT_DROP?.customThreshold ?? 95
+  const enabledEnvironments = settings?.ROW_COUNT_DROP?.enabledEnvironments ?? []
 
   return (
     <div className="flex items-start justify-between gap-4 p-4 rounded-lg border bg-muted/30">
@@ -189,107 +170,60 @@ function RowCountDropSetting({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {currentDescription}
-        </p>
-        {currentSensitivity !== "DISABLED" && (
-          <p className="text-xs text-muted-foreground">
-            Alert triggers when row count drops by {currentThreshold} or more
+        {isEnabled ? (
+          <p className="text-sm text-muted-foreground">
+            Alert triggers when row count drops by {savedThreshold}% or more
           </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">Detection disabled</p>
         )}
       </div>
-      
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Label htmlFor="row-count-enabled" className="text-sm text-muted-foreground">
-            Enabled
-          </Label>
-          <Switch
-            id="row-count-enabled"
-            checked={isEnabled}
-            onCheckedChange={(checked: boolean) => onEnabledChange("ROW_COUNT_DROP", checked)}
-            disabled={isPending}
-          />
-        </div>
-        
-        <Select
-          value={currentSensitivity}
-          onValueChange={onSensitivityChange}
-          disabled={isPending || !isEnabled}
-        >
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="HIGH">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-red-500" />
-                High
-              </div>
-            </SelectItem>
-            <SelectItem value="MEDIUM">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-orange-500" />
-                Medium
-              </div>
-            </SelectItem>
-            <SelectItem value="LOW">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-yellow-500" />
-                Low
-              </div>
-            </SelectItem>
-            <SelectItem value="DISABLED">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-muted-foreground" />
-                Disabled
-              </div>
-            </SelectItem>
-            <SelectItem value="CUSTOM">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-purple-500" />
-                Custom
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
+
+      <div className="flex items-center gap-3">
+        {isEnabled && (
+          <>
+            <EnvironmentSelector
+              alertType="ROW_COUNT_DROP"
+              selectedEnvironments={enabledEnvironments}
+              availableEnvironments={environments}
+              isPending={isPending}
+              onEnvironmentsChange={onEnvironmentsChange}
+            />
+            <div className="flex items-center gap-2">
+              <Label htmlFor="custom-threshold" className="text-sm text-muted-foreground whitespace-nowrap">
+                Threshold
+              </Label>
+              <Input
+                id="custom-threshold"
+                type="number"
+                min={1}
+                max={99}
+                value={customThresholdInput}
+                onChange={(e) => onCustomThresholdChange(e.target.value)}
+                className="w-16 h-8"
+                disabled={isPending}
+              />
+              <span className="text-sm text-muted-foreground">%</span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onCustomThresholdSave}
+                disabled={isPending || customThresholdInput === savedThreshold.toString()}
+                className="h-8"
+              >
+                {isPending ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </>
+        )}
+
+        <Switch
+          id="row-count-enabled"
+          checked={isEnabled}
+          onCheckedChange={(checked: boolean) => onEnabledChange("ROW_COUNT_DROP", checked)}
+          disabled={isPending}
+        />
       </div>
-    </div>
-  )
-}
-
-interface CustomThresholdInputProps {
-  value: string
-  onChange: (value: string) => void
-  onSave: () => void
-  isPending: boolean
-}
-
-function CustomThresholdInput({ value, onChange, onSave, isPending }: CustomThresholdInputProps) {
-  return (
-    <div className="flex items-center gap-2 mt-3 p-3 bg-muted/50 rounded-lg">
-      <Label htmlFor="custom-threshold" className="text-sm whitespace-nowrap">
-        Alert when row count drops by
-      </Label>
-      <Input
-        id="custom-threshold"
-        type="number"
-        min={1}
-        max={99}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-20"
-        placeholder="95"
-      />
-      <span className="text-sm text-muted-foreground">% or more</span>
-      <Button
-        size="sm"
-        onClick={onSave}
-        disabled={isPending}
-        className="ml-2"
-      >
-        {isPending ? "Saving..." : "Apply"}
-      </Button>
     </div>
   )
 }
@@ -297,11 +231,14 @@ function CustomThresholdInput({ value, onChange, onSave, isPending }: CustomThre
 interface NullOccurrenceSettingProps {
   settings?: AlertSettings
   isPending: boolean
+  environments: EnvironmentInfo[]
   onEnabledChange: (alertType: AlertType, enabled: boolean) => void
+  onEnvironmentsChange?: (alertType: AlertType, environments: string[]) => void
 }
 
-function NullOccurrenceSetting({ settings, isPending, onEnabledChange }: NullOccurrenceSettingProps) {
+function NullOccurrenceSetting({ settings, isPending, environments, onEnabledChange, onEnvironmentsChange }: NullOccurrenceSettingProps) {
   const isEnabled = settings?.NULL_OCCURRENCE?.enabled ?? true
+  const enabledEnvironments = settings?.NULL_OCCURRENCE?.enabledEnvironments ?? []
 
   return (
     <div className="flex items-start justify-between gap-4 p-4 rounded-lg border bg-muted/30">
@@ -321,16 +258,22 @@ function NullOccurrenceSetting({ settings, isPending, onEnabledChange }: NullOcc
           </TooltipProvider>
         </div>
         <p className="text-sm text-muted-foreground">
-          {isEnabled 
+          {isEnabled
             ? "Alert when columns that never had nulls suddenly have them"
             : "Detection disabled"}
         </p>
       </div>
-      
-      <div className="flex items-center gap-2">
-        <Label htmlFor="null-occurrence-enabled" className="text-sm text-muted-foreground">
-          Enabled
-        </Label>
+
+      <div className="flex items-center gap-3">
+        {isEnabled && (
+          <EnvironmentSelector
+            alertType="NULL_OCCURRENCE"
+            selectedEnvironments={enabledEnvironments}
+            availableEnvironments={environments}
+            isPending={isPending}
+            onEnvironmentsChange={onEnvironmentsChange}
+          />
+        )}
         <Switch
           id="null-occurrence-enabled"
           checked={isEnabled}
@@ -345,11 +288,14 @@ function NullOccurrenceSetting({ settings, isPending, onEnabledChange }: NullOcc
 interface SchemaChangeSettingProps {
   settings?: AlertSettings
   isPending: boolean
+  environments: EnvironmentInfo[]
   onEnabledChange: (alertType: AlertType, enabled: boolean) => void
+  onEnvironmentsChange?: (alertType: AlertType, environments: string[]) => void
 }
 
-function SchemaChangeSetting({ settings, isPending, onEnabledChange }: SchemaChangeSettingProps) {
+function SchemaChangeSetting({ settings, isPending, environments, onEnabledChange, onEnvironmentsChange }: SchemaChangeSettingProps) {
   const isEnabled = settings?.SCHEMA_CHANGE?.enabled ?? true
+  const enabledEnvironments = settings?.SCHEMA_CHANGE?.enabledEnvironments ?? []
 
   return (
     <div className="flex items-start justify-between gap-4 p-4 rounded-lg border bg-muted/30">
@@ -369,16 +315,22 @@ function SchemaChangeSetting({ settings, isPending, onEnabledChange }: SchemaCha
           </TooltipProvider>
         </div>
         <p className="text-sm text-muted-foreground">
-          {isEnabled 
+          {isEnabled
             ? "Alert when columns are added, removed, or change type"
             : "Detection disabled"}
         </p>
       </div>
-      
-      <div className="flex items-center gap-2">
-        <Label htmlFor="schema-change-enabled" className="text-sm text-muted-foreground">
-          Enabled
-        </Label>
+
+      <div className="flex items-center gap-3">
+        {isEnabled && (
+          <EnvironmentSelector
+            alertType="SCHEMA_CHANGE"
+            selectedEnvironments={enabledEnvironments}
+            availableEnvironments={environments}
+            isPending={isPending}
+            onEnvironmentsChange={onEnvironmentsChange}
+          />
+        )}
         <Switch
           id="schema-change-enabled"
           checked={isEnabled}
@@ -387,5 +339,100 @@ function SchemaChangeSetting({ settings, isPending, onEnabledChange }: SchemaCha
         />
       </div>
     </div>
+  )
+}
+
+// Environment selector component for selecting which environments trigger alerts
+interface EnvironmentSelectorProps {
+  alertType: AlertType
+  selectedEnvironments: string[]
+  availableEnvironments: EnvironmentInfo[]
+  isPending: boolean
+  onEnvironmentsChange?: (alertType: AlertType, environments: string[]) => void
+}
+
+function EnvironmentSelector({
+  alertType,
+  selectedEnvironments,
+  availableEnvironments,
+  isPending,
+  onEnvironmentsChange,
+}: EnvironmentSelectorProps) {
+  const allSelected = selectedEnvironments.length === 0
+
+  if (availableEnvironments.length === 0) {
+    return null
+  }
+
+  const handleAllChange = (checked: boolean) => {
+    if (checked) {
+      onEnvironmentsChange?.(alertType, [])
+    }
+  }
+
+  const handleEnvironmentChange = (envName: string, checked: boolean) => {
+    if (allSelected) {
+      // Switching from "all" to specific - select only this one
+      onEnvironmentsChange?.(alertType, [envName])
+    } else if (checked) {
+      onEnvironmentsChange?.(alertType, [...selectedEnvironments, envName])
+    } else {
+      const newEnvs = selectedEnvironments.filter(e => e !== envName)
+      // If removing the last one, revert to "all environments"
+      onEnvironmentsChange?.(alertType, newEnvs.length === 0 ? [] : newEnvs)
+    }
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" disabled={isPending} className="h-8 gap-1.5">
+          <Globe className="h-3.5 w-3.5" />
+          <span className="text-xs">
+            {allSelected
+              ? "All envs"
+              : selectedEnvironments.length === 1
+                ? selectedEnvironments[0]
+                : `${selectedEnvironments.length} envs`}
+          </span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-56 p-3" align="end">
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id={`${alertType}-all`}
+              checked={allSelected}
+              onCheckedChange={handleAllChange}
+              disabled={isPending}
+            />
+            <Label htmlFor={`${alertType}-all`} className="text-sm font-medium">
+              All environments
+            </Label>
+          </div>
+          <Separator />
+          <div className="space-y-2">
+            {availableEnvironments.map((env) => (
+              <div key={env.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${alertType}-${env.id}`}
+                  checked={!allSelected && selectedEnvironments.includes(env.name)}
+                  onCheckedChange={(checked) => handleEnvironmentChange(env.name, !!checked)}
+                  disabled={isPending}
+                />
+                <Label htmlFor={`${alertType}-${env.id}`} className="text-sm flex items-center gap-1.5">
+                  {env.name}
+                  {env.isDefault && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                      default
+                    </Badge>
+                  )}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
