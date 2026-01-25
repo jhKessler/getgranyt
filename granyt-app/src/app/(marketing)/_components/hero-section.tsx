@@ -12,13 +12,13 @@ function HeroHeadline() {
   return (
     <>
       <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-        Pipeline monitoring{" "}
+        Stop finding out your DAG failed{" "}
         <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          you&apos;ll actually use
+          from Slack messages
         </span>
       </h1>
       <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-        Granyt is a modern, open source all-in-one monitoring platform for Apache Airflow that lets you catch errors and data issues before they reach production.
+        Open source Airflow observability with error tracking, metrics, and alerts that actually understand your pipelines. Self-hosted. 5 minutes to deploy.
       </p>
     </>
   )
@@ -78,15 +78,15 @@ export function HeroSection() {
           <div className="flex flex-wrap justify-center gap-8 pt-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span>100% Open Source</span>
+              <span>No $2k/month Datadog bill</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span>Self-Hosted</span>
+              <span>Your infra, your data</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span>5-minute install</span>
+              <span>5-minute deploy</span>
             </div>
           </div>
 
