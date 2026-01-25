@@ -15,6 +15,7 @@ model User {
   createdOrganizations     Organization[]            @relation("CreatedOrganizations")
   dagMetricsSettings  DagMetricsSettings[]
   notificationSettings UserNotificationSettings[]
+  notificationFilters  UserNotificationFilters?
 
   @@map("users")
 }

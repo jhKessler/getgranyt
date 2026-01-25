@@ -90,6 +90,7 @@ export function OperatorMetricsSection() {
               Need support for a custom operator? You can easily build and register your own adapters to extract any metadata you need. <Link href={getDocsLink("/operators")} className="text-primary hover:underline inline-flex items-center gap-1">Learn more in our docs <ExternalLink className="h-3 w-3" /></Link>
             </p>
 
+            <p className="text-sm font-medium text-muted-foreground mb-4">Supported Operators</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {operators.map((op) => (
                 <div key={op.title} className="space-y-3">
@@ -116,15 +117,20 @@ export function OperatorMetricsSection() {
             <div className="absolute -inset-4 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5 rounded-3xl blur-2xl" />
             <Card className="relative border-border/50 bg-background/50 backdrop-blur-sm overflow-hidden">
               <CardContent className="p-0">
-                <CodeBlock 
-                  code={`@task
+                <CodeBlock
+                  code={`from granyt_sdk import compute_df_metrics
+
+@task
 def transform_data():
     # Load raw data
     df_raw = pd.read_sql("SELECT * FROM raw_events", conn)
-    
+
     # Return data and metrics via granyt key
     return {
         "granyt": {
+            # Enables row counts, schema detection, null anomaly detection
+            "df_metrics": compute_df_metrics(df_raw),
+            # You can also return and track custom metrics
             "high_value_orders": (df_raw["amount"] > 1000).sum()
         }
     }`}

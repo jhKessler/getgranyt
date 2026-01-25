@@ -53,7 +53,8 @@ function RunsPageContent() {
     }
 
     if (parsed.data.environment) {
-      setFilter("selectedEnvironment", parsed.data.environment)
+      // "all" means All Environments (null)
+      setFilter("selectedEnvironment", parsed.data.environment === "all" ? null : parsed.data.environment)
       setFilter("_envInitialized", true)
     }
     // Handle custom date range
@@ -81,7 +82,7 @@ function RunsPageContent() {
     startTime: filters.startTime ?? undefined,
     endTime: filters.endTime ?? undefined,
   }, {
-    enabled: !!filters.selectedEnvironment,
+    enabled: filters._envInitialized,
   })
 
   // Fetch dag runs with open alerts

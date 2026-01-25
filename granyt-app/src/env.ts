@@ -63,7 +63,6 @@ export const env = createEnv({
    */
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url().default("https://granyt.dev").describe("Public app URL for dashboard links"),
-    NEXT_PUBLIC_INSTALL_URL: z.string().url().optional().describe("URL for the installation script"),
     NEXT_PUBLIC_GRANYT_MODE: z.enum(["APP", "DOCS", "DEV", "app", "docs", "dev"]).optional().describe("App mode: APP, DOCS, or DEV"),
     NEXT_PUBLIC_POSTHOG_KEY: z.string().optional().describe("PostHog analytics API key"),
     NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional().describe("PostHog host URL"),
@@ -114,7 +113,6 @@ export const env = createEnv({
     
     // Client
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_INSTALL_URL: process.env.NEXT_PUBLIC_INSTALL_URL,
     NEXT_PUBLIC_GRANYT_MODE: process.env.NEXT_PUBLIC_GRANYT_MODE,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,

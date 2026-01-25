@@ -6,9 +6,13 @@ export {
   type NotificationCategory,
   type NotificationTypeKey,
   type NotificationTypeValue,
+  type EnvironmentFilterValue,
+  type EnvironmentFilterOption,
 
   // Constants
   NotificationTypes,
+  ENVIRONMENT_FILTER_OPTIONS,
+  DEFAULT_NOTIFICATION_FILTERS,
 
   // Config arrays
   ALERT_NOTIFICATIONS,

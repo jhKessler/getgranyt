@@ -24,9 +24,7 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <>
-      <FadeIn>
-        <HeroSection />
-      </FadeIn>
+      <HeroSection />
       <FadeIn>
         <OperatorMetricsSection />
       </FadeIn>

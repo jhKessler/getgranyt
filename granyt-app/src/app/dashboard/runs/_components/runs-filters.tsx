@@ -108,9 +108,9 @@ export function RunsFilters({
         />
       </div>
       <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        <Select 
-          value={selectedEnvironment ?? ""} 
-          onValueChange={(v) => onEnvironmentChange(v)}
+        <Select
+          value={selectedEnvironment ?? "all"}
+          onValueChange={(v) => onEnvironmentChange(v === "all" ? null : v)}
           disabled={isLoading}
         >
           <SelectTrigger className="w-full sm:w-[140px]">
@@ -120,6 +120,7 @@ export function RunsFilters({
             </div>
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="all">All Environments</SelectItem>
             {environments.map((env) => (
               <SelectItem key={env.name} value={env.name} className="capitalize">
                 {env.name}

@@ -25,14 +25,15 @@ enum AlertSensitivity {
 
 // Global alert settings per organization
 model OrganizationAlertSettings {
-  id              String           @id @default(cuid())
-  organizationId  String
-  alertType       AlertType
-  enabled         Boolean          @default(true)
-  sensitivity     AlertSensitivity @default(MEDIUM)
-  customThreshold Int?             // Custom percentage threshold (1-100), only used when sensitivity=CUSTOM
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id                  String           @id @default(cuid())
+  organizationId      String
+  alertType           AlertType
+  enabled             Boolean          @default(true)
+  sensitivity         AlertSensitivity @default(MEDIUM)
+  customThreshold     Int?             // Custom percentage threshold (1-100), only used when sensitivity=CUSTOM
+  enabledEnvironments String[]         @default([]) // Empty = all environments, otherwise only listed environments trigger alerts
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 

@@ -48,6 +48,7 @@ export interface EffectiveAlertSettings {
   enabled: boolean;
   sensitivity: AlertSensitivity;
   customThreshold: number | null; // Custom percentage (1-100), only used when sensitivity=CUSTOM
+  enabledEnvironments: string[]; // Empty = all environments, otherwise only listed environments trigger alerts
 }
 
 // ============================================================================

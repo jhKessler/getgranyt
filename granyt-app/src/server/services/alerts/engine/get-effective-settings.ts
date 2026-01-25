@@ -13,6 +13,7 @@ const DEFAULT_SETTINGS: EffectiveAlertSettings = {
   enabled: true,
   sensitivity: AlertSensitivity.MEDIUM,
   customThreshold: null,
+  enabledEnvironments: [], // Empty = all environments
 };
 
 /**
@@ -57,6 +58,7 @@ export async function getEffectiveSettings(
     enabled: orgSettings?.enabled ?? DEFAULT_SETTINGS.enabled,
     sensitivity: orgSettings?.sensitivity ?? DEFAULT_SETTINGS.sensitivity,
     customThreshold: orgSettings?.customThreshold ?? DEFAULT_SETTINGS.customThreshold,
+    enabledEnvironments: orgSettings?.enabledEnvironments ?? DEFAULT_SETTINGS.enabledEnvironments,
   };
 
   // If no DAG settings, use org settings
@@ -65,10 +67,12 @@ export async function getEffectiveSettings(
   }
 
   // Merge DAG settings (null means inherit from org)
+  // Note: enabledEnvironments is org-level only for now, DAG settings don't override it
   return {
     enabled: dagSettings.enabled ?? orgEffective.enabled,
     sensitivity: dagSettings.sensitivity ?? orgEffective.sensitivity,
     customThreshold: dagSettings.customThreshold ?? orgEffective.customThreshold,
+    enabledEnvironments: orgEffective.enabledEnvironments,
   };
 }
 

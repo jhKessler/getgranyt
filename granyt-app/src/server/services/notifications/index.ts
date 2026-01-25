@@ -63,6 +63,17 @@ export {
   updateNotificationSetting,
 } from "./config";
 
+// Filter helpers
+export {
+  getUserNotificationFilters,
+  updateUserNotificationFilters,
+  getDefaultEnvironmentName,
+  shouldSendNotificationToUser,
+  filterRecipientsByPreferences,
+  type NotificationFilters,
+  type EnvironmentFilter,
+} from "./filters";
+
 // Channel management
 export {
   getChannel,
