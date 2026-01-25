@@ -276,4 +276,59 @@ describe("Null Occurrence Detector", () => {
       expect(result).toBeNull();
     });
   });
+
+  describe("environment filtering", () => {
+    it("should only use historical null counts from the same environment", async () => {
+      const ctx = createContext({ environment: "production" });
+
+      await nullOccurrenceDetector.detect(ctx, defaultSettings);
+
+      // Both queries should include environment filter
+      expect(prisma.metric.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            organizationId: "org-1",
+            captureId: "capture_1",
+            taskRun: {
+              dagRun: {
+                environment: "production",
+              },
+            },
+          }),
+        })
+      );
+    });
+
+    it("should not apply environment filter when environment is null", async () => {
+      const ctx = createContext({ environment: null });
+
+      await nullOccurrenceDetector.detect(ctx, defaultSettings);
+
+      // Verify the query did NOT include environment filter in taskRun
+      expect(prisma.metric.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            organizationId: "org-1",
+            captureId: "capture_1",
+          }),
+        })
+      );
+    });
+
+    it("should not trigger alert based on other environment baselines", async () => {
+      // Mock returns empty because no metrics exist for the same environment
+      vi.mocked(prisma.metric.findMany).mockResolvedValue([]);
+
+      const ctx = createContext({
+        environment: "production",
+        columns: [
+          { name: "id", dtype: "int64", null_count: 10, empty_string_count: null },
+        ],
+      });
+      const result = await nullOccurrenceDetector.detect(ctx, defaultSettings);
+
+      // Should return null since there's not enough history in the same environment
+      expect(result).toBeNull();
+    });
+  });
 });

@@ -46,9 +46,12 @@ export const rowCountDropDetector: AlertDetector = {
     }
 
     // Fetch historical data with temporal enrichment
-    const history = await fetchHistoricalRuns(ctx.organizationId, ctx.captureId!, {
-      limit: 60, // More history for better cohort analysis
-    });
+    const history = await fetchHistoricalRuns(
+      ctx.organizationId,
+      ctx.captureId!,
+      ctx.environment,
+      { limit: 60 } // More history for better cohort analysis
+    );
 
     // Not enough history
     if (history.length < DETECTION_REQUIREMENTS.absoluteMinimum) {

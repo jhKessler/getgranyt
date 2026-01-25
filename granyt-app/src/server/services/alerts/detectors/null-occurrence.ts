@@ -26,10 +26,15 @@ const LOOKBACK_DAYS = 7;
  */
 async function getHistoricalColumnMetrics(
   organizationId: string,
-  captureId: string
+  captureId: string,
+  environment: string | null
 ): Promise<ColumnInfo[][]> {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - LOOKBACK_DAYS);
+
+  const environmentFilter = environment != null
+    ? { taskRun: { dagRun: { environment } } }
+    : {};
 
   // First, get metrics from the last 7 days
   const recentMetrics = await prisma.metric.findMany({
@@ -37,6 +42,7 @@ async function getHistoricalColumnMetrics(
       organizationId,
       captureId,
       capturedAt: { gte: sevenDaysAgo },
+      ...environmentFilter,
     },
     select: {
       metrics: true,
@@ -55,6 +61,7 @@ async function getHistoricalColumnMetrics(
       where: {
         organizationId,
         captureId,
+        ...environmentFilter,
       },
       select: {
         metrics: true,
@@ -141,7 +148,8 @@ export const nullOccurrenceDetector: AlertDetector = {
     // Get historical column metrics
     const history = await getHistoricalColumnMetrics(
       ctx.organizationId,
-      ctx.captureId
+      ctx.captureId,
+      ctx.environment
     );
 
     // Not enough history to make a judgment

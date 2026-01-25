@@ -241,4 +241,54 @@ describe("Schema Change Detector", () => {
       expect(result).toBeNull();
     });
   });
+
+  describe("environment filtering", () => {
+    it("should only compare schema from the same environment", async () => {
+      const ctx = createContext({ environment: "production" });
+
+      await schemaChangeDetector.detect(ctx, defaultSettings);
+
+      // Verify the query included environment filter
+      expect(prisma.metric.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            organizationId: "org-1",
+            captureId: "capture_1",
+            taskRun: {
+              dagRun: {
+                environment: "production",
+              },
+            },
+          }),
+        })
+      );
+    });
+
+    it("should not apply environment filter when environment is null", async () => {
+      const ctx = createContext({ environment: null });
+
+      await schemaChangeDetector.detect(ctx, defaultSettings);
+
+      // Verify the query did NOT include environment filter in taskRun
+      expect(prisma.metric.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            organizationId: "org-1",
+            captureId: "capture_1",
+          },
+        })
+      );
+    });
+
+    it("should not detect change when only other environments differ", async () => {
+      // Mock returns null because no metrics exist for the same environment
+      vi.mocked(prisma.metric.findFirst).mockResolvedValue(null);
+
+      const ctx = createContext({ environment: "production" });
+      const result = await schemaChangeDetector.detect(ctx, defaultSettings);
+
+      // Should return null since there's no previous metric in the same environment
+      expect(result).toBeNull();
+    });
+  });
 });
