@@ -62,6 +62,7 @@ export interface AlertData {
   createdAt: Date | string
   acknowledgedAt: Date | string | null
   dismissedAt: Date | string | null
+  environment?: string | null
 }
 
 /**

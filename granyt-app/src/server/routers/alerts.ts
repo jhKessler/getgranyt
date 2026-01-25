@@ -102,6 +102,7 @@ export const alertsRouter = router({
       alertType: z.nativeEnum(AlertType).optional(),
       srcDagId: z.string().optional(),
       dagRunId: z.string().optional(),
+      environment: z.string().optional(),
       limit: z.number().min(1).max(100).default(50),
       offset: z.number().min(0).default(0),
     }))
@@ -114,6 +115,7 @@ export const alertsRouter = router({
         alertType: input.alertType,
         srcDagId: input.srcDagId,
         dagRunId: input.dagRunId,
+        environment: input.environment,
         limit: input.limit,
         offset: input.offset,
       });
@@ -136,33 +138,43 @@ export const alertsRouter = router({
    * Get count of open alerts
    */
   getOpenAlertCount: protectedProcedure
-    .input(z.object({ organizationId: z.string().optional() }))
+    .input(z.object({
+      organizationId: z.string().optional(),
+      environment: z.string().optional(),
+    }))
     .query(async ({ ctx, input }) => {
       const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
-      return countOpenAlerts(org.id);
+      return countOpenAlerts(org.id, input.environment);
     }),
 
   /**
    * Get alerts summary (critical/warning counts)
    */
   getAlertsSummary: protectedProcedure
-    .input(z.object({ organizationId: z.string().optional() }))
+    .input(z.object({
+      organizationId: z.string().optional(),
+      environment: z.string().optional(),
+    }))
     .query(async ({ ctx, input }) => {
       const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
-      return getAlertsSummary(org.id);
+      return getAlertsSummary(org.id, input.environment);
     }),
 
   /**
    * Get DAG IDs that have open alerts (for UI indicators)
    */
   getDagsWithAlerts: protectedProcedure
-    .input(z.object({ organizationId: z.string().optional() }))
+    .input(z.object({
+      organizationId: z.string().optional(),
+      environment: z.string().optional(),
+    }))
     .query(async ({ ctx, input }) => {
       const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
       const alerts = await ctx.prisma.alert.findMany({
         where: {
           organizationId: org.id,
           status: AlertStatus.OPEN,
+          ...(input.environment && { dagRun: { environment: input.environment } }),
         },
         select: {
           srcDagId: true,
@@ -196,13 +208,17 @@ export const alertsRouter = router({
    * Get dag run IDs that have open alerts (for UI indicators)
    */
   getDagRunsWithAlerts: protectedProcedure
-    .input(z.object({ organizationId: z.string().optional() }))
+    .input(z.object({
+      organizationId: z.string().optional(),
+      environment: z.string().optional(),
+    }))
     .query(async ({ ctx, input }) => {
       const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
       const alerts = await ctx.prisma.alert.findMany({
         where: {
           organizationId: org.id,
           status: AlertStatus.OPEN,
+          ...(input.environment && { dagRun: { environment: input.environment } }),
         },
         select: {
           dagRunId: true,
@@ -521,6 +537,7 @@ export const alertsRouter = router({
     .input(z.object({
       organizationId: z.string().optional(),
       srcDagId: z.string(),
+      environment: z.string().optional(),
     }))
     .query(async ({ ctx, input }) => {
       const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
@@ -532,6 +549,7 @@ export const alertsRouter = router({
           taskRun: {
             dagRun: {
               srcDagId: input.srcDagId,
+              ...(input.environment && { environment: input.environment }),
             },
           },
         },

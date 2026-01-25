@@ -66,7 +66,8 @@ export async function detectCustomMetricDrop(
   srcDagId: string,
   metricName: string,
   currentValue: number,
-  monitor: CustomMetricMonitor
+  monitor: CustomMetricMonitor,
+  environment: string | null
 ): Promise<CustomMetricDropResult | null> {
   // Early exit if disabled
   if (monitor.sensitivity === AlertSensitivity.DISABLED) {
@@ -78,6 +79,7 @@ export async function detectCustomMetricDrop(
     organizationId,
     srcDagId,
     metricName,
+    environment,
     60 // Fetch last 60 data points
   );
 
@@ -145,6 +147,7 @@ async function fetchHistoricalMetricValues(
   organizationId: string,
   srcDagId: string,
   metricName: string,
+  environment: string | null,
   limit: number
 ): Promise<HistoricalMetricValue[]> {
   const metrics = await prisma.metric.findMany({
@@ -153,6 +156,7 @@ async function fetchHistoricalMetricValues(
       taskRun: {
         dagRun: {
           srcDagId,
+          ...(environment != null && { environment }),
         },
       },
     },

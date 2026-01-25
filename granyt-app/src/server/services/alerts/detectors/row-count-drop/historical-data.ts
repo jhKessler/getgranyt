@@ -47,6 +47,7 @@ interface RawHistoricalData {
 export async function fetchHistoricalRuns(
   organizationId: string,
   captureId: string,
+  environment: string | null,
   options: FetchOptions = {}
 ): Promise<HistoricalRun[]> {
   const { limit = 60, includeCurrent = false } = options;
@@ -55,6 +56,13 @@ export async function fetchHistoricalRuns(
     where: {
       organizationId,
       captureId,
+      ...(environment != null && {
+        taskRun: {
+          dagRun: {
+            environment,
+          },
+        },
+      }),
     },
     select: {
       metrics: true,
