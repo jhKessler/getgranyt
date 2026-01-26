@@ -22,11 +22,10 @@ export function CTASection() {
                 Open Source
               </Badge>
               <h2 className="text-3xl md:text-4xl font-bold">
-                Ready to take control of your Airflow DAGs?
+                Your DAG failed 3 hours ago. Your dashboard didn&apos;t notice.
               </h2>
               <p className="text-xl text-muted-foreground">
-                Deploy Granyt on your infrastructure in minutes. 
-                Full access to the source code, no vendor lock-in. Your data never leaves your servers.
+                Granyt would have. Deploy in 5 minutes, catch the next failure before anyone notices.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">

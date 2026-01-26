@@ -10,13 +10,13 @@ import {
 } from "./_components"
 
 export const metadata: Metadata = {
-  title: "Granyt - Open Source Data Observability for Apache Airflow",
+  title: "Granyt - Open Source Airflow Observability",
   description:
-    "Monitor your Airflow DAGs, catch errors before they impact your data, and track data quality metrics. Zero-code setup, 100% open source and self-hostable.",
+    "Stop finding out your DAG failed from Slack messages. Error tracking, metrics, and alerts that understand your pipelines. Self-hosted, 5 min setup.",
   openGraph: {
-    title: "Granyt - Open Source Data Observability for Apache Airflow",
+    title: "Granyt - Open Source Airflow Observability",
     description:
-      "Monitor your Airflow DAGs, catch errors before they impact your data, and track data quality metrics. Zero-code setup, 100% open source and self-hostable.",
+      "Stop finding out your DAG failed from Slack messages. Error tracking, metrics, and alerts that understand your pipelines. Self-hosted, 5 min setup.",
     type: "website",
   },
 }
