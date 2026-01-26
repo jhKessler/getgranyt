@@ -33,12 +33,12 @@
 
 ## Features
 
-- **DAG Monitoring** - Know when pipelines break before downstream teams do. Track run history, duration trends, and success rates.
-- **Smart Alerts** - Get notified when your BigQuery job returns 0 rows instead of finding out from your CEO on Monday. Schema changes, row count drops, failures - all covered.
-- **Error Tracking** - Stack traces with DAG context, not just Python tracebacks. Errors grouped by fingerprint so you see patterns, not noise.
-- **Automatic Metrics** - Snowflake query stats, BigQuery bytes scanned, dbt test results - captured automatically from your existing operators.
-- **Multi-Environment** - Compare errors across dev, staging, and prod without switching tabs or grep-ing through logs.
-- **Self-Hosted** - Your data never leaves your infrastructure. No $2k/month observability bill. MIT licensed.
+- **DAG Monitoring**: Know when pipelines break before downstream teams do. Track run history, duration trends, and success rates.
+- **Smart Alerts**: Get notified when your BigQuery job returns 0 rows instead of finding out from your CEO on Monday. Schema changes, row count drops, failures: all covered.
+- **Error Tracking**: Stack traces with DAG context, not just Python tracebacks. Errors grouped by fingerprint so you see patterns, not noise.
+- **Automatic Metrics**: Snowflake query stats, BigQuery bytes scanned, dbt test results - captured automatically from your existing operators.
+- **Multi-Environment**: Compare errors across dev, staging, and prod without switching tabs or grep-ing through logs.
+- **Self-Hosted**: Your data never leaves your infrastructure. No $2k/month observability bill. MIT licensed.
 
 ---
 
