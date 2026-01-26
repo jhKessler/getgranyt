@@ -7,6 +7,7 @@ export interface GetAlertsParams {
   alertType?: AlertType;
   srcDagId?: string;
   dagRunId?: string;
+  environment?: string;
   limit?: number;
   offset?: number;
 }
@@ -42,6 +43,7 @@ export async function getAlerts(params: GetAlertsParams): Promise<AlertWithConte
     alertType,
     srcDagId,
     dagRunId,
+    environment,
     limit = 50,
     offset = 0,
   } = params;
@@ -59,6 +61,7 @@ export async function getAlerts(params: GetAlertsParams): Promise<AlertWithConte
       alertType,
       srcDagId,
       dagRunId,
+      ...(environment && { dagRun: { environment } }),
     },
     include: {
       dagRun: {
@@ -118,6 +121,7 @@ export async function getAlertById(
       dagRun: {
         select: {
           srcRunId: true,
+          environment: true,
         },
       },
     },
@@ -143,17 +147,22 @@ export async function getAlertById(
     srcRunId: alert.dagRun?.srcRunId ?? "n/a",
     dagName: alert.srcDagId ?? "system",
     dagDescription: dag?.description ?? undefined,
+    environment: alert.dagRun?.environment ?? null,
   };
 }
 
 /**
  * Counts open alerts for an organization
  */
-export async function countOpenAlerts(organizationId: string): Promise<number> {
+export async function countOpenAlerts(
+  organizationId: string,
+  environment?: string
+): Promise<number> {
   return prisma.alert.count({
     where: {
       organizationId,
       status: AlertStatus.OPEN,
+      ...(environment && { dagRun: { environment } }),
     },
   });
 }
@@ -162,19 +171,21 @@ export async function countOpenAlerts(organizationId: string): Promise<number> {
  * Gets open alerts count grouped by severity
  */
 export async function getAlertsSummary(
-  organizationId: string
+  organizationId: string,
+  environment?: string
 ): Promise<{ critical: number; warning: number; total: number }> {
-  const alerts = await prisma.alert.groupBy({
-    by: ["severity"],
+  // Note: Using findMany instead of groupBy because groupBy doesn't support relation filtering
+  const alerts = await prisma.alert.findMany({
     where: {
       organizationId,
       status: AlertStatus.OPEN,
+      ...(environment && { dagRun: { environment } }),
     },
-    _count: true,
+    select: { severity: true },
   });
 
-  const critical = alerts.find((a) => a.severity === "critical")?._count ?? 0;
-  const warning = alerts.find((a) => a.severity === "warning")?._count ?? 0;
+  const critical = alerts.filter((a) => a.severity === "critical").length;
+  const warning = alerts.filter((a) => a.severity === "warning").length;
 
   return {
     critical,

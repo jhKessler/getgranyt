@@ -9,18 +9,20 @@
   <img src="https://img.shields.io/badge/Airflow-2.5--2.10-017CEE?style=for-the-badge&logo=apache-airflow" alt="Airflow Support" />
 </p>
 
-<h1 align="center">🔍 Granyt</h1>
+<h1 align="center">Granyt</h1>
 
 <p align="center">
-  <strong>A modern, open source all-in-one monitoring platform for Apache Airflow that lets you catch errors and data issues before they reach production.</strong>
+  <strong>Stop finding out your DAG failed from Slack messages.</strong>
 </p>
 
 <p align="center">
-  <a href="#-features">Features</a> •
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#-project-structure">Project Structure</a> •
-  <a href="#-documentation">Documentation</a> •
-  <a href="#-contributing">Contributing</a>
+  Open source Airflow observability with error tracking, metrics, and alerts that actually understand your pipelines. Self-hosted. 5 minutes to deploy.
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#why-granyt">Why Granyt?</a> •
+  <a href="#quick-start">Quick Start</a>
 </p>
 
 ---
@@ -29,17 +31,36 @@
 
 ---
 
-## ✨ Features
+## Features
 
-- **📊 DAG Monitoring** - Real-time visibility into your data pipelines with run history, duration trends, and success rates
-- **🚨 Smart Alerts** - Configurable alerts for failures and data anomalies with email, Slack, and webhook notifications
-- **🐛 Error Tracking** - Sentry-like error aggregation with fingerprinting and stack trace analysis
-- **📈 Metrics Collection** - Automatic capture of metrics from popular operators (Snowflake, BigQuery, dbt, S3, and more)
-- **🌐 Multi-Environment** - Unified monitoring across dev, staging and production environments
-- **🔓 100% Open Source & Self-Hostable** - Complete control over your data with flexible, self-hosted deployment
+- **DAG Monitoring**: Know when pipelines break before downstream teams do. Track run history, duration trends, and success rates.
+- **Smart Alerts**: Get notified when your BigQuery job returns 0 rows instead of finding out from your CEO on Monday. Schema changes, row count drops, failures: all covered.
+- **Error Tracking**: Stack traces with DAG context, not just Python tracebacks. Errors grouped by fingerprint so you see patterns, not noise.
+- **Automatic Metrics**: Snowflake query stats, BigQuery bytes scanned, dbt test results - captured automatically from your existing operators.
+- **Multi-Environment**: Compare errors across dev, staging, and prod without switching tabs or grep-ing through logs.
+- **Self-Hosted**: Your data never leaves your infrastructure. No $2k/month observability bill. MIT licensed.
+
 ---
 
-## 🚀 Quick Start
+## Why Granyt?
+
+**The Airflow UI shows you what happened. Granyt tells you what went wrong.**
+
+If you've ever:
+- Discovered a DAG failed because someone asked "why is the dashboard empty?"
+- Spent 20 minutes clicking through task logs to find the actual error
+- Wished Sentry understood that `dag_id` and `task_id` matter
+- Set up Grafana dashboards that nobody looks at
+
+...then you know why generic monitoring tools don't cut it for data pipelines.
+
+Granyt is built specifically for Airflow. It speaks DAG, not just HTTP status codes.
+
+---
+
+## Quick Start
+
+Get from zero to monitoring in under 5 minutes. No credit card, no sales call, no "contact us for pricing."
 
 ### 1. Deploy the Granyt App
 
@@ -154,7 +175,7 @@ You can also set up custom alerts for your own metrics in the dashboard.
 
 ---
 
-## 📧 Contact
+## Contact
 
 - **GitHub:** [@jhkessler](https://github.com/jhkessler)
 - **Email:** johnny@granyt.dev
@@ -162,7 +183,7 @@ You can also set up custom alerts for your own metrics in the dashboard.
 
 ---
 
-## ⚖️ License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 

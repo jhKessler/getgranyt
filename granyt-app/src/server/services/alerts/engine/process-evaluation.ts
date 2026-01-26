@@ -291,7 +291,8 @@ async function evaluateDetectors(ctx: DetectorContext): Promise<Alert[]> {
       ctx.organizationId,
       ctx.srcDagId,
       ctx.captureId,
-      alertType
+      alertType,
+      ctx.environment
     );
 
     if (existingAlert) {
@@ -327,7 +328,8 @@ async function findOpenAlert(
   organizationId: string,
   srcDagId: string,
   captureId: string | null,
-  alertType: AlertType
+  alertType: AlertType,
+  environment: string | null
 ): Promise<Alert | null> {
   return prisma.alert.findFirst({
     where: {
@@ -336,6 +338,7 @@ async function findOpenAlert(
       captureId: captureId ?? undefined,
       alertType,
       status: AlertStatus.OPEN,
+      ...(environment && { dagRun: { environment } }),
     },
   });
 }
@@ -374,6 +377,7 @@ async function evaluateCustomMetricMonitors(
     id: string;
     organizationId: string;
     srcDagId: string;
+    environment: string | null;
     taskRuns: Array<{
       id: string;
       metrics: Array<{
@@ -429,7 +433,8 @@ async function evaluateCustomMetricMonitors(
       dagRun.organizationId,
       dagRun.srcDagId,
       monitor.metricName,
-      monitor.alertType
+      monitor.alertType,
+      dagRun.environment
     );
 
     if (existingAlert) {
@@ -445,7 +450,8 @@ async function evaluateCustomMetricMonitors(
         dagRun.srcDagId,
         monitor.metricName,
         currentValue,
-        monitor
+        monitor,
+        dagRun.environment
       );
     } else if (monitor.alertType === PrismaAlertType.CUSTOM_METRIC_DEGRADATION) {
       result = await detectCustomMetricDegradation(
@@ -453,7 +459,8 @@ async function evaluateCustomMetricMonitors(
         dagRun.srcDagId,
         monitor.metricName,
         currentValue,
-        monitor
+        monitor,
+        dagRun.environment
       );
     }
 
@@ -502,7 +509,8 @@ async function findOpenCustomMetricAlert(
   organizationId: string,
   srcDagId: string,
   metricName: string,
-  alertType: PrismaAlertType
+  alertType: PrismaAlertType,
+  environment: string | null
 ): Promise<Alert | null> {
   return prisma.alert.findFirst({
     where: {
@@ -511,6 +519,7 @@ async function findOpenCustomMetricAlert(
       captureId: `custom-metric:${metricName}`,
       alertType,
       status: AlertStatus.OPEN,
+      ...(environment && { dagRun: { environment } }),
     },
   });
 }

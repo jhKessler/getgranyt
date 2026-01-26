@@ -61,7 +61,8 @@ export async function detectCustomMetricDegradation(
   srcDagId: string,
   metricName: string,
   currentValue: number,
-  monitor: CustomMetricMonitor
+  monitor: CustomMetricMonitor,
+  environment: string | null
 ): Promise<CustomMetricDegradationResult | null> {
   const windowDays = monitor.windowDays;
   const minDeclinePercent = monitor.minDeclinePercent;
@@ -74,6 +75,7 @@ export async function detectCustomMetricDegradation(
     organizationId,
     srcDagId,
     metricName,
+    environment,
     windowStart
   );
 
@@ -151,6 +153,7 @@ async function fetchHistoricalMetricValues(
   organizationId: string,
   srcDagId: string,
   metricName: string,
+  environment: string | null,
   windowStart: Date
 ): Promise<HistoricalDataPoint[]> {
   const metrics = await prisma.metric.findMany({
@@ -160,6 +163,7 @@ async function fetchHistoricalMetricValues(
       taskRun: {
         dagRun: {
           srcDagId,
+          ...(environment != null && { environment }),
         },
       },
     },

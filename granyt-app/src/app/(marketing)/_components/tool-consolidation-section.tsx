@@ -59,27 +59,27 @@ interface GranytCapability {
 const granytCapabilities: GranytCapability[] = [
   {
     icon: AlertTriangle,
-    name: "Rich Observability",
-    description: "Sentry-style error tracking and metrics built for Airflow DAGs.",
-    highlights: ["Full stack traces", "Automatic operator metrics", "Task metadata context"],
+    name: "Errors With Context",
+    description: "Stack traces that show dag_id, task_id, and run_id. Not just 'Exception in worker'.",
+    highlights: ["DAG-aware grouping", "Operator metrics", "One-click to logs"],
   },
   {
     icon: Bell,
-    name: "Proactive Alerting",
-    description: "Get notified before unexpected changes break downstream pipelines.",
-    highlights: ["Schema change alerts", "Anomaly detection", "Email notifications"],
+    name: "Alerts That Matter",
+    description: "Know when row counts drop 90% or schemas change. Not just 'task failed'.",
+    highlights: ["Row count anomalies", "Schema drift detection", "Slack & email"],
   },
   {
     icon: Layers,
-    name: "Multi-Environment Support",
-    description: "Track and compare errors across dev, staging, and production in one place.",
-    highlights: ["Environment filtering", "Cross-env comparison", "Unified error view"],
+    name: "Multi-Environment",
+    description: "Compare errors across dev, staging, and prod without grep-ing through logs.",
+    highlights: ["Environment filtering", "Cross-env comparison", "Unified view"],
   },
   {
     icon: Shield,
-    name: "100% Open Source",
-    description: "Deploy on your infrastructure with complete data ownership.",
-    highlights: ["Open source", "Self-hosted", "No vendor lock-in"],
+    name: "Self-Hosted",
+    description: "Your data never leaves your infrastructure. No $2k/month bill.",
+    highlights: ["MIT licensed", "Docker or K8s", "No vendor lock-in"],
   },
 ]
 
@@ -260,10 +260,10 @@ export function ToolConsolidationSection() {
         <div className="text-center space-y-4 mb-12">
           <Badge variant="secondary">Unified Observability</Badge>
           <h2 className="text-3xl md:text-4xl font-bold">
-            Stop context switching
+            Your current setup is held together with duct tape
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Monitoring is only useful if it&apos;s actually used. Granyt consolidates error tracking, metrics, lineage, and alerts into a single platform designed specifically for the Airflow ecosystem.
+            Sentry doesn&apos;t know what a DAG is. Grafana requires a PhD to configure. The Airflow UI shows you logs, not insights. Granyt replaces the duct tape with something that actually works.
           </p>
         </div>
 

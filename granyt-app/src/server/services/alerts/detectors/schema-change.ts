@@ -25,12 +25,20 @@ interface SchemaChange {
  */
 async function getPreviousMetric(
   organizationId: string,
-  captureId: string
+  captureId: string,
+  environment: string | null
 ): Promise<ColumnInfo[] | null> {
   const previousMetric = await prisma.metric.findFirst({
     where: {
       organizationId,
       captureId,
+      ...(environment != null && {
+        taskRun: {
+          dagRun: {
+            environment,
+          },
+        },
+      }),
     },
     select: {
       metrics: true,
@@ -127,7 +135,8 @@ export const schemaChangeDetector: AlertDetector = {
     // Get the previous metric for comparison
     const previousColumns = await getPreviousMetric(
       ctx.organizationId,
-      ctx.captureId
+      ctx.captureId,
+      ctx.environment
     );
 
     // No previous metric to compare against (first run)
