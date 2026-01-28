@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "AlertType" AS ENUM ('ROW_COUNT_DROP', 'NULL_OCCURRENCE', 'SCHEMA_CHANGE', 'INTEGRATION_ERROR');
+CREATE TYPE "AlertType" AS ENUM ('ROW_COUNT_DROP', 'NULL_OCCURRENCE', 'SCHEMA_CHANGE', 'INTEGRATION_ERROR', 'CUSTOM_METRIC_DROP', 'CUSTOM_METRIC_DEGRADATION');
 
 -- CreateEnum
 CREATE TYPE "AlertStatus" AS ENUM ('OPEN', 'ACKNOWLEDGED', 'DISMISSED', 'AUTO_RESOLVED');
@@ -24,6 +24,7 @@ CREATE TABLE "organization_alert_settings" (
     "enabled" BOOLEAN NOT NULL DEFAULT true,
     "sensitivity" "AlertSensitivity" NOT NULL DEFAULT 'MEDIUM',
     "customThreshold" INTEGER,
+    "enabledEnvironments" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -81,6 +82,25 @@ CREATE TABLE "alert_evaluation_jobs" (
     "processedAt" TIMESTAMP(3),
 
     CONSTRAINT "alert_evaluation_jobs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "custom_metric_monitors" (
+    "id" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "srcDagId" TEXT NOT NULL,
+    "metricName" TEXT NOT NULL,
+    "alertType" "AlertType" NOT NULL,
+    "sensitivity" "AlertSensitivity" NOT NULL DEFAULT 'MEDIUM',
+    "customThreshold" INTEGER,
+    "windowDays" INTEGER NOT NULL DEFAULT 14,
+    "minDeclinePercent" DOUBLE PRECISION NOT NULL DEFAULT 15,
+    "enabled" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "custom_metric_monitors_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -348,6 +368,18 @@ CREATE TABLE "user_notification_settings" (
 );
 
 -- CreateTable
+CREATE TABLE "user_notification_filters" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "environmentFilter" TEXT NOT NULL DEFAULT 'all',
+    "includeManualRuns" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "user_notification_filters_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "organizations" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -377,6 +409,7 @@ CREATE TABLE "environments" (
     "organizationId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "airflowUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -429,6 +462,15 @@ CREATE INDEX "alert_evaluation_jobs_status_scheduledFor_idx" ON "alert_evaluatio
 
 -- CreateIndex
 CREATE INDEX "alert_evaluation_jobs_organizationId_idx" ON "alert_evaluation_jobs"("organizationId");
+
+-- CreateIndex
+CREATE INDEX "custom_metric_monitors_organizationId_enabled_idx" ON "custom_metric_monitors"("organizationId", "enabled");
+
+-- CreateIndex
+CREATE INDEX "custom_metric_monitors_organizationId_srcDagId_idx" ON "custom_metric_monitors"("organizationId", "srcDagId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "custom_metric_monitors_organizationId_srcDagId_metricName_key" ON "custom_metric_monitors"("organizationId", "srcDagId", "metricName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
@@ -491,7 +533,7 @@ CREATE INDEX "dag_runs_environment_idx" ON "dag_runs"("environment");
 CREATE INDEX "dag_runs_status_idx" ON "dag_runs"("status");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "dag_runs_organizationId_srcDagId_srcRunId_key" ON "dag_runs"("organizationId", "srcDagId", "srcRunId");
+CREATE UNIQUE INDEX "dag_runs_organizationId_srcDagId_srcRunId_environment_key" ON "dag_runs"("organizationId", "srcDagId", "srcRunId", "environment");
 
 -- CreateIndex
 CREATE INDEX "task_runs_dagRunId_idx" ON "task_runs"("dagRunId");
@@ -551,6 +593,9 @@ CREATE UNIQUE INDEX "organization_channel_config_organizationId_channelType_key"
 CREATE UNIQUE INDEX "user_notification_settings_userId_notificationType_key" ON "user_notification_settings"("userId", "notificationType");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "user_notification_filters_userId_key" ON "user_notification_filters"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "organizations_slug_key" ON "organizations"("slug");
 
 -- CreateIndex
@@ -573,6 +618,9 @@ ALTER TABLE "organization_alert_settings" ADD CONSTRAINT "organization_alert_set
 
 -- AddForeignKey
 ALTER TABLE "alerts" ADD CONSTRAINT "alerts_dagRunId_fkey" FOREIGN KEY ("dagRunId") REFERENCES "dag_runs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "custom_metric_monitors" ADD CONSTRAINT "custom_metric_monitors_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -624,6 +672,9 @@ ALTER TABLE "organization_channel_config" ADD CONSTRAINT "organization_channel_c
 
 -- AddForeignKey
 ALTER TABLE "user_notification_settings" ADD CONSTRAINT "user_notification_settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_notification_filters" ADD CONSTRAINT "user_notification_filters_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "organizations" ADD CONSTRAINT "organizations_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

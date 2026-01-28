@@ -33,7 +33,7 @@ export const env = createEnv({
     LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).optional().describe("Pino log level"),
     
     // ==================== App Mode ====================
-    GRANYT_MODE: z.enum(["APP", "DOCS", "DEV", "app", "docs", "dev"]).optional().describe("Server-side fallback for NEXT_PUBLIC_GRANYT_MODE"),
+    GRANYT_MODE: z.enum(["APP", "DOCS", "DEV", "app", "docs", "dev"]).optional().default("APP").describe("Server-side fallback for NEXT_PUBLIC_GRANYT_MODE"),
     
     // ==================== SMTP (Optional) ====================
     SMTP_HOST: z.string().optional().describe("SMTP server host"),

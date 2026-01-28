@@ -72,8 +72,8 @@ cd granyt/granyt-app
 # Install dependencies
 npm install
 
-# Start PostgreSQL
-docker compose up -d postgres
+# Start PostgreSQL (from repo root)
+docker compose -f docker/docker-compose.development.yml up -d
 
 # Setup database
 npm run db:generate

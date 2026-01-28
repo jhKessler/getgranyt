@@ -184,6 +184,9 @@ jobs:
           echo "Updated pyproject.toml:"
           grep "version = " pyproject.toml
 
+      - name: Copy root README for PyPI
+        run: cp ../README.md ./README.md
+
       - name: Build package
         run: uv build
 

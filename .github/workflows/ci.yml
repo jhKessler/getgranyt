@@ -154,7 +154,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./granyt-app
-          file: ./granyt-app/Dockerfile
+          file: ./docker/Dockerfile
           target: runner
           push: true
           tags: ${{ steps.meta-app.outputs.tags }}
@@ -168,7 +168,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./granyt-app
-          file: ./granyt-app/Dockerfile
+          file: ./docker/Dockerfile
           target: migrations
           push: true
           tags: ${{ steps.meta-migrations.outputs.tags }}
