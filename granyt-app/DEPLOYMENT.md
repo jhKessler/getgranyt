@@ -43,7 +43,7 @@ BETTER_AUTH_URL=http://localhost:3000
 EOF
 
 # Build and start
-docker compose -f docker/docker-compose.yml up --build -d
+docker compose -f docker/docker-compose.yml --env-file .env up --build -d
 ```
 
 #### Option B: Prebuilt Images
@@ -304,7 +304,7 @@ If you're running from source, pull the latest code and rebuild:
 ```bash
 cd getgranyt
 git pull
-docker compose -f docker/docker-compose.yml up --build -d
+docker compose -f docker/docker-compose.yml --env-file .env up --build -d
 ```
 
 ### Prebuilt Images
@@ -354,10 +354,10 @@ docker compose -f docker-compose.production.yml up -d
 
 ```bash
 # Stop and remove everything
-docker compose -f docker/docker-compose.yml down -v
+docker compose -f docker/docker-compose.yml --env-file .env down -v
 
 # Start fresh
-docker compose -f docker/docker-compose.yml up --build -d
+docker compose -f docker/docker-compose.yml --env-file .env up --build -d
 ```
 ---
 ## Support

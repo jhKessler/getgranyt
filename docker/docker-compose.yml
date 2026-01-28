@@ -8,7 +8,7 @@
 # 1. Clone the repo: git clone https://github.com/jhkessler/getgranyt.git
 # 2. cd getgranyt
 # 3. Create a .env file with the required variables (see below)
-# 4. Run: docker compose -f docker/docker-compose.yml up --build -d
+# 4. Run: docker compose -f docker/docker-compose.yml --env-file .env up --build -d
 #
 # Required .env file contents:
 # ----------------------------
@@ -60,6 +60,7 @@ services:
       context: ../granyt-app
       dockerfile: ../docker/Dockerfile
       target: migrations
+    image: granyt-app-migrations
     container_name: granyt-migrations
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-granyt}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-granyt}?schema=public
@@ -78,6 +79,7 @@ services:
       context: ../granyt-app
       dockerfile: ../docker/Dockerfile
       target: runner
+    image: granyt-app
     container_name: granyt-app
     restart: unless-stopped
     ports:
