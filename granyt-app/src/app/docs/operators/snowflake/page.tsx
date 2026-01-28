@@ -19,7 +19,7 @@ export const metadata = {
   description: "Automatic metric capture and tracking for Snowflake operators in Airflow.",
 }
 
-const GITHUB_ADAPTER_URL = "https://github.com/jhkessler/getgranyt/blob/main/src/granyt_sdk/integrations/airflow/operator_adapters/sql/snowflake.py"
+const GITHUB_ADAPTER_URL = "https://github.com/jhKessler/getgranyt/blob/main/granyt-sdk/src/granyt_sdk/integrations/airflow/operator_adapters/sql/snowflake.py"
 
 export default function SnowflakePage() {
   return (

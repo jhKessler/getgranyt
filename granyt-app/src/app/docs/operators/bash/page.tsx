@@ -17,7 +17,7 @@ export const metadata = {
   description: "Automatic metric capture and tracking for Bash and Python scripts in Airflow.",
 }
 
-const GITHUB_ADAPTER_URL = "https://github.com/jhkessler/getgranyt/blob/main/src/granyt_sdk/integrations/airflow/operator_adapters/transform/bash.py"
+const GITHUB_ADAPTER_URL = "https://github.com/jhKessler/getgranyt/blob/main/granyt-sdk/src/granyt_sdk/integrations/airflow/operator_adapters/transform/bash.py"
 
 export default function BashPage() {
   return (

@@ -17,7 +17,7 @@ export const metadata = {
   description: "Automatic metric capture and tracking for Azure Blob Storage operators in Airflow.",
 }
 
-const GITHUB_ADAPTER_URL = "https://github.com/jhkessler/getgranyt/blob/main/src/granyt_sdk/integrations/airflow/operator_adapters/storage/azure.py"
+const GITHUB_ADAPTER_URL = "https://github.com/jhKessler/getgranyt/blob/main/granyt-sdk/src/granyt_sdk/integrations/airflow/operator_adapters/storage/azure.py"
 
 export default function AzureBlobPage() {
   return (

@@ -126,6 +126,7 @@ You can emit custom metrics in your python tasks by returning a `granyt` key in 
 
 ```python
 from granyt_sdk import compute_df_metrics
+
 @task
 def transform_data():
     # Load raw data

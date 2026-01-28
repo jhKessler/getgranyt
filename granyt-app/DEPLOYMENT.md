@@ -232,9 +232,9 @@ Granyt publishes multiple image tags:
 
 | Tag | Description | Use Case |
 |-----|-------------|----------|
-| `latest` | Most recent build from main | Production (recommended) |
+| `latest` | Most recent build from main | Production |
 | `dev` | Most recent build from dev branch | Testing pre-release |
-| `1.0.0` | Specific version | Production (pinned) |
+| `1.0.0` | Specific version | Pinned (recommended for production) |
 | `1.0` | Major.minor version | Auto-update patch versions |
 | `sha-abc123` | Git commit SHA | Debugging specific builds |
 | `dev-abc123` | Dev branch commit SHA | Testing specific dev builds |

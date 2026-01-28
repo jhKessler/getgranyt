@@ -60,7 +60,7 @@ export function HeroSection() {
             <Button asChild size="lg" className="gap-2 text-base">
               <Link href={getDocsLink("/")}>
                 <BookOpen className="h-4 w-4" />
-                Docs
+                Quickstart
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="gap-2 text-base">
