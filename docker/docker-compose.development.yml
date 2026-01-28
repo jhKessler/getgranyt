@@ -5,9 +5,9 @@
 # This file is for local development only. It starts the 
 # infrastructure (database) needed to run the app locally.
 #
-# Usage:
-# 1. Start database: docker compose -f docker-compose.development.yml up -d
-# 2. Run app: npm run dev
+# Usage (from repo root):
+# 1. Start database: docker compose -f docker/docker-compose.development.yml up -d
+# 2. Run app: cd granyt-app && npm run dev
 # =====================================================
 
 services:

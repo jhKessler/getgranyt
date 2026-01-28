@@ -11,12 +11,9 @@
 
 <h1 align="center">Granyt</h1>
 
-<p align="center">
-  <strong>Stop finding out your DAG failed from Slack messages.</strong>
-</p>
 
 <p align="center">
-  Open source Airflow observability with error tracking, metrics, and alerts that actually understand your pipelines. Self-hosted. 5 minutes to deploy.
+  Modern, open source Airflow monitoring with error tracking, metrics, and alerts that actually understand your pipelines. Self-hosted. 5 minutes to deploy.
 </p>
 
 <p align="center">
@@ -35,7 +32,7 @@
 
 - **DAG Monitoring**: Know when pipelines break before downstream teams do. Track run history, duration trends, and success rates.
 - **Smart Alerts**: Get notified when your BigQuery job returns 0 rows instead of finding out from your CEO on Monday. Schema changes, row count drops, failures: all covered.
-- **Error Tracking**: Stack traces with DAG context, not just Python tracebacks. Errors grouped by fingerprint so you see patterns, not noise.
+- **Sentry-like Error Tracking**: Stack traces with DAG context, not just Python tracebacks. Errors grouped by fingerprint so you see patterns, not noise.
 - **Automatic Metrics**: Snowflake query stats, BigQuery bytes scanned, dbt test results - captured automatically from your existing operators.
 - **Multi-Environment**: Compare errors across dev, staging, and prod without switching tabs or grep-ing through logs.
 - **Self-Hosted**: Your data never leaves your infrastructure. No $2k/month observability bill. MIT licensed.
@@ -58,15 +55,28 @@ Granyt is built specifically for Airflow. It speaks DAG, not just HTTP status co
 
 ---
 
+## Architecture
+
+Granyt consists of three parts:
+
+- **Frontend**: Next.js 15 web application
+- **SDK**: Airflow pip package for capturing metrics and errors
+- **PostgreSQL Database**
+
+---
+
 ## Quick Start
 
 Get from zero to monitoring in under 5 minutes. No credit card, no sales call, no "contact us for pricing."
 
 ### 1. Deploy the Granyt App
 
+The easiest way to run Granyt is using Docker:
+
 ```bash
-# Download the docker-compose file
-curl -O https://raw.githubusercontent.com/jhkessler/getgranyt/main/granyt-app/docker-compose.yml
+# Clone the repository
+git clone https://github.com/jhkessler/getgranyt.git
+cd getgranyt
 
 # Create a .env file with required variables
 cat > .env << EOF
@@ -75,13 +85,13 @@ BETTER_AUTH_SECRET=$(openssl rand -hex 32)
 BETTER_AUTH_URL=http://localhost:3000
 EOF
 
-# Start with Docker Compose
-docker compose up -d
+# Build and start with Docker Compose
+docker compose -f docker/docker-compose.yml --env-file .env up --build -d
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and create your account.
 
-> For production deployment with Kubernetes, configuration and more options, see the [Deployment Guide](./granyt-app/DEPLOYMENT.md).
+> For production deployment with prebuilt images, Kubernetes, and more options, see the [Deployment Guide](./granyt-app/DEPLOYMENT.md).
 
 ### 2. Install the SDK in Airflow
 

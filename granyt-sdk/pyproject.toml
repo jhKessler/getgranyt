@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "granyt-sdk"
-version = "0.1.0"
+version = "0.1.2"
 description = "Granyt SDK for Apache Airflow - Automatic lineage tracking and error monitoring"
 readme = "README.md"
 license = {text = "MIT"}
