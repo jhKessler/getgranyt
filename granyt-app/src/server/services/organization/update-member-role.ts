@@ -10,8 +10,7 @@ export async function updateMemberRole(
   prisma: PrismaClient,
   organizationId: string,
   memberId: string,
-  newRole: MemberRole,
-  actorUserId: string
+  newRole: MemberRole
 ): Promise<OrganizationMember> {
   // Find the member to update
   const member = await prisma.organizationMember.findFirst({
