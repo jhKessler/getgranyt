@@ -31,6 +31,9 @@ export interface AlertMetadata {
   typeChangedColumns?: Array<{ name: string; previousType?: string; currentType?: string }>
   previousColumnCount?: number
   currentColumnCount?: number
+  // USER_CREATED metadata
+  title?: string
+  description?: string
 }
 
 export const STATUS_CONFIG = {

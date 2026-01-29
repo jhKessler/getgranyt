@@ -4,6 +4,8 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
+  isActive      Boolean   @default(true)
+  deactivatedAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -13,9 +15,10 @@ model User {
   // Granyt specific relations
   organizationMemberships  OrganizationMember[]
   createdOrganizations     Organization[]            @relation("CreatedOrganizations")
-  dagMetricsSettings  DagMetricsSettings[]
-  notificationSettings UserNotificationSettings[]
-  notificationFilters  UserNotificationFilters?
+  dagMetricsSettings       DagMetricsSettings[]
+  notificationSettings     UserNotificationSettings[]
+  notificationFilters      UserNotificationFilters?
+  sentInvitations          Invitation[]              @relation("SentInvitations")
 
   @@map("users")
 }

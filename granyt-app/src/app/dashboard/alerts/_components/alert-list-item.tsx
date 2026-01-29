@@ -151,7 +151,7 @@ interface AlertItemDescriptionProps {
 function AlertItemDescription({ alertType, captureId, metadata }: AlertItemDescriptionProps) {
   return (
     <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-      {captureId && <span className="font-mono text-xs bg-muted px-1 py-0.5 rounded mr-2">{captureId}</span>}
+      {captureId && alertType !== "USER_CREATED" && <span className="font-mono text-xs bg-muted px-1 py-0.5 rounded mr-2">{captureId}</span>}
       {getAlertPreviewText(alertType, metadata)}
     </p>
   )

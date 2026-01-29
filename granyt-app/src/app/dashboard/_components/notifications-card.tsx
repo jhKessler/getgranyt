@@ -64,7 +64,7 @@ function NotificationItem({ alert, onClick }: { alert: NotificationAlert; onClic
           )}
         </div>
         <p className="text-xs text-muted-foreground line-clamp-1 sm:truncate">
-          {alert.captureId && <span className="font-mono bg-muted px-1 py-0.5 rounded mr-1">{alert.captureId}</span>}
+          {alert.captureId && alert.alertType !== "USER_CREATED" && <span className="font-mono bg-muted px-1 py-0.5 rounded mr-1">{alert.captureId}</span>}
           {getAlertPreviewText(alert.alertType, alert.metadata)}
         </p>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-xs text-muted-foreground">
