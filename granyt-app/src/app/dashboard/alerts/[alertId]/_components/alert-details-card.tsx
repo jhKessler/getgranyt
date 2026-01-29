@@ -28,6 +28,10 @@ export function AlertDetailsCard({ alertType, metadata }: AlertDetailsCardProps)
     return <SchemaChangeDetails metadata={metadata} />
   }
 
+  if (alertType === "USER_CREATED") {
+    return <UserCreatedDetails metadata={metadata} />
+  }
+
   return null
 }
 
@@ -266,6 +270,25 @@ function SchemaChangeDetails({ metadata }: { metadata: AlertMetadata }) {
             value={metadata.sensitivity ?? "MEDIUM"} 
           />
         </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function UserCreatedDetails({ metadata }: { metadata: AlertMetadata }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{metadata.title ?? "Custom Alert"}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {metadata.description && (
+          <p className="text-muted-foreground">{metadata.description}</p>
+        )}
+        <Separator />
+        <p className="text-sm text-muted-foreground">
+          This alert was created programmatically via the Granyt SDK.
+        </p>
       </CardContent>
     </Card>
   )

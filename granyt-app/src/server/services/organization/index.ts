@@ -7,6 +7,11 @@ export { generateSlug, generateApiKey } from "./helpers";
 // Membership
 export { checkMembership } from "./check-membership";
 
+// Team Management
+export { listOrganizationMembers, type OrganizationMemberWithUser } from "./list-members";
+export { updateMemberRole, type MemberRole } from "./update-member-role";
+export { toggleMemberStatus } from "./toggle-member-status";
+
 // Organizations
 export { listUserOrganizations, createOrganization } from "./organizations";
 

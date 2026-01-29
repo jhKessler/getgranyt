@@ -8,6 +8,7 @@ model Organization {
 
   creator       User                 @relation("CreatedOrganizations", fields: [createdBy], references: [id])
   members       OrganizationMember[]
+  invitations   Invitation[]
   environments  Environment[]
   apiKeys       ApiKey[]
   dags          Dag[]

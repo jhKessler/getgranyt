@@ -7,9 +7,11 @@ import { toast } from "sonner";
 export function useSettingsPage() {
   const utils = trpc.useUtils();
 
-  // Get organization ID for queries
+  // Get organization ID and user role for queries
   const { data: organizations } = trpc.organization.list.useQuery();
   const organizationId = organizations?.[0]?.id;
+  const userRole = organizations?.[0]?.role;
+  const canManageTeam = userRole === "owner" || userRole === "admin";
   
   // Queries
   const { data: notificationSettings, isLoading: isLoadingNotifications } = trpc.settings.getNotificationSettings.useQuery();
@@ -274,5 +276,8 @@ export function useSettingsPage() {
     // Setup Status
     setupStatus,
     isLoadingSetupStatus,
+
+    // Team Management Access
+    canManageTeam,
   };
 }

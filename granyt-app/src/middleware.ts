@@ -19,10 +19,11 @@ const DOCS_ROUTES = [
 
 const APP_ROUTES = [
   "/dashboard", // Main app functionality
-  "/login", // Auth 
+  "/login", // Auth
   "/register", // Auth
   "/onboarding", // Onboarding flow
   "/api", // API routes
+  "/invite", // Invitation acceptance
 ];
 
 /**
