@@ -179,7 +179,7 @@ def validate_data():
     invalid_count = df[df['status'] == 'invalid'].shape[0]
 
     alert = None
-    if invalid_count > 100:
+    invalid_count = (df['status'] == 'invalid').sum()
         alert = {
             "title": f"High invalid record count: {invalid_count}",
             "description": "Found more than 100 invalid records in the data pipeline",

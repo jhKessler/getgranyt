@@ -158,7 +158,7 @@ Programmatically create alerts from your DAG. This is useful for custom data val
 @task
 def validate_data():
     df = pd.read_parquet("data.parquet")
-    invalid_count = df[df['status'] == 'invalid'].shape[0]
+    invalid_count = (df['status'] == 'invalid').sum()
 
     alert = None
     if invalid_count > 100:
