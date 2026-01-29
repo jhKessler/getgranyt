@@ -152,6 +152,8 @@ def transform_data():
 
 ### `create_alert`
 
+> **Note:** The `create_alert` feature requires granyt-sdk and granyt-app version 0.2.0 or above.
+
 Programmatically create alerts from your DAG. This is useful for custom data validation, business rule violations, or any condition you want to surface as an alert in the Granyt dashboard:
 
 ```python
