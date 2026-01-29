@@ -247,6 +247,8 @@ jobs:
             type=sha,prefix=staging-,enable=${{ github.ref == 'refs/heads/staging' }}
 
       - name: Create and push App multi-arch manifest
+        env:
+          APP_TAGS: ${{ steps.meta-app.outputs.tags }}
         run: |
           # Determine if we have arm64 build
           if [[ "${{ needs.build-arm64.result }}" == "success" ]]; then
@@ -256,11 +258,13 @@ jobs:
           fi
 
           # Create manifest for each tag
-          for tag in ${{ steps.meta-app.outputs.tags }}; do
-            docker buildx imagetools create -t "$tag" $SOURCES
+          echo "$APP_TAGS" | while IFS= read -r tag; do
+            [ -n "$tag" ] && docker buildx imagetools create -t "$tag" $SOURCES
           done
 
       - name: Create and push Migrations multi-arch manifest
+        env:
+          MIGRATIONS_TAGS: ${{ steps.meta-migrations.outputs.tags }}
         run: |
           # Determine if we have arm64 build
           if [[ "${{ needs.build-arm64.result }}" == "success" ]]; then
@@ -270,8 +274,8 @@ jobs:
           fi
 
           # Create manifest for each tag
-          for tag in ${{ steps.meta-migrations.outputs.tags }}; do
-            docker buildx imagetools create -t "$tag" $SOURCES
+          echo "$MIGRATIONS_TAGS" | while IFS= read -r tag; do
+            [ -n "$tag" ] && docker buildx imagetools create -t "$tag" $SOURCES
           done
 
       - name: Image digest summary
