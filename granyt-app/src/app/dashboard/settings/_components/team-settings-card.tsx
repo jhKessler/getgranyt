@@ -339,7 +339,7 @@ export function TeamSettingsCard({ currentUserId }: TeamSettingsCardProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => handleResendInvitation(invitation.id)}
-                        disabled={isResendingInvitation}
+                        disabled={isResendingInvitation || !isEmailAvailable}
                       >
                         {isResendingInvitation ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
