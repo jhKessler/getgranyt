@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 # Constants for the special keys in task return values
 GRANYT_KEY = "granyt"
 DF_METRICS_KEY = "df_metrics"
+CREATE_ALERT_KEY = "create_alert"
 
 # Keys that belong in the schema object (sent to backend's 'schema' field)
 SCHEMA_KEYS = {"column_dtypes", "null_counts", "empty_string_counts"}

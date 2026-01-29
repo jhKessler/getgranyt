@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import crypto from "crypto";
 import { resolveDagContext } from "../../dag-run";
 import { updateComputedMetricsOnMetricsIngest, updateDagRunMetricSnapshot } from "../../dag-metrics";
+import { createUserAlert } from "../../alerts/mutations";
 import type { IngestMetricsParams, IngestMetricsResult } from "./types";
 import { createLogger } from "@/lib/logger";
 
@@ -63,8 +64,8 @@ export async function ingestMetrics(
 
   if (taskRun?.dagRun) {
     // Extract row_count from metrics if present (for backwards compatibility with computed metrics)
-    const rowCount = typeof payload.metrics?.row_count === "number" 
-      ? BigInt(payload.metrics.row_count) 
+    const rowCount = typeof payload.metrics?.row_count === "number"
+      ? BigInt(payload.metrics.row_count)
       : BigInt(0);
 
     await updateComputedMetricsOnMetricsIngest({
@@ -80,6 +81,25 @@ export async function ingestMetrics(
       organizationId,
       dagRunId: taskRun.dagRunId,
     });
+
+    // Handle user-created alert from create_alert XCom key
+    if (payload.create_alert) {
+      await createUserAlert({
+        organizationId,
+        srcDagId: taskRun.dagRun.srcDagId,
+        dagRunId: taskRun.dagRunId,
+        taskRunId,
+        title: payload.create_alert.title,
+        description: payload.create_alert.description,
+        sendNotification: payload.create_alert.send_notification ?? false,
+        environment,
+      }).catch((err) => {
+        logger.error(
+          { error: err, dagId: payload.dag_id, taskId: payload.task_id },
+          "Failed to create user alert"
+        );
+      });
+    }
   }
 
   return { taskRunId };

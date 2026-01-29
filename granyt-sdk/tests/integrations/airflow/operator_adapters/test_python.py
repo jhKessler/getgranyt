@@ -460,6 +460,174 @@ class TestPythonAdapterIntegration:
         assert third_payload["schema"]["column_dtypes"] == {"amount": "int64"}
 
 
+class TestPythonAdapterCreateAlert:
+    """Tests for create_alert extraction from XCom."""
+
+    def test_extracts_create_alert_with_all_fields(self, mock_task_instance, mock_python_task):
+        """Test that create_alert with all fields is extracted correctly."""
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "create_alert": {
+                    "title": "Data validation failed",
+                    "description": "Found 15 invalid records",
+                    "send_notification": True,
+                }
+            }
+        }
+        adapter = PythonAdapter()
+
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        assert result is not None
+        assert result.create_alert is not None
+        assert result.create_alert["title"] == "Data validation failed"
+        assert result.create_alert["description"] == "Found 15 invalid records"
+        assert result.create_alert["send_notification"] is True
+
+    def test_extracts_create_alert_minimal(self, mock_task_instance, mock_python_task):
+        """Test that create_alert with only required title field works."""
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "create_alert": {
+                    "title": "Simple alert",
+                }
+            }
+        }
+        adapter = PythonAdapter()
+
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        assert result is not None
+        assert result.create_alert is not None
+        assert result.create_alert["title"] == "Simple alert"
+        assert "description" not in result.create_alert
+        assert "send_notification" not in result.create_alert
+
+    def test_create_alert_none_not_set(self, mock_task_instance, mock_python_task):
+        """Test that create_alert=None results in None on metrics."""
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "create_alert": None,
+            }
+        }
+        adapter = PythonAdapter()
+
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        assert result is not None
+        assert result.create_alert is None
+
+    def test_create_alert_not_in_custom_metrics(self, mock_task_instance, mock_python_task):
+        """Test that create_alert is stored in dedicated field, not custom_metrics."""
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "create_alert": {
+                    "title": "Test alert",
+                },
+                "other_metric": 42,
+            }
+        }
+        adapter = PythonAdapter()
+
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        assert result is not None
+        # create_alert should be in dedicated field
+        assert result.create_alert is not None
+        assert result.create_alert["title"] == "Test alert"
+        # create_alert should NOT be in custom_metrics
+        assert "create_alert" not in result.custom_metrics
+        # other metrics should still be in custom_metrics
+        assert result.custom_metrics["other_metric"] == 42
+
+    def test_create_alert_alongside_df_metrics(self, mock_task_instance, mock_python_task):
+        """Test that create_alert works alongside df_metrics."""
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "df_metrics": {
+                    "column_dtypes": {"id": "int64"},
+                    "row_count": 100,
+                },
+                "create_alert": {
+                    "title": "Low row count",
+                    "description": "Expected at least 1000 rows",
+                    "send_notification": False,
+                },
+            }
+        }
+        adapter = PythonAdapter()
+
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        assert result is not None
+        # df_metrics should be extracted
+        assert result.row_count == 100
+        assert "schema" in result.custom_metrics
+        # create_alert should be extracted
+        assert result.create_alert is not None
+        assert result.create_alert["title"] == "Low row count"
+        assert result.create_alert["send_notification"] is False
+
+    def test_create_alert_in_to_dict_output(self, mock_task_instance, mock_python_task):
+        """Test that create_alert is included in to_dict() output."""
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "create_alert": {
+                    "title": "Backend alert",
+                    "description": "Should be in payload",
+                    "send_notification": True,
+                }
+            }
+        }
+        adapter = PythonAdapter()
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        # Add lineage linkage like the real code does
+        result.dag_id = mock_task_instance.dag_id
+        result.task_id = mock_task_instance.task_id
+        result.run_id = mock_task_instance.run_id
+
+        backend_payload = result.to_dict()
+
+        assert "create_alert" in backend_payload
+        assert backend_payload["create_alert"]["title"] == "Backend alert"
+        assert backend_payload["create_alert"]["description"] == "Should be in payload"
+        assert backend_payload["create_alert"]["send_notification"] is True
+
+    def test_create_alert_none_in_to_dict_output(self, mock_task_instance, mock_python_task):
+        """Test that create_alert=None results in None in to_dict() output."""
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "create_alert": None,
+            }
+        }
+        adapter = PythonAdapter()
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        result.dag_id = mock_task_instance.dag_id
+        result.task_id = mock_task_instance.task_id
+        result.run_id = mock_task_instance.run_id
+
+        backend_payload = result.to_dict()
+
+        # create_alert should be None (not sent to backend)
+        assert backend_payload["create_alert"] is None
+
+    def test_create_alert_missing_key_results_in_none(self, mock_task_instance, mock_python_task):
+        """Test that missing create_alert key results in None."""
+        mock_task_instance.xcom_pull.return_value = {
+            "granyt": {
+                "other_metric": 42,
+            }
+        }
+        adapter = PythonAdapter()
+
+        result = adapter.extract_metrics(mock_task_instance, mock_python_task)
+
+        assert result is not None
+        assert result.create_alert is None
+
+
 # Fixtures specific to Python adapter tests
 @pytest.fixture
 def mock_python_task():

@@ -26,6 +26,13 @@ const schemaFieldSchema = z.object({
   empty_string_counts: z.record(z.string(), z.number()).optional(), // Optional: {column_name: count}
 }).nullable().optional();
 
+// User-created alert from DAG XCom
+const createAlertSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
+  send_notification: z.boolean().optional(),
+}).nullable().optional();
+
 export const metricsPayloadSchema = z.object({
   captured_at: z.string().regex(iso8601Regex, { message: "Invalid datetime format" }),
   dag_id: z.string(),
@@ -33,6 +40,7 @@ export const metricsPayloadSchema = z.object({
   run_id: z.string(),
   metrics: metricsValuesSchema, // Flat metrics as flexible JSON
   schema: schemaFieldSchema, // DataFrame schema info (column_dtypes, null_counts, empty_string_counts)
+  create_alert: createAlertSchema, // User-created alert from DAG
 });
 
 export type MetricsPayload = z.infer<typeof metricsPayloadSchema>;

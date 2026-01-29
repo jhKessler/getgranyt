@@ -161,7 +161,7 @@ from granyt_sdk import compute_df_metrics
 @task
 def transform_data():
     df = pd.read_parquet("data.parquet")
-    
+
     return {
         "granyt": {
             # automatically captures schema and df metadata
@@ -170,6 +170,40 @@ def transform_data():
         }
     }
 ```
+
+### Creating Custom Alerts
+
+You can programmatically create alerts from your DAG by including a `create_alert` key in your return value. This is useful for custom data validation, business rule violations, or any condition you want to surface as an alert:
+
+```python
+@task
+def validate_data():
+    df = pd.read_parquet("data.parquet")
+    invalid_count = df[df['status'] == 'invalid'].shape[0]
+
+    alert = None
+    if invalid_count > 100:
+        alert = {
+            "title": f"High invalid record count: {invalid_count}",
+            "description": "Found more than 100 invalid records in the data pipeline",
+            "send_notification": True  # Optional, defaults to False
+        }
+
+    return {
+        "granyt": {
+            "df_metrics": compute_df_metrics(df),
+            "create_alert": alert  # None = no alert created
+        }
+    }
+```
+
+**Alert Fields:**
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `title` | string | Yes | - | Alert title (max 200 chars) |
+| `description` | string | No | - | Detailed description (max 2000 chars) |
+| `send_notification` | bool | No | `False` | Send email notification to team |
+
 ---
 
 ### Proactive Data Alerts

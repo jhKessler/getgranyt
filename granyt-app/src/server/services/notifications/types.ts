@@ -17,10 +17,11 @@ export enum NotificationEventType {
   ROW_COUNT_DROP_ALERT = "ROW_COUNT_DROP_ALERT",
   NULL_OCCURRENCE_ALERT = "NULL_OCCURRENCE_ALERT",
   SCHEMA_CHANGE_ALERT = "SCHEMA_CHANGE_ALERT",
-  
+  USER_CREATED_ALERT = "USER_CREATED_ALERT",
+
   // Batch alerts (summary of multiple alerts from a single DAG run)
   DAG_RUN_ALERTS_SUMMARY = "DAG_RUN_ALERTS_SUMMARY",
-  
+
   // Errors
   PIPELINE_ERROR = "PIPELINE_ERROR",
   NEW_PIPELINE_ERROR = "NEW_PIPELINE_ERROR",
@@ -109,9 +110,26 @@ export interface ErrorNotificationPayload extends BaseNotificationPayload {
 }
 
 /**
+ * User-created alert payload (from create_alert XCom key)
+ */
+export interface UserCreatedAlertPayload extends BaseNotificationPayload {
+  type: NotificationEventType.USER_CREATED_ALERT;
+  dagId: string;
+  alertId: string;
+  title: string;
+  description?: string;
+  environment?: string | null;
+  runType?: string | null;
+}
+
+/**
  * Union of all notification payloads
  */
-export type NotificationPayload = AlertNotificationPayload | ErrorNotificationPayload | BatchAlertNotificationPayload;
+export type NotificationPayload =
+  | AlertNotificationPayload
+  | ErrorNotificationPayload
+  | BatchAlertNotificationPayload
+  | UserCreatedAlertPayload;
 
 // ============================================================================
 // CHANNEL TYPES
@@ -229,4 +247,8 @@ export function isErrorPayload(payload: NotificationPayload): payload is ErrorNo
 
 export function isBatchAlertPayload(payload: NotificationPayload): payload is BatchAlertNotificationPayload {
   return payload.type === NotificationEventType.DAG_RUN_ALERTS_SUMMARY;
+}
+
+export function isUserCreatedAlertPayload(payload: NotificationPayload): payload is UserCreatedAlertPayload {
+  return payload.type === NotificationEventType.USER_CREATED_ALERT;
 }
