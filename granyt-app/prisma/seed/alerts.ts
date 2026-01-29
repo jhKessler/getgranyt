@@ -1,7 +1,7 @@
 import { PrismaClient, AlertType, AlertStatus } from "@prisma/client";
 
 /**
- * Seeds 3 sample alerts connected to existing DAG runs and capture points
+ * Seeds 4 sample alerts connected to existing DAG runs and capture points
  * 🚨 These alerts showcase different alert types and statuses
  */
 export async function seedAlerts(
@@ -18,7 +18,7 @@ export async function seedAlerts(
     orderBy: { startTime: "desc" },
   });
 
-  if (dagRuns.length < 3) {
+  if (dagRuns.length < 4) {
     console.log("⚠️ Not enough DAG runs to seed alerts, skipping...");
     return;
   }
@@ -114,5 +114,25 @@ export async function seedAlerts(
     },
   });
 
-  console.log("✅ Created 3 sample alerts (ROW_COUNT_DROP, NULL_OCCURRENCE, SCHEMA_CHANGE)");
+  // Alert 4: USER_CREATED - Open alert with custom title and description
+  const dagRun4 = dagRuns[3];
+  await prisma.alert.create({
+    data: {
+      organizationId,
+      alertType: AlertType.USER_CREATED,
+      status: AlertStatus.OPEN,
+      severity: "warning",
+      srcDagId: dagRun4.srcDagId,
+      captureId: `user-alert:${dagRun4.taskRuns[0]?.id ?? dagRun4.id}`,
+      dagRunId: dagRun4.id,
+      taskRunId: dagRun4.taskRuns[0]?.id ?? null,
+      metadata: {
+        title: "High invalid record count: 150",
+        description: "Found more than 100 invalid records in the data pipeline",
+        createdVia: "xcom",
+      },
+    },
+  });
+
+  console.log("✅ Created 4 sample alerts (ROW_COUNT_DROP, NULL_OCCURRENCE, SCHEMA_CHANGE, USER_CREATED)");
 }

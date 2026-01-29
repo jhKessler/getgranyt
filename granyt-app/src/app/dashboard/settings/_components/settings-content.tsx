@@ -2,12 +2,15 @@
 
 import { PageHeader, PageSkeleton, GettingStartedChecklist } from "@/components/shared";
 import { useSettings } from "../_context";
+import { useSession } from "@/lib/auth-client";
 import {
   EmailSettingsCard,
   AirflowSettingsCard,
+  TeamSettingsCard,
 } from ".";
 
 export function SettingsContent() {
+  const { data: session } = useSession();
   const {
     isLoading,
     notificationSettings,
@@ -23,6 +26,7 @@ export function SettingsContent() {
     savingEnvironmentId,
     setupStatus,
     isLoadingSetupStatus,
+    canManageTeam,
   } = useSettings();
 
   if (isLoading) {
@@ -40,6 +44,8 @@ export function SettingsContent() {
     setupStatus?.hasNotificationChannel &&
     setupStatus?.hasErrors;
 
+  const currentUserId = session?.user?.id ?? "";
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -54,6 +60,8 @@ export function SettingsContent() {
             isLoading={isLoadingSetupStatus}
           />
         )}
+
+        {canManageTeam && <TeamSettingsCard currentUserId={currentUserId} />}
 
         <AirflowSettingsCard
           environments={airflowEnvironments}

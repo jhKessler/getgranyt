@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, TrendingDown, AlertTriangle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { AlertData } from "./types"
+import { AlertData, AlertMetadata } from "./types"
 
 interface AlertDetailHeaderProps {
   alert: AlertData
@@ -14,6 +14,12 @@ interface AlertDetailHeaderProps {
 export function AlertDetailHeader({ alert, basePath = "/dashboard" }: AlertDetailHeaderProps) {
   const router = useRouter()
   const isCritical = alert.severity === "critical"
+  const metadata = alert.metadata as AlertMetadata | undefined
+
+  // For USER_CREATED alerts, show the custom title if available
+  const displayTitle = alert.alertType === "USER_CREATED" && metadata?.title
+    ? metadata.title
+    : alert.alertType.replace(/_/g, " ")
 
   return (
     <div className="space-y-4">
@@ -35,7 +41,7 @@ export function AlertDetailHeader({ alert, basePath = "/dashboard" }: AlertDetai
                 isCritical ? "text-red-500" : "text-amber-500"
               )} />
             )}
-            {alert.alertType.replace(/_/g, " ")}
+            {displayTitle}
           </h1>
         </div>
       </div>

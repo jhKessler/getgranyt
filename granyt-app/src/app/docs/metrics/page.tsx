@@ -340,6 +340,9 @@ user_pipeline()`}
       {/* Creating Custom Alerts */}
       <section className="space-y-6">
         <h2 className="text-2xl font-bold">Creating Custom Alerts</h2>
+        <Callout variant="warning">
+          The <InlineCode>create_alert</InlineCode> feature requires granyt-sdk and granyt-app version 0.2.0 or above.
+        </Callout>
         <p className="text-muted-foreground">
           You can programmatically create alerts from your DAG by including a <InlineCode>create_alert</InlineCode> key
           in your return value. This is useful for custom data validation, business rule violations, or any condition
@@ -356,7 +359,7 @@ import pandas as pd
 @task
 def validate_data():
     df = pd.read_parquet("data.parquet")
-    invalid_count = df[df['status'] == 'invalid'].shape[0]
+    invalid_count = (df['status'] == 'invalid').sum()
 
     alert = None
     if invalid_count > 100:

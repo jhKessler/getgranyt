@@ -170,6 +170,8 @@ def transform_data():
 
 ### Creating Custom Alerts
 
+> **Note:** The `create_alert` feature requires granyt-sdk and granyt-app version 0.2.0 or above.
+
 You can programmatically create alerts from your DAG by including a `create_alert` key in your return value. This is useful for custom data validation, business rule violations, or any condition you want to surface as an alert:
 
 ```python
@@ -179,7 +181,7 @@ def validate_data():
     invalid_count = df[df['status'] == 'invalid'].shape[0]
 
     alert = None
-    if invalid_count > 100:
+    invalid_count = (df['status'] == 'invalid').sum()
         alert = {
             "title": f"High invalid record count: {invalid_count}",
             "description": "Found more than 100 invalid records in the data pipeline",

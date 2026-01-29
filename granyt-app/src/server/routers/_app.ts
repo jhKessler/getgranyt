@@ -5,6 +5,7 @@ import { dagMetricsRouter } from "./dag-metrics";
 import { alertsRouter } from "./alerts";
 import { settingsRouter } from "./settings";
 import { authRouter } from "./auth";
+import { teamRouter } from "./team";
 
 export const appRouter = router({
   auth: authRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   dagMetrics: dagMetricsRouter,
   alerts: alertsRouter,
   settings: settingsRouter,
+  team: teamRouter,
 });
 
 export type AppRouter = typeof appRouter;

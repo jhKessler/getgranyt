@@ -113,7 +113,7 @@ const ALERT_EXPLANATIONS: Record<string, AlertExplanationConfig> = {
       const addedColumns = metadata?.addedColumns ?? []
       const removedColumns = metadata?.removedColumns ?? []
       const typeChangedColumns = metadata?.typeChangedColumns ?? []
-      
+
       return (
         <>
           <p>The schema of this data changed compared to previous runs:</p>
@@ -144,6 +144,25 @@ const ALERT_EXPLANATIONS: Record<string, AlertExplanationConfig> = {
       "cause queries to fail, added columns might indicate new data that needs to be processed, and " +
       "type changes can lead to data corruption or incorrect calculations. It's important to verify " +
       "if these changes are intentional and update dependent systems accordingly.",
+  },
+
+  USER_CREATED: {
+    renderExplanation: (metadata) => (
+      <>
+        <p>
+          This alert was created programmatically via the Granyt SDK
+          {metadata?.title && (
+            <> with the title <strong className="text-foreground">&quot;{metadata.title}&quot;</strong></>
+          )}.
+        </p>
+        {metadata?.description && (
+          <p className="mt-2">{metadata.description}</p>
+        )}
+      </>
+    ),
+    whyItMatters:
+      "This alert was explicitly triggered by your pipeline code to notify you of a condition " +
+      "that requires attention. The alert message and description were defined in your code.",
   },
 }
 
