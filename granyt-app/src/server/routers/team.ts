@@ -45,8 +45,7 @@ export const teamRouter = router({
         ctx.prisma,
         input.organizationId,
         input.memberId,
-        input.role,
-        ctx.user.id
+        input.role
       );
     }),
 
