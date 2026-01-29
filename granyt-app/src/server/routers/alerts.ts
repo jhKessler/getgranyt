@@ -35,6 +35,7 @@ export const alertsRouter = router({
         INTEGRATION_ERROR: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
         CUSTOM_METRIC_DROP: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
         CUSTOM_METRIC_DEGRADATION: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
+        USER_CREATED: { enabled: true, sensitivity: AlertSensitivity.MEDIUM, customThreshold: null, enabledEnvironments: [] },
       };
 
       for (const setting of settings) {

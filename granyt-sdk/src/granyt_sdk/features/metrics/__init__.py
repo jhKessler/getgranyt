@@ -3,6 +3,7 @@ Data Metrics feature for Granyt SDK.
 """
 
 from granyt_sdk.features.metrics.core import (
+    CREATE_ALERT_KEY,
     DF_METRICS_KEY,
     GRANYT_KEY,
     METRICS_KEYS,
@@ -46,6 +47,7 @@ __all__ = [
     "validate_df_metrics",
     "GRANYT_KEY",
     "DF_METRICS_KEY",
+    "CREATE_ALERT_KEY",
     "SCHEMA_KEYS",
     "METRICS_KEYS",
 ]

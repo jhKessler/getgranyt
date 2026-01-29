@@ -57,6 +57,10 @@ export interface AlertMetadata {
   trendConfidence?: string
   monitorName?: string
 
+  // USER_CREATED
+  title?: string
+  description?: string
+
   // Generic fields that might be used by multiple alert types
   [key: string]: unknown
 }
@@ -183,6 +187,13 @@ const ALERT_PREVIEW_GENERATORS: Record<AlertType, AlertPreviewGenerator> = {
     }
 
     return `${metricName} shows declining trend`
+  },
+
+  USER_CREATED: (metadata) => {
+    if (!metadata?.title) {
+      return "User-created alert"
+    }
+    return metadata.title
   },
 }
 
