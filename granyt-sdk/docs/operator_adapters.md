@@ -126,3 +126,65 @@ Granyt SDK comes with built-in support for many popular operators:
 | **Spark** | `SparkSubmitOperator`, `DataprocSubmitJobOperator`, `EmrAddStepsOperator` | `stages_completed`, `tasks_completed`, `shuffle_bytes`, `row_count` |
 
 You can find the implementations of these adapters in `granyt_sdk.integrations.airflow.operator_adapters/`.
+
+## Python Operator Special Keys
+
+When using `PythonOperator` or the `@task` decorator, you can return a dictionary with a `granyt` key to send custom data to Granyt. The following special keys are recognized:
+
+### `df_metrics`
+
+Use `compute_df_metrics()` to automatically capture DataFrame schema and metrics:
+
+```python
+from granyt_sdk import compute_df_metrics
+
+@task
+def transform_data():
+    df = pd.read_parquet("data.parquet")
+
+    return {
+        "granyt": {
+            "df_metrics": compute_df_metrics(df),  # Captures schema, row count, null counts
+            "custom_metric": 42,  # Any additional metrics
+        }
+    }
+```
+
+### `create_alert`
+
+Programmatically create alerts from your DAG. This is useful for custom data validation, business rule violations, or any condition you want to surface as an alert in the Granyt dashboard:
+
+```python
+@task
+def validate_data():
+    df = pd.read_parquet("data.parquet")
+    invalid_count = df[df['status'] == 'invalid'].shape[0]
+
+    alert = None
+    if invalid_count > 100:
+        alert = {
+            "title": f"High invalid record count: {invalid_count}",
+            "description": "Found more than 100 invalid records in the data pipeline",
+            "send_notification": True  # Optional, defaults to False
+        }
+
+    return {
+        "granyt": {
+            "df_metrics": compute_df_metrics(df),
+            "create_alert": alert  # None = no alert created
+        }
+    }
+```
+
+**Alert Fields:**
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `title` | string | Yes | - | Alert title (max 200 chars) |
+| `description` | string | No | - | Detailed description (max 2000 chars) |
+| `send_notification` | bool | No | `False` | Send email notification to team |
+
+**Notes:**
+- Setting `create_alert` to `None` or omitting it entirely will not create an alert
+- Alerts created this way appear in the Granyt dashboard with type `USER_CREATED`
+- When `send_notification` is `True`, an email is sent to team members subscribed to alerts

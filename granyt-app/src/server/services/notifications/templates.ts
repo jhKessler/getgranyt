@@ -11,9 +11,11 @@ import {
   type ErrorNotificationPayload,
   type BatchAlertNotificationPayload,
   type BatchAlertItem,
+  type UserCreatedAlertPayload,
   isAlertPayload,
   isErrorPayload,
   isBatchAlertPayload,
+  isUserCreatedAlertPayload,
   NotificationEventType,
 } from "./types";
 
@@ -44,6 +46,8 @@ export function renderNotification(payload: NotificationPayload): RenderedNotifi
 
   if (isBatchAlertPayload(payload)) {
     rendered = renderBatchAlertNotification(payload);
+  } else if (isUserCreatedAlertPayload(payload)) {
+    rendered = renderUserCreatedAlertNotification(payload);
   } else if (isAlertPayload(payload)) {
     rendered = renderAlertNotification(payload);
   } else if (isErrorPayload(payload)) {
@@ -267,6 +271,79 @@ A ${payload.severity} alert has been triggered for your DAG.
 Alert Details:
 DAG: ${payload.dagId}
 ${payload.captureId ? `Capture Point: ${payload.captureId}\n` : ""}${metadataText}
+
+${payload.dashboardUrl ? `View in Dashboard: ${payload.dashboardUrl}` : ""}
+
+---
+You received this email because you're subscribed to Granyt alerts.
+Manage your notification preferences in the dashboard settings.
+`.trim();
+}
+
+// ============================================================================
+// USER-CREATED ALERT TEMPLATES
+// ============================================================================
+
+/**
+ * Render user-created alert notification
+ */
+function renderUserCreatedAlertNotification(payload: UserCreatedAlertPayload): RenderedNotification {
+  const subject = `[Granyt] Alert: ${payload.title}`;
+
+  return {
+    subject,
+    html: generateUserCreatedAlertHtml(payload),
+    text: generateUserCreatedAlertText(payload),
+  };
+}
+
+function generateUserCreatedAlertHtml(payload: UserCreatedAlertPayload): string {
+  const colors = SEVERITY_COLORS[payload.severity] || SEVERITY_COLORS.warning;
+
+  return `
+    <div style="${BASE_STYLES}">
+      <div style="background: ${colors.bg}; border: 1px solid ${colors.border}; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+        <h2 style="margin: 0 0 8px 0; color: ${colors.text};">🔔 Custom Alert</h2>
+        <p style="margin: 0; color: #4b5563;">An alert was triggered from your DAG.</p>
+      </div>
+
+      <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+        <h3 style="margin: 0 0 12px 0; color: #111827;">${escapeHtml(payload.title)}</h3>
+        ${payload.description ? `<p style="margin: 0 0 16px 0; color: #4b5563;">${escapeHtml(payload.description)}</p>` : ""}
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr><td style="padding: 8px; color: #6b7280;">DAG</td><td style="padding: 8px; font-weight: 500;">${payload.dagId}</td></tr>
+          ${payload.environment ? `<tr><td style="padding: 8px; color: #6b7280;">Environment</td><td style="padding: 8px; font-weight: 500;">${payload.environment}</td></tr>` : ""}
+          <tr><td style="padding: 8px; color: #6b7280;">Severity</td><td style="padding: 8px; font-weight: 500; color: ${colors.text};">${payload.severity}</td></tr>
+        </table>
+      </div>
+
+      ${payload.dashboardUrl ? `
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${payload.dashboardUrl}" style="display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+            View in Dashboard
+          </a>
+        </div>
+      ` : ""}
+
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+        You received this email because you're subscribed to Granyt alerts.<br>
+        Manage your notification preferences in the dashboard settings.
+      </p>
+    </div>
+  `;
+}
+
+function generateUserCreatedAlertText(payload: UserCreatedAlertPayload): string {
+  return `
+Custom Alert
+
+${payload.title}
+
+${payload.description ? `${payload.description}\n` : ""}
+Alert Details:
+DAG: ${payload.dagId}
+${payload.environment ? `Environment: ${payload.environment}\n` : ""}Severity: ${payload.severity}
 
 ${payload.dashboardUrl ? `View in Dashboard: ${payload.dashboardUrl}` : ""}
 

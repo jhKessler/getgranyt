@@ -5,3 +5,5 @@ export {
   reopenAlert,
   type DismissReason,
 } from "./alert-actions";
+
+export { createUserAlert } from "./user-alerts";

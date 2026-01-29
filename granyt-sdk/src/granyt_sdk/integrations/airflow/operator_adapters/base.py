@@ -106,6 +106,9 @@ class OperatorMetrics:
     # Custom metrics
     custom_metrics: Optional[Dict[str, Any]] = None
 
+    # User-created alert (from create_alert key in granyt XCom)
+    create_alert: Optional[Dict[str, Any]] = None
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert metrics to dictionary for serialization.
 
@@ -186,6 +189,7 @@ class OperatorMetrics:
             "run_id": self.run_id,
             "metrics": metrics,
             "schema": schema_data,
+            "create_alert": self.create_alert,
         }
 
     def to_openlineage_facet(

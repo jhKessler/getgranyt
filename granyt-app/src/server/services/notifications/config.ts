@@ -32,6 +32,10 @@ const EVENT_TO_SETTING_MAP: Record<NotificationEventType, NotificationTypeValue[
   [NotificationEventType.DAG_RUN_ALERTS_SUMMARY]: [
     NotificationTypes.ALL_ALERTS,
   ],
+  // User-created alerts - uses ALL_ALERTS (no specific sub-setting)
+  [NotificationEventType.USER_CREATED_ALERT]: [
+    NotificationTypes.ALL_ALERTS,
+  ],
   [NotificationEventType.PIPELINE_ERROR]: [
     NotificationTypes.ALL_ERRORS,
   ],

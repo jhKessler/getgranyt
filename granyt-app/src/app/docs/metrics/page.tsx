@@ -337,11 +337,74 @@ user_pipeline()`}
         </Card>
       </section>
 
+      {/* Creating Custom Alerts */}
+      <section className="space-y-6">
+        <h2 className="text-2xl font-bold">Creating Custom Alerts</h2>
+        <p className="text-muted-foreground">
+          You can programmatically create alerts from your DAG by including a <InlineCode>create_alert</InlineCode> key
+          in your return value. This is useful for custom data validation, business rule violations, or any condition
+          you want to surface as an alert in the Granyt dashboard.
+        </p>
+        <Card className="bg-muted/30">
+          <CardContent className="pt-6">
+            <CodeBlock
+              language="python"
+              code={`from airflow.decorators import task
+from granyt_sdk import compute_df_metrics
+import pandas as pd
+
+@task
+def validate_data():
+    df = pd.read_parquet("data.parquet")
+    invalid_count = df[df['status'] == 'invalid'].shape[0]
+
+    alert = None
+    if invalid_count > 100:
+        alert = {
+            "title": f"High invalid record count: {invalid_count}",
+            "description": "Found more than 100 invalid records in the data pipeline",
+            "send_notification": True  # Optional, defaults to False
+        }
+
+    return {
+        "granyt": {
+            "df_metrics": compute_df_metrics(df),
+            "create_alert": alert  # None = no alert created
+        }
+    }`}
+            />
+          </CardContent>
+        </Card>
+
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold mb-4">Alert Fields</h3>
+          <Card>
+            <CardContent className="pt-6">
+              <DataTable
+                headers={["Field", "Type", "Required", "Default", "Description"]}
+                rows={[
+                  ["title", "string", "Yes", "-", "Alert title (max 200 chars)"],
+                  ["description", "string", "No", "-", "Detailed description (max 2000 chars)"],
+                  ["send_notification", "bool", "No", "False", "Send email notification to team"],
+                ]}
+                monospaceColumns={[0, 1]}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        <Callout variant="info">
+          Setting <InlineCode>create_alert</InlineCode> to <InlineCode>None</InlineCode> or omitting it entirely will not create an alert.
+          When <InlineCode>send_notification</InlineCode> is <InlineCode>True</InlineCode>, an email is sent to team members subscribed to alerts.
+        </Callout>
+      </section>
+
       {/* Best Practices */}
       <InfoSection title="Best Practices">
         <CheckList items={[
           <>Use descriptive metric names that reflect the data&apos;s purpose (e.g., row_count, null_rate)</>,
           <>Always return metrics via the <InlineCode>granyt</InlineCode> key with DataFrame schema in <InlineCode>df_metrics</InlineCode></>,
+          <>Use <InlineCode>create_alert</InlineCode> for custom data validation that goes beyond automatic anomaly detection</>,
         ]} />
       </InfoSection>
     </div>

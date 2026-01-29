@@ -2,6 +2,7 @@ import logging
 from typing import Any, Optional
 
 from granyt_sdk.features.metrics import (
+    CREATE_ALERT_KEY,
     DF_METRICS_KEY,
     GRANYT_KEY,
     validate_df_metrics,
@@ -149,8 +150,12 @@ class PythonAdapter(OperatorAdapter):
                 if key in df_metrics:
                     metrics.custom_metrics[key] = df_metrics[key]
 
+        # Handle create_alert if present and not None
+        if CREATE_ALERT_KEY in granyt_data and granyt_data[CREATE_ALERT_KEY] is not None:
+            metrics.create_alert = granyt_data[CREATE_ALERT_KEY]
+
         # Process all other keys in granyt (custom metrics)
-        reserved_keys = {DF_METRICS_KEY}
+        reserved_keys = {DF_METRICS_KEY, CREATE_ALERT_KEY}
         for key, value in granyt_data.items():
             if key not in reserved_keys:
                 # Handle standard metric names
