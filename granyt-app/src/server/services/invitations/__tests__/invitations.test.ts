@@ -25,6 +25,7 @@ const mockPrisma = {
     findMany: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    deleteMany: vi.fn(),
   },
   organizationMember: {
     findFirst: vi.fn(),
@@ -251,6 +252,53 @@ describe("Invitation Services", () => {
       const createCall = mockPrisma.invitation.create.mock.calls[0][0];
       expect(createCall.data.email).toBe("jane@test.com");
     });
+
+    it("should reuse stale invitation when re-inviting", async () => {
+      mockPrisma.organizationMember.findFirst.mockResolvedValue(null);
+      // First findFirst: no active invitation
+      mockPrisma.invitation.findFirst
+        .mockResolvedValueOnce(null)
+        // Second findFirst: stale (revoked) invitation exists
+        .mockResolvedValueOnce({
+          id: "inv-1",
+          email: "jane@test.com",
+          revokedAt: new Date(),
+        });
+      mockPrisma.invitation.update.mockResolvedValue({
+        id: "inv-1",
+        email: "jane@test.com",
+        token: "newtoken123",
+        organization: { name: "Test Org" },
+        inviter: { name: "John" },
+      });
+
+      const result = await createInvitation(mockPrisma as any, {
+        organizationId: "org-1",
+        email: "jane@test.com",
+        role: "admin",
+        invitedBy: "user-2",
+        sendEmail: false,
+      });
+
+      // Should update the existing invitation, not create new
+      expect(mockPrisma.invitation.update).toHaveBeenCalledWith({
+        where: { id: "inv-1" },
+        data: {
+          token: expect.any(String),
+          role: "admin",
+          expiresAt: expect.any(Date),
+          invitedBy: "user-2",
+          revokedAt: null,
+          acceptedAt: null,
+        },
+        include: {
+          organization: { select: { name: true } },
+          inviter: { select: { name: true } },
+        },
+      });
+      expect(mockPrisma.invitation.create).not.toHaveBeenCalled();
+      expect(result.invitation.id).toBe("inv-1");
+    });
   });
 
   describe("listPendingInvitations", () => {
@@ -305,18 +353,6 @@ describe("Invitation Services", () => {
       await expect(
         revokeInvitation(mockPrisma as any, "inv-1", "org-1")
       ).rejects.toThrow("Cannot revoke an accepted invitation");
-    });
-
-    it("should throw if invitation already revoked", async () => {
-      mockPrisma.invitation.findFirst.mockResolvedValue({
-        id: "inv-1",
-        acceptedAt: null,
-        revokedAt: new Date(),
-      });
-
-      await expect(
-        revokeInvitation(mockPrisma as any, "inv-1", "org-1")
-      ).rejects.toThrow("Invitation is already revoked");
     });
 
     it("should revoke valid invitation", async () => {
