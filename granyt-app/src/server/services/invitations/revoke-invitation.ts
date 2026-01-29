@@ -25,10 +25,6 @@ export async function revokeInvitation(
     throw new Error("Cannot revoke an accepted invitation");
   }
 
-  if (invitation.revokedAt) {
-    throw new Error("Invitation is already revoked");
-  }
-
   // Revoke the invitation
   return prisma.invitation.update({
     where: { id: invitationId },

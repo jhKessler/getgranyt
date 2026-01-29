@@ -54,29 +54,44 @@ export async function createInvitation(
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS);
 
-  // Create the invitation
-  const invitation = await prisma.invitation.create({
-    data: {
+  // Check for stale invitation to reuse (expired or revoked)
+  const staleInvitation = await prisma.invitation.findFirst({
+    where: {
       organizationId,
       email: normalizedEmail,
-      role,
-      token,
-      expiresAt,
-      invitedBy,
-    },
-    include: {
-      organization: {
-        select: {
-          name: true,
-        },
-      },
-      inviter: {
-        select: {
-          name: true,
-        },
-      },
     },
   });
+
+  const includeOptions = {
+    organization: { select: { name: true } },
+    inviter: { select: { name: true } },
+  };
+
+  // Reuse existing invitation or create new one
+  const invitation = staleInvitation
+    ? await prisma.invitation.update({
+        where: { id: staleInvitation.id },
+        data: {
+          token,
+          role,
+          expiresAt,
+          invitedBy,
+          revokedAt: null,
+          acceptedAt: null,
+        },
+        include: includeOptions,
+      })
+    : await prisma.invitation.create({
+        data: {
+          organizationId,
+          email: normalizedEmail,
+          role,
+          token,
+          expiresAt,
+          invitedBy,
+        },
+        include: includeOptions,
+      });
 
   // Build invite URL
   const inviteUrl = `${env.NEXT_PUBLIC_APP_URL}/invite/${token}`;
