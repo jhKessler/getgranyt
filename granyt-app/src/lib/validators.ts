@@ -29,7 +29,7 @@ const schemaFieldSchema = z.object({
 // User-created alert from DAG XCom
 const createAlertSchema = z.object({
   title: z.string().min(1).max(200),
-  description: z.string().max(2000).optional(),
+  description: z.string().max(10000).optional(),
   send_notification: z.boolean().optional(),
 }).nullable().optional();
 
