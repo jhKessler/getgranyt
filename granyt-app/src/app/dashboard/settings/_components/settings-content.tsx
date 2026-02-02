@@ -4,7 +4,8 @@ import { PageHeader, PageSkeleton, GettingStartedChecklist } from "@/components/
 import { useSettings } from "../_context";
 import { useSession } from "@/lib/auth-client";
 import {
-  EmailSettingsCard,
+  OrgEmailSettingsCard,
+  NotificationPreferencesCard,
   AirflowSettingsCard,
   TeamSettingsCard,
 } from ".";
@@ -70,7 +71,9 @@ export function SettingsContent() {
           savingEnvironmentId={savingEnvironmentId}
         />
 
-        <EmailSettingsCard
+        <OrgEmailSettingsCard />
+
+        <NotificationPreferencesCard
           notificationSettings={notificationSettings}
           onUpdateNotifications={handleUpdateNotifications}
           filters={notificationFilters}

@@ -71,31 +71,7 @@ const CHANNEL_ICONS: Record<string, React.ElementType> = {
   WEBHOOK: Webhook,
 };
 
-interface EmailSettingsCardProps {
-  notificationSettings: Record<string, boolean> | undefined;
-  onUpdateNotifications: (updates: Array<{ type: string; enabled: boolean }>) => void;
-  filters: {
-    environmentFilter: EnvironmentFilterValue;
-    includeManualRuns: boolean;
-  } | undefined;
-  onUpdateFilters: (updates: {
-    environmentFilter?: EnvironmentFilterValue;
-    includeManualRuns?: boolean;
-  }) => void;
-  hasEmailConfigured: boolean;
-  defaultEnvironmentName?: string;
-  isUpdatingFilters?: boolean;
-}
-
-export function EmailSettingsCard({
-  notificationSettings,
-  onUpdateNotifications,
-  filters,
-  onUpdateFilters,
-  hasEmailConfigured,
-  defaultEnvironmentName,
-  isUpdatingFilters,
-}: EmailSettingsCardProps) {
+export function OrgEmailSettingsCard() {
   const {
     channelStatuses,
     getChannelConfig,
@@ -117,50 +93,15 @@ export function EmailSettingsCard({
     (c) => c.type === "SMTP" || c.type === "RESEND"
   );
 
-  const isNotificationsDisabled = !hasEmailConfigured || isUpdatingFilters;
-
-  const alertsEnabled = notificationSettings?.["ALL_ALERTS"] ?? true;
-
-  const getErrorValue = () => {
-    const allErrors = notificationSettings?.["ALL_ERRORS"] ?? false;
-    const newErrorsOnly = notificationSettings?.["NEW_ERRORS_ONLY"] ?? false;
-    if (newErrorsOnly) return "new_errors";
-    if (allErrors) return "all_errors";
-    return "disabled";
-  };
-
-  const handleErrorChange = (value: string) => {
-    switch (value) {
-      case "disabled":
-        onUpdateNotifications([
-          { type: "ALL_ERRORS", enabled: false },
-          { type: "NEW_ERRORS_ONLY", enabled: false },
-        ]);
-        break;
-      case "new_errors":
-        onUpdateNotifications([
-          { type: "ALL_ERRORS", enabled: false },
-          { type: "NEW_ERRORS_ONLY", enabled: true },
-        ]);
-        break;
-      case "all_errors":
-        onUpdateNotifications([
-          { type: "ALL_ERRORS", enabled: true },
-          { type: "NEW_ERRORS_ONLY", enabled: false },
-        ]);
-        break;
-    }
-  };
-
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
           <Mail className="h-5 w-5" />
-          <CardTitle>Email Settings</CardTitle>
+          <CardTitle>Email Configuration</CardTitle>
         </div>
         <CardDescription>
-          Configure your email provider and notification preferences
+          Configure your organization&apos;s email provider and webhook
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -221,115 +162,181 @@ export function EmailSettingsCard({
         {/* Divider */}
         <div className="border-t" />
 
-        {/* Notification Preferences Section */}
-        <div>
-          <h3 className="text-sm font-medium mb-3">Notification Preferences</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Configure when you receive email alerts. Alerts still appear in your dashboard regardless of these settings.
-          </p>
+        {/* Webhook Section */}
+        <WebhookSection />
+      </CardContent>
+    </Card>
+  );
+}
 
-          {!hasEmailConfigured && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20 p-3 mb-4">
-              <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
-                <Mail className="h-4 w-4" />
-                <span>Configure an email provider above to enable email notifications.</span>
-              </div>
+interface NotificationPreferencesCardProps {
+  notificationSettings: Record<string, boolean> | undefined;
+  onUpdateNotifications: (updates: Array<{ type: string; enabled: boolean }>) => void;
+  filters: {
+    environmentFilter: EnvironmentFilterValue;
+    includeManualRuns: boolean;
+  } | undefined;
+  onUpdateFilters: (updates: {
+    environmentFilter?: EnvironmentFilterValue;
+    includeManualRuns?: boolean;
+  }) => void;
+  hasEmailConfigured: boolean;
+  defaultEnvironmentName?: string;
+  isUpdatingFilters?: boolean;
+}
+
+export function NotificationPreferencesCard({
+  notificationSettings,
+  onUpdateNotifications,
+  filters,
+  onUpdateFilters,
+  hasEmailConfigured,
+  defaultEnvironmentName,
+  isUpdatingFilters,
+}: NotificationPreferencesCardProps) {
+  const isNotificationsDisabled = !hasEmailConfigured || isUpdatingFilters;
+
+  const alertsEnabled = notificationSettings?.["ALL_ALERTS"] ?? true;
+
+  const getErrorValue = () => {
+    const allErrors = notificationSettings?.["ALL_ERRORS"] ?? false;
+    const newErrorsOnly = notificationSettings?.["NEW_ERRORS_ONLY"] ?? false;
+    if (newErrorsOnly) return "new_errors";
+    if (allErrors) return "all_errors";
+    return "disabled";
+  };
+
+  const handleErrorChange = (value: string) => {
+    switch (value) {
+      case "disabled":
+        onUpdateNotifications([
+          { type: "ALL_ERRORS", enabled: false },
+          { type: "NEW_ERRORS_ONLY", enabled: false },
+        ]);
+        break;
+      case "new_errors":
+        onUpdateNotifications([
+          { type: "ALL_ERRORS", enabled: false },
+          { type: "NEW_ERRORS_ONLY", enabled: true },
+        ]);
+        break;
+      case "all_errors":
+        onUpdateNotifications([
+          { type: "ALL_ERRORS", enabled: true },
+          { type: "NEW_ERRORS_ONLY", enabled: false },
+        ]);
+        break;
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Bell className="h-5 w-5" />
+          <CardTitle>Your Notification Preferences</CardTitle>
+        </div>
+        <CardDescription>
+          Configure when you receive email alerts. These settings only affect your account.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!hasEmailConfigured && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20 p-3 mb-4">
+            <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
+              <Mail className="h-4 w-4" />
+              <span>Configure an email provider to enable email notifications.</span>
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="space-y-1">
-            {/* Alert Emails */}
-            <SettingRow
-              icon={Bell}
-              label="Alert Emails"
-              description="Receive emails when data quality alerts occur"
+        <div className="space-y-1">
+          {/* Alert Emails */}
+          <SettingRow
+            icon={Bell}
+            label="Alert Emails"
+            description="Receive emails when data quality alerts occur"
+            disabled={isNotificationsDisabled}
+          >
+            <Switch
+              checked={alertsEnabled}
+              onCheckedChange={(checked) =>
+                onUpdateNotifications([{ type: "ALL_ALERTS", enabled: checked }])
+              }
+              disabled={isNotificationsDisabled}
+            />
+          </SettingRow>
+
+          {/* Error Emails */}
+          <SettingRow
+            icon={AlertTriangle}
+            label="Error Emails"
+            description="Receive emails for DAG errors"
+            disabled={isNotificationsDisabled}
+          >
+            <Select
+              value={getErrorValue()}
+              onValueChange={handleErrorChange}
               disabled={isNotificationsDisabled}
             >
-              <Switch
-                checked={alertsEnabled}
-                onCheckedChange={(checked) =>
-                  onUpdateNotifications([{ type: "ALL_ALERTS", enabled: checked }])
-                }
-                disabled={isNotificationsDisabled}
-              />
-            </SettingRow>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="disabled">Disabled</SelectItem>
+                <SelectItem value="new_errors">New Errors Only</SelectItem>
+                <SelectItem value="all_errors">All Errors</SelectItem>
+              </SelectContent>
+            </Select>
+          </SettingRow>
 
-            {/* Error Emails */}
-            <SettingRow
-              icon={AlertTriangle}
-              label="Error Emails"
-              description="Receive emails for DAG errors"
-              disabled={isNotificationsDisabled}
-            >
-              <Select
-                value={getErrorValue()}
-                onValueChange={handleErrorChange}
-                disabled={isNotificationsDisabled}
-              >
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="disabled">Disabled</SelectItem>
-                  <SelectItem value="new_errors">New Errors Only</SelectItem>
-                  <SelectItem value="all_errors">All Errors</SelectItem>
-                </SelectContent>
-              </Select>
-            </SettingRow>
-
-            {/* Environment Filter */}
-            <SettingRow
-              icon={Globe}
-              label="Environment Filter"
-              description="Which environments trigger email notifications"
-              hint={
-                defaultEnvironmentName && filters?.environmentFilter === "default_only"
-                  ? `Emails will only be sent for: ${defaultEnvironmentName}`
-                  : undefined
+          {/* Environment Filter */}
+          <SettingRow
+            icon={Globe}
+            label="Environment Filter"
+            description="Which environments trigger email notifications"
+            hint={
+              defaultEnvironmentName && filters?.environmentFilter === "default_only"
+                ? `Emails will only be sent for: ${defaultEnvironmentName}`
+                : undefined
+            }
+            disabled={isNotificationsDisabled}
+          >
+            <Select
+              value={filters?.environmentFilter ?? "all"}
+              onValueChange={(value) =>
+                onUpdateFilters({ environmentFilter: value as EnvironmentFilterValue })
               }
               disabled={isNotificationsDisabled}
             >
-              <Select
-                value={filters?.environmentFilter ?? "all"}
-                onValueChange={(value) =>
-                  onUpdateFilters({ environmentFilter: value as EnvironmentFilterValue })
-                }
-                disabled={isNotificationsDisabled}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ENVIRONMENT_FILTER_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </SettingRow>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ENVIRONMENT_FILTER_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </SettingRow>
 
-            {/* Manual Run Emails */}
-            <SettingRow
-              icon={Play}
-              label="Manual Run Emails"
-              description="Receive emails for manually triggered DAG runs"
+          {/* Manual Run Emails */}
+          <SettingRow
+            icon={Play}
+            label="Manual Run Emails"
+            description="Receive emails for errors in manually triggered DAG runs"
+            disabled={isNotificationsDisabled}
+          >
+            <Switch
+              checked={filters?.includeManualRuns ?? true}
+              onCheckedChange={(checked) =>
+                onUpdateFilters({ includeManualRuns: checked })
+              }
               disabled={isNotificationsDisabled}
-            >
-              <Switch
-                checked={filters?.includeManualRuns ?? true}
-                onCheckedChange={(checked) =>
-                  onUpdateFilters({ includeManualRuns: checked })
-                }
-                disabled={isNotificationsDisabled}
-              />
-            </SettingRow>
-
-            {/* Webhook Section */}
-            <div className="pt-4 border-t mt-4">
-              <WebhookSection />
-            </div>
-          </div>
+            />
+          </SettingRow>
         </div>
       </CardContent>
     </Card>
