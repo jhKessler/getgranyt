@@ -80,11 +80,14 @@ export default function DagDetailPage({ params }: { params: Promise<{ dagId: str
     enabled: !!selectedEnv,
   })
 
-  // Open alerts for this DAG
+  // Open alerts for this DAG in the selected environment
   const { data: openAlerts, isLoading: alertsLoading } = trpc.alerts.getAlerts.useQuery({
     srcDagId: dagId,
     status: "OPEN",
     limit: 10,
+    environment: selectedEnv ?? undefined,
+  }, {
+    enabled: !!selectedEnv,
   })
 
   // Fetch dag runs with open alerts

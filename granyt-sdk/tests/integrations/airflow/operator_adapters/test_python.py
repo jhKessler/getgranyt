@@ -49,6 +49,10 @@ class TestPythonAdapterPatterns:
         """_PythonDecoratedOperator is created by @task decorator."""
         assert PythonAdapter.can_handle("_PythonDecoratedOperator") is True
 
+    def test_handles_pyspark_decorated_operator(self):
+        """_PySparkDecoratedOperator is created by @task.pyspark decorator."""
+        assert PythonAdapter.can_handle("_PySparkDecoratedOperator") is True
+
     def test_handles_decorated_mapped_operator(self):
         """DecoratedMappedOperator is created by @task with .expand()."""
         assert PythonAdapter.can_handle("DecoratedMappedOperator") is True

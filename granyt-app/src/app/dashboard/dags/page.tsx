@@ -62,8 +62,12 @@ function DagsPageContent() {
     enabled: !!filters.selectedEnvironment,
   })
 
-  // Fetch DAGs with open alerts
-  const { data: dagAlerts } = trpc.alerts.getDagsWithAlerts.useQuery({})
+  // Fetch DAGs with open alerts for the selected environment
+  const { data: dagAlerts } = trpc.alerts.getDagsWithAlerts.useQuery({
+    environment: filters.selectedEnvironment ?? undefined,
+  }, {
+    enabled: !!filters.selectedEnvironment,
+  })
 
   // Get Airflow URL for the selected environment
   const airflowUrl = getAirflowUrl(filters.selectedEnvironment)
