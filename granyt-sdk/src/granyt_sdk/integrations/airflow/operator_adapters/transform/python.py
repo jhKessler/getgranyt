@@ -38,6 +38,7 @@ class PythonAdapter(OperatorAdapter):
         "ExternalPythonOperator",
         "BranchExternalPythonOperator",
         "_PythonDecoratedOperator",
+        "_PySparkDecoratedOperator",
         "DecoratedMappedOperator",
     ]
 
