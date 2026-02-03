@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 import { getDocsLink } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,8 @@ export function OrgEmailSettingsCard() {
     isTesting,
     isSendingTest,
   } = useChannelManagement();
+  const { data: session } = authClient.useSession();
+  const userEmail = session?.user?.email;
 
   const [activeTab, setActiveTab] = useState("SMTP");
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
@@ -141,7 +144,7 @@ export function OrgEmailSettingsCard() {
                     saveConfig(channel.type, enabled, config)
                   }
                   onTest={() => testConnection(channel.type)}
-                  onSendTest={(recipient) => sendTest(channel.type, recipient)}
+                  onSendTest={() => sendTest(channel.type)}
                   onClear={() => clearConfig(channel.type)}
                   isToggling={isToggling}
                   isSaving={isSaving}
@@ -153,6 +156,7 @@ export function OrgEmailSettingsCard() {
                       expandedChannel === channel.type ? null : channel.type
                     )
                   }
+                  userEmail={userEmail}
                 />
               </TabsContent>
             ))}
@@ -349,7 +353,7 @@ interface ChannelTabProps {
   onToggle: (enabled: boolean) => void;
   onSave: (enabled: boolean, config: Record<string, unknown> | null) => void;
   onTest: () => void;
-  onSendTest: (recipient: string) => void;
+  onSendTest: () => void;
   onClear: () => void;
   isToggling: boolean;
   isSaving: boolean;
@@ -357,6 +361,7 @@ interface ChannelTabProps {
   isSendingTest: boolean;
   isExpanded: boolean;
   onExpandToggle: () => void;
+  userEmail?: string;
 }
 
 function ChannelTab({
@@ -373,8 +378,8 @@ function ChannelTab({
   isSendingTest,
   isExpanded,
   onExpandToggle,
+  userEmail,
 }: ChannelTabProps) {
-  const [testRecipient, setTestRecipient] = useState("");
 
   return (
     <div className="space-y-4">
@@ -521,27 +526,19 @@ function ChannelTab({
               Test Connection
             </Button>
 
-            <div className="flex gap-2">
-              <Input
-                placeholder="test@example.com"
-                value={testRecipient}
-                onChange={(e) => setTestRecipient(e.target.value)}
-                className="w-48"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onSendTest(testRecipient)}
-                disabled={!channel.isConfigured || !testRecipient || isSendingTest}
-              >
-                {isSendingTest ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="mr-2 h-4 w-4" />
-                )}
-                Send Test
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onSendTest}
+              disabled={!channel.isConfigured || !userEmail || isSendingTest}
+            >
+              {isSendingTest ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="mr-2 h-4 w-4" />
+              )}
+              Send Test{userEmail ? ` to ${userEmail}` : ""}
+            </Button>
 
             {!channel.hasEnvConfig && channel.isConfigured && (
               <Button

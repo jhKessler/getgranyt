@@ -178,10 +178,9 @@ export function useSettingsPage() {
     });
   };
 
-  const handleSendTestNotification = (channelType: string, recipient: string) => {
+  const handleSendTestNotification = (channelType: string) => {
     sendTestNotification.mutate({
       channelType: channelType as "SMTP" | "RESEND" | "WEBHOOK",
-      testRecipient: recipient,
     });
   };
 

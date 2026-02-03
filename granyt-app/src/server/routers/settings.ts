@@ -386,16 +386,22 @@ export const settingsRouter = router({
 
   /**
    * Send a test notification through a specific channel
+   * Always sends to the logged-in user's email address
    */
   sendTestNotification: protectedProcedure
     .input(
       z.object({
         organizationId: z.string().optional(),
         channelType: z.enum(["SMTP", "RESEND", "WEBHOOK"]),
-        testRecipient: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Always send to the logged-in user's email
+      const testRecipient = ctx.user.email;
+      if (!testRecipient) {
+        return { success: false, error: "User email not found" };
+      }
+
       const org = await getUserOrganization(ctx.prisma, ctx.user.id, input.organizationId);
 
       const channel = getChannel(input.channelType as ChannelType);
@@ -408,7 +414,7 @@ export const settingsRouter = router({
         return { success: false, error: `${channel.displayName} not configured` };
       }
 
-      const result = await channel.sendTest(config, input.testRecipient);
+      const result = await channel.sendTest(config, testRecipient);
 
       // Update last test result
       await ctx.prisma.organizationChannelConfig.upsert({

@@ -32,7 +32,7 @@ export function useChannelManagement() {
     toggleChannel: settings.handleToggleChannel,
     saveConfig: settings.handleSaveChannelConfig,
     testConnection: settings.handleTestChannelConnection,
-    sendTest: settings.handleSendTestNotification,
+    sendTest: settings.handleSendTestNotification, // No recipient param - uses logged-in user's email
     clearConfig: settings.handleClearChannelConfig,
     isToggling: settings.isTogglingChannel,
     isSaving: settings.isSavingChannelConfig,

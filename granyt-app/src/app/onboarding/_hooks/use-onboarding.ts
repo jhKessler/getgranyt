@@ -217,15 +217,10 @@ export function useOnboarding() {
   }
 
   const handleSendTestEmail = () => {
-    if (!userEmail) {
-      toast.error("No email address found")
-      return
-    }
-    // Try SMTP first, then Resend
+    // Try SMTP first, then Resend - backend will use logged-in user's email
     const channelType = emailStatus?.smtp ? "SMTP" : "RESEND"
     sendTestEmail.mutate({
       channelType,
-      testRecipient: userEmail,
     })
   }
 

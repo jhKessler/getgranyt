@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import { Loader2, Save } from "lucide-react"
 
 export interface SmtpConfigFormProps {
@@ -19,17 +18,17 @@ export function SmtpConfigForm({ config, onSave, isSaving, compact = false }: Sm
   const [port, setPort] = useState((config?.port as number)?.toString() ?? "587")
   const [user, setUser] = useState((config?.user as string) ?? "")
   const [password, setPassword] = useState("")
-  const [secure, setSecure] = useState((config?.secure as boolean) ?? true)
   const [fromEmail, setFromEmail] = useState((config?.fromEmail as string) ?? "")
   const [fromName, setFromName] = useState((config?.fromName as string) ?? "")
 
   const handleSave = () => {
+    const portNum = parseInt(port, 10)
     onSave({
       host,
-      port: parseInt(port, 10),
+      port: portNum,
       user,
       password: password || config?.password,
-      secure,
+      secure: portNum === 465, // Auto-detect: port 465 uses implicit SSL, others use STARTTLS
       fromEmail,
       fromName,
     })
@@ -58,6 +57,9 @@ export function SmtpConfigForm({ config, onSave, isSaving, compact = false }: Sm
             value={port}
             onChange={(e) => setPort(e.target.value)}
           />
+          <p className="text-xs text-muted-foreground">
+            Port 465 uses implicit SSL. Port 587 uses STARTTLS. Both are encrypted.
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="smtp-user">Username</Label>
@@ -97,10 +99,6 @@ export function SmtpConfigForm({ config, onSave, isSaving, compact = false }: Sm
             onChange={(e) => setFromName(e.target.value)}
           />
         </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <Switch id="smtp-secure" checked={secure} onCheckedChange={setSecure} />
-        <Label htmlFor="smtp-secure">Use TLS/SSL</Label>
       </div>
       <Button onClick={handleSave} disabled={isSaving || !isValid} className="w-full sm:w-auto">
         {isSaving ? (
